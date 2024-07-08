@@ -22,7 +22,7 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import removeBookmarkApi from "../api/removebookmark";
 import {getUserByIdApi} from "../api/authApi";
-import jwtDecode from "jwt-decode";
+import {jwtDecode} from "jwt-decode";
 import {getAllChannelApi} from "../api/channelApi";
 import profileImage from "../public/images/defaultProfile.svg";
 

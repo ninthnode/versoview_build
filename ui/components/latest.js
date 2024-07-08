@@ -27,7 +27,7 @@ import FormatDate from "./formateDate";
 import getAllBookmarkApi from "../api/getAllBookmark";
 import Loader from '../components/loader';
 import ShimmerEffect from "./shimmer";
-import jwtDecode from 'jwt-decode';
+import {jwtDecode} from 'jwt-decode';
 import {getUserByIdApi} from "../api/authApi";
 import {getUnreadPostApi} from "../api/postApi";
 import {unreadPostApi} from "../api/postApi";

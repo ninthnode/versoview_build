@@ -8,7 +8,7 @@ import globalStyles from "../styles/global.module.css";
 import chooseTopicsApi from "../api/chooseTopics";
 import Loader from '../components/loader';
 import Head from 'next/head';
-import jwtDecode from 'jwt-decode';
+import {jwtDecode} from 'jwt-decode';
 import {updateUserApi} from "../api/authApi";
 
 const Welcome = () => {

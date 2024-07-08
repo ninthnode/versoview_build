@@ -31,7 +31,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { getSignedProfileUrl, uploadFileToSignedUrl } from "../src/api";
 import Loader from '../components/loader'
 import {updateUserApi} from "../api/authApi";
-import jwtDecode from 'jwt-decode';
+import {jwtDecode} from 'jwt-decode';
 import {FollowersList} from "../api/channelApi";
 import {getAllPostByChannelId} from "../api/postApi";
 import {FollowChannelList} from "../api/channelApi";
