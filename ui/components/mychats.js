@@ -20,7 +20,7 @@ import dummyData from "../mydmsDummyData.json";
 import { FaLocationArrow } from "react-icons/fa";
 import ServerUrl from "../context/production";
 import { useRouter } from 'next/router';
-import getChannelByName from "../api/authApi";
+import {getChannelByName} from "../api/authApi";
 import socket from "../socket";
 
 const MyChats = ({ device }) => {

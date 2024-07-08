@@ -13,7 +13,7 @@ import filledstar from "../public/images/filledstar.svg";
 import img from "../public/images/following.png";
 import dummyData from "../dummyData.json";
 import {getChannelByName} from "../api/authApi"
-import {followChannelList,pinnedChannelApi,unpinnedChannelApi} from "../api/channelApi";
+import {FollowChannelList,pinnedChannelApi,unpinnedChannelApi} from "../api/channelApi";
 import profileImage from "../public/images/defaultProfile.svg";
 
 const Following = ({ device }) => {
@@ -97,7 +97,7 @@ const Following = ({ device }) => {
     
     const followingChannelData = async () => {
       try { 
-        const response = await followChannelList();
+        const response = await FollowChannelList();
         setFollowingChannel(response.data);
       } catch(error) {
         console.log(error);

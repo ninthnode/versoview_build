@@ -26,7 +26,7 @@ import {updateProfileApi} from "../api/authApi";
 import {ToastContainer,  toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useRouter } from "next/router";
-import getProfileApi from "../api/authApi";
+import {getProfileApi} from "../api/authApi";
 import Loader from '../components/loader'
 
 const UpdateProfile = ({ device}) => {

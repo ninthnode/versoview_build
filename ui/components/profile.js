@@ -25,16 +25,16 @@ import { FaTelegram } from "react-icons/fa";
 import { FaFacebook } from "react-icons/fa";
 import { deviceType } from "react-device-detect";
 import { FaInstagram } from "react-icons/fa";
-import getChannelByName from "../api/authApi";
+import {getChannelByName} from "../api/authApi";
 import { ToastContainer,toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { getSignedProfileUrl, uploadFileToSignedUrl } from "../src/api";
 import Loader from '../components/loader'
 import {updateUserApi} from "../api/authApi";
-import {jwtDecode} from 'jwt-decode';
+import jwtDecode from 'jwt-decode';
 import {FollowersList} from "../api/channelApi";
 import {getAllPostByChannelId} from "../api/postApi";
-import {followChannelList} from "../api/channelApi";
+import {FollowChannelList} from "../api/channelApi";
 
 const Profile = ({ device }) => {
   const [profileData, setProfileData] = useState({});
@@ -319,7 +319,7 @@ const Profile = ({ device }) => {
           setFollowers(followers.data.length);
         }
 
-        const following = await followChannelList();
+        const following = await FollowChannelList();
         const totalFollowing = following.data.length;
         setFollowing(totalFollowing);
 

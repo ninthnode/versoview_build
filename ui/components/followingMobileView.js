@@ -14,7 +14,7 @@ import img from "../public/images/following.png";
 import dummyData from "../dummyData.json";
 import BottomNav from "../components/bottom-nav";
 import {getChannelByName} from "../api/authApi"
-import {followChannelList,pinnedChannelApi,unfollowChannelApi,unpinnedChannelApi} from "../api/channelApi";
+import {FollowChannelList,pinnedChannelApi,unfollowChannelApi,unpinnedChannelApi} from "../api/channelApi";
 import profileImage from "../public/images/defaultProfile.svg";
 import {getUnreadPostApi} from "../api/postApi";
 
@@ -148,7 +148,7 @@ const FollowingMobileView = ({ device }) => {
 
     const followingChannelData = async () => {
       try { 
-        const channelData = await followChannelList();
+        const channelData = await FollowChannelList();
       
         // ranu
         const fetchUnreadPostCount = async (channelId) => {
@@ -189,7 +189,7 @@ const FollowingMobileView = ({ device }) => {
 
   const followingChannelData = async () => {
     try { 
-      const response = await followChannelList();
+      const response = await FollowChannelList();
       setFollowingChannel(response.data);
     } catch(error) {
       console.log(error);

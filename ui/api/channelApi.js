@@ -37,7 +37,7 @@ export const followChannelApi = async ({channelId}) => {
     }
   };
 
-  export const followChannelList = async () => {
+  export const FollowChannelList = async () => {
     try {
       const token = localStorage.getItem("token");
   

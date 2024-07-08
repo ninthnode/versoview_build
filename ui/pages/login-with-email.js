@@ -8,7 +8,7 @@ import envelope from "../public/images/envelope.svg";
 import back from "../public/images/backwardarrow.svg";
 import group from "../public/images/group.svg";
 import login from "../public/images/login.svg";
-import loginApi from "../api/authApi";
+import {loginApi} from "../api/authApi";
 import Loader from '../components/loader';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";

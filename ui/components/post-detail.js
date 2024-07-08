@@ -22,7 +22,7 @@ import profilesData from "../profileData.json";
 import dummyData from "../versoviewDummyData.json";
 import profileImage from "../public/images/defaultProfile.svg";
 import {getPostByIdApi} from "../api/postApi";
-import getProfileApi from "../api/authApi";
+import {getProfileApi} from "../api/authApi";
 import bookmarkApi from "../api/addBookmarks";
 import removeBookmarkApi from "../api/removebookmark";
 import upvoteApi from "../api/upvote";
