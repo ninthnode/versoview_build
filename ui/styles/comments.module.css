@@ -1,0 +1,64 @@
+@font-face {
+    font-family: SF-Bold;
+    src: url("../fonts/SF-Pro-Display-Bold.otf") format('opentype');
+    ;
+}
+
+@font-face {
+    font-family: SF-Light;
+    src: url("../fonts//SF-Pro-Display-Light.otf") format('opentype');
+    ;
+}
+
+@font-face {
+    font-family: SF-SemiBold;
+    src: url("../fonts//SF-Pro-Display-Semibold.otf") format('opentype');
+    ;
+}
+
+@font-face {
+    font-family: SF-Text-Regular;
+    src: url("../fonts//SF-Pro-Text-Regular.otf") format('opentype');
+    ;
+}
+
+@font-face {
+    font-family: NewYork;
+    src: url("../fonts//FontsFree-Net-NewYorkSmallRegular.ttf") format('opentype');
+    ;
+}
+
+
+.channelName {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.replyCommentBox {
+    width: 100%;
+    margin-top: 20px;
+    max-width: calc(100% - 0px);
+}
+
+.container {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: calc(100% - 0px);
+    margin: 0 auto;
+}
+
+@media screen and (min-width: 375px) {
+    .container {
+        box-sizing: border-box;
+        width: 100%;
+        max-width: calc(100% - 0px);
+        margin: 0 auto;
+    }
+
+    .channelName {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+    }
+}

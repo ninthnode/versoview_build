@@ -1,0 +1,955 @@
+const asyncHandler = require("express-async-handler");
+const mongoose = require("mongoose");
+const { Vote } = require("../models/vote.model");
+const { CommentVote } = require("../models/commentVote.model");
+const { CommentReply } = require("../models/replytocomment.model");
+const { Post } = require("../models/post.model");
+const { Channel } = require("../models/channel.model");
+const { User } = require("../models/user.model");
+const { Bookmark } = require("../models/bookmark.model");
+const { Favorite } = require("../models/favorite.model");
+const { PostComment }= require("../models/postcomment.model");
+const PdfExtractor = require("pdf-extractor").PdfExtractor;
+const {PostCommentReply} = require("../models/postcomment.replies.model")
+const {UnreadPost} = require("../models/unreadPost.model");
+const fs = require("fs");
+const path = require("path");
+const fse = require("fs-extra");
+
+// get all pdf images
+function getAllImageFiles(folder) {
+  const files = fs.readdirSync(folder);
+  return files.filter((file) => {
+    return /\.(jpg|jpeg|png)$/i.test(file);
+  });
+}
+
+// Create post
+module.exports.create = asyncHandler(async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const channelData = await Channel.findOne({ userId });
+    const channelId = channelData._id;
+
+    const postData = {
+      channelId: channelId,
+      userId: userId,
+      mainImageURL: req.body.mainImageURL || "",
+      section: req.body.section || "",
+      subSection: req.body.subSection || "",
+      header: req.body.header || "",
+      standFirst: req.body.standFirst || "",
+      credits: req.body.credits || "",
+      bodyRichText: req.body.bodyRichText || "",
+      status: req.body.status || "",
+    };
+
+    const newPost = new Post(postData);
+    await newPost.save();
+
+    // Update userType to 'publisher'
+    await User.findByIdAndUpdate(userId, { userType: 'publisher' });
+
+    const postId = newPost._id;
+
+        // Create unread post for the user
+        const unreadPostData = {
+          postId,
+          userId,
+          channelId,
+          readPost: false,
+        };
+    
+        const newUnreadPost = new UnreadPost(unreadPostData);
+        await newUnreadPost.save();
+    
+    res.status(201);
+    res.json({status: 201, message: "Post created successfully", data: newPost });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// module.exports.getAllPost = asyncHandler(async (req, res) => {
+//   try {
+//     const postData = await Post.find().populate("channelId").sort({ createdAt: -1 });
+//     res.status(200);
+//     res.json({ message: "Success", data: postData });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: "Internal Server Error" });
+//   }
+// });
+// Get all post
+module.exports.getAllPost = asyncHandler(async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const postData = await Post.find()
+      .populate("channelId")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const totalPosts = await Post.countDocuments();
+
+    res.status(200).json({
+      message: "Success",
+      data: postData,
+      totalPages: Math.ceil(totalPosts / limit),
+      currentPage: page,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+
+module.exports.getPostById = asyncHandler(async (req, res) => {
+  try {
+    const postId = req.params._id;
+
+    // Fetch post data
+    const postData = await Post.findOne({ _id: postId });
+    if (!postData) {
+      console.log(`Post not found for ID: ${postId}`);
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    // Fetch channel data
+    const channelId = postData.channelId;
+    if (!channelId) {
+      console.log(`Channel ID not found in post data: ${postData}`);
+      return res.status(404).json({ message: "Channel ID not found in post data" });
+    }
+
+    const channelData = await Channel.findOne({ _id: channelId });
+    if (!channelData) {
+      console.log(`Channel not found for ID: ${channelId}`);
+      return res.status(404).json({ message: "Channel not found" });
+    }
+
+    // Fetch user data
+    const userId = channelData.userId;
+    if (!userId) {
+      console.log(`User ID not found in channel data: ${channelData}`);
+      return res.status(404).json({ message: "User ID not found in channel data" });
+    }
+
+    const userData = await User.findOne({ _id: userId });
+    if (!userData) {
+      console.log(`User not found for ID: ${userId}`);
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const votes = await Vote.find({ postId: postId });
+    const voteCounts = votes.reduce((counts, vote) => {
+      if (vote.voteType === true) {
+        counts.trueCount++;
+      } else if (vote.voteType === false) {
+        counts.falseCount++;
+      }
+      return counts;
+    }, { trueCount: 0, falseCount: 0 });
+
+    // Combine all the data
+    const combinedData = {
+      post: postData,
+      channel: channelData,
+      user: userData,
+      votes: voteCounts
+    };
+
+    res.status(200).json({ message: "Success", data: combinedData });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// Get posts by channel id
+module.exports.getPostByChannelId = asyncHandler(async (req, res) => {
+  try {
+    const channelId = req.params._id;
+    const postData = await Post.find({ channelId: channelId });
+    res.status(200);
+    res.json({ message: "Success", data: postData });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// Update post
+module.exports.updatePost = asyncHandler(async (req, res) => {
+  try {
+    const postId = req.params._id;
+    const isPostExist = await Post.findOne(postId);
+
+    if (!isPostExist) {
+      return res.status(404).json({ error: "Post not found" });
+    }
+
+    const updatedPost = await Post.findByIdAndUpdate(postId, req.body, {
+      new: true,
+    });
+
+    res
+      .status(200)
+      .json({ message: "Post updated successfully", data: updatedPost });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// Delete post
+module.exports.deletePost = asyncHandler(async (req, res) => {
+  try {
+    const postId = req.params._id;
+
+    const postToDelete = await Post.findById(postId);
+
+    if (!postToDelete) {
+      return res.status(404).json({ error: "Post not found" });
+    }
+
+    await postToDelete.remove();
+
+    res
+      .status(200)
+      .json({ message: "Post deleted successfully", data: postToDelete });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// Upvote post
+module.exports.upvotePost = asyncHandler(async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const postId = req.params._id;
+
+    const isAlreadyVoted = await Vote.findOne({votingUserId: userId, postId : postId});
+    if(isAlreadyVoted && isAlreadyVoted.voteType === true) {
+      return res.status(200).json({status: 400, message: "Already upvoted"});
+    }
+    else if(isAlreadyVoted && isAlreadyVoted.voteType === false) {
+      isAlreadyVoted.voteType = true;
+      await isAlreadyVoted.save();
+      return res.status(200).json({status: 200, message: "upvoted"});
+    }
+    else {
+      const newVote = new Vote({
+        votingUserId: userId,
+        postId: postId,
+        voteType: true,
+      });
+  
+      await newVote.save();
+      return res.status(201).json({status : 201, message: "Success", data: newVote });
+    }
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// Downvote post
+module.exports.downvotePost = asyncHandler(async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const postId = req.params._id;
+
+    const isAlreadyVoted = await Vote.findOne({votingUserId: userId, postId : postId});
+    if(isAlreadyVoted && isAlreadyVoted.voteType === false) {
+      return res.status(200).json({status: 400, message: "Already downvoted"});
+    }
+    else if(isAlreadyVoted && isAlreadyVoted.voteType === true) {
+      isAlreadyVoted.voteType = false;
+      await isAlreadyVoted.save();
+      return res.status(200).json({status: 200, message: "downvoted"});
+    }
+    else {
+      const newVote = new Vote({
+        votingUserId: userId,
+        postId: postId,
+        voteType: false,
+      });
+  
+      await newVote.save();
+      return res.status(201).json({status : 201, message: "Success", data: newVote });
+    }
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// Votes
+module.exports.voting = asyncHandler(async (req, res) => {
+  try {
+    const postId = req.params.postId;
+    const votingData = await Vote.find({postId});
+
+    if (votingData && votingData.length > 0) {
+      return res.status(200).json({ status: 200, message: "Success", data: votingData });
+    } else {
+      return res.status(200).json({ status: 404, message: "No voting data found" });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// bookmark
+module.exports.bookmarkPost = asyncHandler(async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { _id } = req.params;
+    const { type } = req.query;
+
+    if (type !== 'post' && type !== 'comment') {
+      return res.status(400).json({ error: "Invalid type parameter. Must be 'post' or 'comment'" });
+    }
+
+    const filter = type === 'post' ? { userId, postId: _id } : { userId, postCommentId: _id };
+    const isBookmark = await Bookmark.findOne(filter);
+
+    if (isBookmark) {
+      // If the bookmark exists, remove it
+      await Bookmark.deleteOne(filter);
+      return res.status(200).json({ message: "Removed from bookmark list" });
+    }
+
+    // If the bookmark does not exist, add it
+    const bookmark = type === 'post' ? { userId, postId: _id } : { userId, postCommentId: _id };
+    const bookmarkPost = new Bookmark(bookmark);
+    await bookmarkPost.save();
+
+    return res.status(201).json({status: 201,  message: "Added to bookmark", data: bookmarkPost });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// Add bookmark
+// module.exports.bookmarkPost = asyncHandler(async (req, res) => {
+//   try {
+//     const userId = req.user._id;
+//     const postId = req.params._id;
+//     const isBookmark = await Bookmark.findOne({ userId: userId, postId: postId });
+
+//     if (isBookmark) {
+//       return res
+//         .status(200)
+//         .json({ status: 409, message: "Already in bookmark list" });
+//     }
+//     const bookmark = {
+//       userId,
+//       postId,
+//     };
+
+//     const bookmarkPost = new Bookmark(bookmark);
+//     await bookmarkPost.save();
+
+//     res.status(201);
+//     res.json({ message: "Added to bookmark", data: bookmarkPost });
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(500).json({ error: "Internal Server Error" });
+//   }
+// });
+
+// Get all bookmark
+// module.exports.getAllBookmark = asyncHandler(async (req, res) => {
+//   try {
+//     const userId = req.user._id;
+//     const bookmarks = await Bookmark.find({ userId }).populate({
+//       path: "postId",
+//       populate: { path: "channelId" }
+//     });
+  
+//     res.status(200);
+//     res.json({ message: "Success", data: bookmarks });
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(500).json({ error: "Internal Server Error" });
+//   }
+// });
+
+// get bookmarks
+module.exports.getAllBookmark = asyncHandler(async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const bookmarks = await Bookmark.aggregate([
+      { $match: { userId: mongoose.Types.ObjectId(userId) } },
+      {
+        $lookup: {
+          from: 'posts',
+          localField: 'postId',
+          foreignField: '_id',
+          as: 'post',
+        },
+      },
+      {
+        $lookup: {
+          from: 'postcomments',
+          localField: 'postCommentId',
+          foreignField: '_id',
+          as: 'postComment',
+        },
+      },
+      {
+        $lookup: {
+          from: 'channels',
+          let: { postChannelId: { $arrayElemAt: ['$post.channelId', 0] } },
+          pipeline: [
+            { $match: { $expr: { $eq: ['$_id', '$$postChannelId'] } } }
+          ],
+          as: 'postChannel',
+        },
+      },
+      {
+        $lookup: {
+          from: 'posts',
+          let: { postCommentPostId: { $arrayElemAt: ['$postComment.postId', 0] } },
+          pipeline: [
+            { $match: { $expr: { $eq: ['$_id', '$$postCommentPostId'] } } }
+          ],
+          as: 'postCommentPost',
+        },
+      },
+      {
+        $lookup: {
+          from: 'channels',
+          let: { postCommentChannelId: { $arrayElemAt: ['$postCommentPost.channelId', 0] } },
+          pipeline: [
+            { $match: { $expr: { $eq: ['$_id', '$$postCommentChannelId'] } } }
+          ],
+          as: 'postCommentChannel',
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          post: { $arrayElemAt: ['$post', 0] },
+          postComment: { $arrayElemAt: ['$postComment', 0] },
+          postChannel: { $arrayElemAt: ['$postChannel', 0] },
+          postCommentPost: { $arrayElemAt: ['$postCommentPost', 0] },
+          postCommentChannel: { $arrayElemAt: ['$postCommentChannel', 0] },
+          userId: 1,
+          isBookmarked: 1,
+          createdAt: 1,
+          updatedAt: 1,
+        },
+      },
+    ]);
+
+    return res.status(200).json({status: 200, message: 'Success', data: bookmarks });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// Remove bookmark
+// module.exports.removeBookmarkPost = asyncHandler(async (req, res) => {
+//   try {
+//     const userId = req.user._id;
+//     const postId  = req.params;
+//     const isAlreadyBookmarked = await Bookmark.findOne({ userId: userId, postId: postId });
+
+//     if (!isAlreadyBookmarked) {
+//       return res.status(404).json({ message: "Not in bookmark list" }); 
+//     }
+
+//     await isAlreadyBookmarked.remove();
+//     res.status(200).json({
+//       status: 200,
+//       message: "Removed from bookmark list",
+//       data: isAlreadyBookmarked,
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(500).json({ error: "Internal Server Error" });
+//   }
+// });
+module.exports.removeBookmarkPost = asyncHandler(async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { _id } = req.params; 
+    const { type } = req.query; 
+
+    if (!type || !['post', 'comment'].includes(type)) {
+      return res.status(400).json({ message: "Invalid type provided" });
+    }
+
+    // Determine the field to search by based on the type
+    const searchField = type === 'post' ? 'postId' : 'postCommentId';
+
+    const isAlreadyBookmarked = await Bookmark.findOne({ userId, [searchField]: _id });
+
+    if (!isAlreadyBookmarked) {
+      return res.status(404).json({ message: "Not in bookmark list" });
+    }
+
+    await isAlreadyBookmarked.remove();
+    res.status(200).json({
+      status: 200,
+      message: "Removed from bookmark list",
+      data: isAlreadyBookmarked,  
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// Add to favorite
+module.exports.addToFavorite = asyncHandler(async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const postId = req.params._id;
+
+    const isFavorite = await Favorite.findOne({ postId: postId });
+    if (isFavorite) {
+      return res.status(409).json({ message: "Already in favorite list" });
+    }
+
+    const favorite = {
+      userId,
+      postId,
+    };
+
+    const favoritePost = new Favorite(favorite);
+    await favoritePost.save();
+
+    res.status(201);
+    res.json({ message: "Added to favorite", data: favoritePost });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// Remove favorite
+module.exports.removeToFavorite = asyncHandler(async (req, res) => {
+  try {
+    const postId = req.params._id;
+
+    const isAlreadyFavorite = await Favorite.findOne({ postId: postId });
+
+    if (!isAlreadyFavorite) {
+      return res
+        .status(404)
+        .json({ message: "Not in favorite list", data: isAlreadyFavorite });
+    }
+
+    await isAlreadyFavorite.remove();
+    res.status(200);
+    res.json({ message: "Removed from favorite list" });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// Extract pdf
+module.exports.extractPDFSlides = asyncHandler(async (req, res) => {
+  try {
+    let isFileExist = req.file;
+    if (!isFileExist) {
+      return res.status(400).json({
+        success: false,
+        message: "file not  received",
+      });
+    }
+
+    let outputDir = path.join(__dirname, "../public/uploads/resumes");
+    pdfExtractor = new PdfExtractor(outputDir, {
+      viewportScale: (width, height) => {
+        //dynamic zoom based on rendering a page to a fixed page size
+        if (width > height) {
+          //landscape: 1100px wide
+          return 1100 / width;
+        }
+        //portrait: 800px wide
+        return 800 / width;
+      },
+      pageRange: [1, 5],
+    });
+    // Parse the PDF and extract images
+
+    await pdfExtractor.parse(req.file?.path);
+    // Get the list of image files
+    const imageFiles = fs
+      .readdirSync(outputDir)
+      .filter((file) => /\.(jpg|jpeg|png)$/i.test(file));
+
+    res.json({
+      images: imageFiles.map(
+        (file) => `http://localhost:5001/public/uploads/resumes/${file}`
+      ),
+    });
+  } catch (error) {
+    console.error("Error:", error.message);
+    res.status(500).json({ error: "Failed to extract images from PDF" });
+  }
+});
+
+// Get pdf slides
+module.exports.getAllPdfSlides = asyncHandler(async (req, res) => {
+  const imageFiles = getAllImageFiles("public/uploads/resumes");
+  const pdfImages = imageFiles.map((file) => {
+    return `http://localhost:5001/public/uploads/resumes/${file}`;
+  });
+
+  res.json({ images: pdfImages });
+});
+
+// Post Comment
+module.exports.postComment = asyncHandler(async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const postId = req.params;
+    const {excerpt, commentText} = req.body;
+  
+    const comment = {
+      userId : userId,
+      postId : postId,
+      excerpt : excerpt,
+      commentText : commentText
+    }
+  
+    const newComment = new PostComment(comment);
+    await newComment.save();
+
+    return res.status(201).json({status: 201, data: newComment});
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+})
+
+// Post Comment Replies
+module.exports.postCommentReply = asyncHandler(async (req, res) => {
+  try {
+    const userId = req.user._id;  
+    const postCommentId = req.params;
+    const {commentReply} = req.body;
+      
+    const comment = {
+      userId : userId,
+      postCommentId : postCommentId,
+      commentReply : commentReply,
+    }
+  
+    const newComment = new PostCommentReply(comment);
+    await newComment.save();
+  
+    return res.status(201).json({status: 201, data: newComment});
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+})
+
+// Get All Comments
+module.exports.getAllComment = asyncHandler(async (req, res) => {
+  try {
+    const postId = req.params;
+    const comments = await PostComment.find({ postId: postId }).
+    populate({
+        path: 'userId',
+        populate: {
+            path: 'userId',
+            model: 'User' 
+        }
+    });
+    
+    return res.status(200).json({status: 200, message: "Success", data: comments });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// Get all comments
+module.exports.getAllCommentReplies = asyncHandler(async (req, res) => {
+  const postCommentId = req.params._id; 
+  try {
+    const replies = await PostCommentReply.find({ postCommentId })
+      .populate({
+        path: 'postCommentId',
+        populate: {
+          path: 'userId',
+          model: 'User'
+        }
+      })
+      .populate('userId');
+ 
+    return res.status(200).json({data: replies});
+
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+});
+
+// Upvote comment 
+module.exports.upvoteComment = asyncHandler(async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const postCommentId = req.params._id;
+
+    const isAlreadyVoted = await CommentVote.findOne({votingUserId: userId, postCommentId : postCommentId});
+    if(isAlreadyVoted && isAlreadyVoted.voteType === true) {
+      return res.status(200).json({status: 400, message: "Already upvoted"});
+    }
+    else if(isAlreadyVoted && isAlreadyVoted.voteType === false) {
+      isAlreadyVoted.voteType = true;
+      await isAlreadyVoted.save();
+      return res.status(200).json({status: 200, message: "upvoted"});
+    }
+    else {
+      const newVote = new CommentVote({
+        votingUserId: userId,
+        postCommentId: postCommentId,
+        voteType: true,
+      });
+  
+      await newVote.save();
+      return res.status(200).json({status : 201, message: "Success", data: newVote });
+    }
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// Downvote comment
+module.exports.downvoteComment = asyncHandler(async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const postCommentId = req.params._id;
+
+    const isAlreadyVoted = await CommentVote.findOne({votingUserId: userId, postCommentId : postCommentId});
+    if(isAlreadyVoted && isAlreadyVoted.voteType === false) {
+      return res.status(200).json({status: 400, message: "Already downvoted"});
+    }
+    else if(isAlreadyVoted && isAlreadyVoted.voteType === true) {
+      isAlreadyVoted.voteType = false;
+      await isAlreadyVoted.save();
+      return res.status(200).json({status: 200, message: "downvoted"});
+    }
+    else {
+      const newVote = new CommentVote({
+        votingUserId: userId,
+        postCommentId: postCommentId,
+        voteType: false,
+      });
+  
+      await newVote.save();
+      return res.status(201).json({status : 201, message: "Success", data: newVote });
+    }
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// Comment Votes
+module.exports.commentVoting = asyncHandler(async (req, res) => {
+  try {
+    const postCommentId = req.params.postCommentId;
+    const votingData = await CommentVote.find({postCommentId});
+
+    if (votingData && votingData.length > 0) {
+      return res.status(200).json({ status: 200, message: "Success", data: votingData });
+    } else {
+      return res.status(200).json({ status: 404, message: "No voting data found" , data: []});
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// Get All Comments
+module.exports.getAllComment = asyncHandler(async (req, res) => {
+  try {
+    const postId = req.params;
+    const comments = await PostComment.find({ postId: postId }).
+    populate({
+        path: 'userId',
+        populate: {
+            path: 'userId',
+            model: 'User' 
+        }
+    });
+
+    return res.status(200).json({status: 200, message: "Success", data: comments});
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// Comment Reply
+module.exports.commentReply = asyncHandler(async (req, res) => {
+  try {
+    const userId = req.user._id;  
+    const commentId = req.params;
+    const {commentReply} = req.body;
+      
+    const comment = {
+      userId : userId,
+      commentId : commentId,
+      commentReply : commentReply,
+    }
+  
+    const newComment = new CommentReply(comment);
+    await newComment.save();
+  
+    return res.status(201).json({status: 201, data: newComment});
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+})
+
+// Get Comment Replies
+module.exports.getCommentReplies = asyncHandler(async (req, res) => {
+  const commentId = req.params._id; 
+  try {
+    const replies = await CommentReply.find({ commentId }).populate("userId");
+      
+    return res.status(200).json({data: replies});
+
+  } catch (err) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// Unread post api 
+module.exports.unreadPost = asyncHandler(async (req, res) => {
+  try {
+    const { postId, userId, channelId, readPost } = req.body;
+
+    const newUnreadPost = new UnreadPost({
+      postId,
+      userId,
+      channelId,
+      readPost,
+    });
+
+    const savedUnreadPost = await newUnreadPost.save();
+    return res.status(201).json({status : 201, data : savedUnreadPost});
+
+  } catch(error){
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+})
+
+// Get all unread post
+module.exports.getAllUnreadPost = asyncHandler(async (req, res) => {
+  try {
+    const channelId  = req.params._id;
+    const userId = req.user._id;
+
+    if (!channelId || !userId) {
+      return res.status(200).json({status: 400,  message: "channelId and userId are required" });
+    }
+
+    // const unreadPosts = await UnreadPost.find({ channelId, userId });
+    const unreadPosts = await UnreadPost.find({ channelId });
+
+    if(!unreadPosts) {
+      return res.status(200).json({status: 404, data: null});
+    }
+   
+    return res.status(200).json({status : 200, data: unreadPosts});
+  } catch(error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+})
+
+// Delete the unread post
+module.exports.deleteUnreadPost = asyncHandler(async (req, res) => {
+  try {
+    const postId = req.params._id;
+    const userId = req.user._id;
+
+    const result = await UnreadPost.deleteOne({ postId, userId });
+
+    if (result.deletedCount === 0) {
+      return res.status(200).json({status : 404, message: "Unread post not found" });
+    }
+
+    return res.status(200).json({status: 200,  message: "Unread post deleted successfully" });
+  } catch(error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+})
+
+// Check post owner
+module.exports.postOwner = asyncHandler(async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const {_id} = req.params;
+    const isOwner = await Post.findOne({_id : _id, userId : userId });
+    if(!isOwner){
+      return res.status(200).json({status: 404, message: "Not an owner"});
+    }
+    return res.status(200).json({status: 200, data: isOwner});
+  } catch(error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+})
+
+// Delete Post Comment
+module.exports.deletePostComment = asyncHandler(async (req, res) => {
+  try {
+    const {_id} = req.params;
+    console.log(req.params, "ids")
+    const deletedPost = await PostComment.findOneAndDelete({_id : _id});
+    console.log(deletedPost, "deleted post comment --")
+    return res.status(200).json({status : 200, data : deletedPost});
+
+  } catch(error){
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+ });
+
+// Delete Comment Reply
+module.exports.deleteCommentReply = asyncHandler(async (req, res) => {
+  try {
+    const {_id} = req.params;
+    const deletedReply = await PostCommentReply.findOneAndDelete({_id : _id});
+    console.log(deletedReply, "deleted comment reply--")
+    return res.status(200).json({status : 200, data : deletedReply});
+  } catch(error){
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+})

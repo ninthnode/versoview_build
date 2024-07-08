@@ -1,0 +1,285 @@
+@font-face {
+    font-family: SF-Bold;
+    src: url("../fonts/SF-Pro-Display-Bold.otf") format('opentype');
+    ;
+}
+
+@font-face {
+    font-family: SF-Light;
+    src: url("../fonts//SF-Pro-Display-Light.otf") format('opentype');
+    ;
+}
+
+@font-face {
+    font-family: SF-SemiBold;
+    src: url("../fonts//SF-Pro-Display-Semibold.otf") format('opentype');
+    ;
+}
+
+@font-face {
+    font-family: SF-Text-Regular;
+    src: url("../fonts//SF-Pro-Text-Regular.otf") format('opentype');
+    ;
+}
+
+@font-face {
+    font-family: NewYork;
+    src: url("../fonts//FontsFree-Net-NewYorkSmallRegular.ttf") format('opentype');
+    ;
+}
+
+@font-face {
+    font-family: SF-Bold;
+    src: url("../fonts/SF-Pro-Display-Bold.otf") format('opentype');
+    ;
+}
+
+@font-face {
+    font-family: SF-Regular;
+    src: url("../fonts/SF-Pro-Display-Regular.otf") format('opentype');
+    ;
+}
+
+@font-face {
+    font-family: SF-Mono;
+    src: url("../fonts/SFMono-Regular.otf") format('opentype');
+    ;
+}
+
+@font-face {
+    font-family: Helvetica-Regular;
+    src: url("../fonts/HelveticaNeue-Regular.otf") format('opentype');
+    ;
+}
+
+@font-face {
+    font-family: Helvetica;
+    src: url("../fonts/HelveticaNeue-Bold.otf") format('opentype');
+    ;
+}
+
+.formContainer {
+    margin-top: 20px;
+    width: 47%;
+}
+
+.parentDiv {
+    width: 90%;
+    display: flex;
+    justify-content: space-between;
+}
+
+.padlock {
+    position: absolute;
+    top: 10px;
+    left: 8px;
+    width: 18;
+    height: 24
+}
+
+.childDiv_1 {
+    width: 60%;
+    position: relative;
+}
+
+.childDiv_2 {
+    width: 30%;
+}
+
+.heading {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.heading p {
+    font-size: 14px;
+    font-family: Helvetica;
+    margin: 3px;
+}
+
+.cameraIcon {
+    width: 254px;
+    height: 137px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: url('/images/rounded-rect.svg') center/100% 100% no-repeat;
+}
+
+.cameraIcon p {
+    font-size: 18px;
+    font-family: Helvetica-Regular;
+}
+
+.headStyle {
+    font-size: 14px;
+    font-family: Helvetica;
+    margin-bottom: 1px;
+    margin-top: 5px;
+}
+
+.headStyle1 {
+    font-size: 14px;
+    font-family: Helvetica;
+    margin-bottom: 1px;
+    margin-left: 0px;
+}
+
+.heading input {
+    width: 160px;
+    height: 20px;
+    padding-left: 10px;
+}
+
+.heading input::placeholder {
+    font-size: 14px;
+    font-family: Helvetica-Regular;
+}
+
+.textarea1 {
+    width: 97%;
+    height: 17px;
+    padding: 5px;
+    margin-top: 0px;
+}
+
+.textarea2 {
+    width: 97%;
+    height: 35px;
+    padding: 5px;
+}
+
+.textarea3 {
+    width: 92%;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 25px;
+    border: 2px solid #707070;
+    height: 26px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+}
+
+.textarea1::placeholder {
+    font-size: 14px;
+    font-family: Helvetica-Regular;
+}
+
+.textarea2::placeholder {
+    font-size: 14px;
+    font-family: Helvetica-Regular;
+}
+
+.textarea3::placeholder {
+    font-size: 14px;
+    font-family: Helvetica-Regular;
+    /* padding-left: 20px;*/
+}
+
+.bodyStyle {
+    width: 100%;
+    border: 0px solid grey;
+    height: 30vh;
+    overflow-y: scroll;
+}
+
+.btnContainer {
+    width: 101%;
+    display: flex;
+    align-items: left;
+    justify-content: flex-end;
+    margin-top: 10px;
+}
+
+.btn {
+    width: 261px;
+    height: 40px;
+    font-size: 20px;
+    font-family: 'SF-Bold', sans-serif;
+    font-weight: 400;
+    background-color: orangered;
+    border: none;
+    padding: 3px;
+    border-radius: 4px;
+    color: white;
+    margin-right: 17px;
+}
+
+
+.editFeature {
+    width: 100%;
+    height: 34px;
+    background-color: #9E866648;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+.pt {
+    padding: 1px 5px;
+    font-size: 13px;
+    font-family: SF-Mono;
+}
+
+.display {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.img {
+    border: 1px solid grey;
+}
+
+.displayBlock {
+    display: flex;
+    flex-direction: column;
+    margin-top: 7px;
+}
+
+
+
+.bodyContentTextArea {
+    width: 100%;
+    height: 30vh;
+    font-size: 16px;
+    font-family: Helvetica-Regular;
+    border: 2px solid #707070;
+}
+
+.bodyContent {
+    width: 98%;
+    height: 50%;
+}
+
+.radioButton {
+    width: 30px;
+    height: 30px;
+}
+
+.sectionDiv {
+    display: flex;
+    flex-direction: column;
+}
+
+.sectionDiv span {
+    font-size: 14px;
+    font-family: SF-Bold;
+    margin-top: 10px
+}
+
+.parentDiv input {
+    border: 2px solid #707070;
+    height: 26px;
+}
+
+.parentDiv textarea {
+    border: 2px solid #707070;
+    height: 26px;
+    padding: 5px;
+}

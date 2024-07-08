@@ -1,0 +1,59 @@
+@font-face {
+  font-family: SF-Bold;
+  src: url("../fonts/SF-Pro-Display-Bold.otf") format('opentype');
+  ;
+}
+
+@font-face {
+  font-family: SF-Light;
+  src: url("../fonts//SF-Pro-Display-Light.otf") format('opentype');
+  ;
+}
+
+@font-face {
+  font-family: SF-SemiBold;
+  src: url("../fonts//SF-Pro-Display-Semibold.otf") format('opentype');
+  ;
+}
+
+@font-face {
+  font-family: SF-Text-Regular;
+  src: url("../fonts//SF-Pro-Text-Regular.otf") format('opentype');
+  ;
+}
+
+@font-face {
+  font-family: NewYork;
+  src: url("../fonts//FontsFree-Net-NewYorkSmallRegular.ttf") format('opentype');
+  ;
+}
+
+@font-face {
+  font-family: SF-Italic;
+  src: url("../fonts//SF-Pro-Display-RegularItalic.otf") format('opentype');
+  ;
+}
+
+@font-face {
+  font-family: SF-Medium;
+  src: url("../fonts//SF-Pro-Display-Medium.otf") format('opentype');
+  ;
+}
+
+
+.container {
+  width: 100%;
+}
+
+.mainContent {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  margin: 0px;
+  padding: 0px;
+}
+
+.pdfView {
+  display: flex;
+  align-items: center;
+}

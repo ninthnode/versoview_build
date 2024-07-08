@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="342" height="209.813" viewBox="0 0 342 209.813">
+  <defs>
+    <pattern id="pattern" width="1" height="1" viewBox="2.18 0 340.886 209.131">
+      <image preserveAspectRatio="xMidYMid slice" width="345.246" height="209.814" xlink:href="Anantara-Sri-Lanka-image.jpg"/>
+    </pattern>
+  </defs>
+  <rect id="Anantara-Sri-Lanka" width="342" height="209.814" fill="url(#pattern)"/>
+</svg>

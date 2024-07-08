@@ -1,0 +1,116 @@
+@font-face {
+    font-family: SF-Bold;
+    src: url("../fonts/SF-Pro-Display-Bold.otf") format("opentype");
+}
+
+@font-face {
+    font-family: SF-Light;
+    src: url("../fonts//SF-Pro-Display-Light.otf") format("opentype");
+}
+
+@font-face {
+    font-family: SF-Semibold;
+    src: url("../fonts//SF-Pro-Display-Semibold.otf") format("opentype");
+}
+
+@font-face {
+    font-family: SF-Regular;
+    src: url("../fonts//SF-Pro-Text-Regular.otf") format("opentype");
+}
+
+@font-face {
+    font-family: NewYork;
+    src: url("../fonts//FontsFree-Net-NewYorkSmallRegular.ttf") format("opentype");
+}
+
+.channelBar {
+    width: 97%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-right: 6px;
+    margin-top: 10px;
+}
+
+.replyContainer {
+    width: 106%;
+    margin-bottom: 20px;
+    margin-top: 20px;
+    margin-left: -22px;
+}
+
+.title {
+    font-size: 13px;
+    font-family: 'SF-Bold', sans-serif;
+    margin-left: 8px;
+    margin-top: 0px;
+}
+
+.statusBoxChild {
+    display: flex;
+    align-items: center;
+    justify-content: right;
+    margin-bottom: 20px;
+    margin-right: 25px;
+}
+
+.subTitle {
+    font-size: 10px;
+    font-family: 'SF-Regular', sans-serif;
+    color: #00000080;
+    margin: 0px;
+    margin-left: 9px;
+    margin-top: -11px;
+}
+
+.chatContent {
+    width: 100%;
+    justify-content: space-between;
+    height: 42px;
+    background-color: #EFEFEF;
+    display: flex;
+    align-items: center;
+    text-align: left;
+}
+
+
+.chatBox {
+    margin-top: 8px;
+    /* margin-left: -33px; */
+}
+
+.closebtn {
+    padding: 2px 6px;
+    background-color: rgb(232 228 228);
+    border-radius: 10px;
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+@media screen and (max-width: 676px) {
+    .chatContent {
+        width: 105%;
+        justify-content: space-between;
+        height: 42px;
+        background-color: #EFEFEF;
+        display: flex;
+        align-items: center;
+        text-align: left;
+    }
+
+    .statusBoxChild {
+        display: flex;
+        align-items: center;
+        justify-content: right;
+        margin-bottom: 20px;
+        margin-right: 0px
+    }
+
+    .alignCenter {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 2px;
+        margin-right: -13px;
+    }
+}

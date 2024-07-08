@@ -1,0 +1,391 @@
+@font-face {
+    font-family: SF-Bold;
+    src: url("../fonts/SF-Pro-Display-Bold.otf") format('opentype');
+    ;
+}
+
+@font-face {
+    font-family: SF-Regular;
+    src: url("../fonts/SF-Pro-Display-Regular.otf") format('opentype');
+    ;
+}
+
+@font-face {
+    font-family: SF-SemiBold;
+    src: url("../fonts/SF-Pro-Display-Semibold.otf") format('opentype');
+    ;
+}
+
+@font-face {
+    font-family: SF-Medium;
+    src: url("../fonts/SF-Pro-Display-Medium.otf") format('opentype');
+    ;
+}
+
+.container {
+    box-sizing: border-box;
+    width: 375px;
+    max-width: calc(100% - 900px);
+    margin: 0 auto;
+}
+
+.heading {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: left;
+}
+
+.boardingHead {
+    margin-top: 50px;
+    font-size: 28px;
+    font-weight: bold;
+    font-family: 'SF-Bold', sans-serif;
+}
+
+.backButton {
+    position: absolute;
+    bottom: 20px;
+    background: #F5F5F5;
+    padding: 7px 9px;
+    border-radius: 16px;
+}
+
+.boardingPara {
+    font-size: 16px;
+    color: rgb(194, 192, 192);
+    margin-top: -14px;
+    font-family: 'SF-Regular', sans-serif;
+    text-align: left;
+}
+
+.addAccount {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.addAccountPara {
+    font-size: 14px;
+    padding: 30px 0px;
+}
+
+.mobileForm {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    margin-top: 50px;
+}
+
+.formGroup {
+    width: 100%;
+    display: block;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.icon {
+    width: 24px;
+    margin-right: 10px;
+}
+
+.inputField {
+    width: 100%;
+    height: 32px;
+    padding: 10px;
+    border: 1px solid #EBEAEB;
+    border-radius: 10px;
+    margin-top: 8px;
+    background: transparent;
+}
+
+.inputField::placeholder {
+    color: grey;
+}
+
+.submitButton {
+    background-color: #AB987A;
+    color: #fff;
+    padding: 10px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    width: 103%;
+    height: 42px;
+    position: relative;
+    font-size: 14px;
+    font-family: 'SF-Regular', sans-serif;
+    letter-spacing: 1px;
+}
+
+.inputLabel {
+    font-size: 12px;
+    font-family: 'SF-Regular', sans-serif;
+    color: #474461;
+}
+
+.passwordIcon {
+    position: absolute;
+    right: 10px;
+    top: 30px;
+}
+
+.paswordBox {
+    position: relative;
+}
+
+.checkboxGroup {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.checkbox {
+    width: 20px;
+    height: 20px;
+    background-color: #F9F9F9;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+
+.checkboxLabel {
+    margin-left: 10px;
+    font-family: 'SF-Regular', sans-serif;
+    color: rgba(0, 0, 0, 0.25);
+}
+
+.checkbox.checked {
+    background-color: rgb(57, 57, 238);
+    cursor: pointer;
+}
+
+.forgotPassword {
+    margin-right: 0px;
+    text-decoration: none;
+    color: black;
+    font-size: 14px;
+    font-family: 'SF-Regular', sans-serif;
+}
+
+.loginIcon {
+    position: absolute;
+    left: 18px;
+}
+
+.btnPosition {
+    width: 100%;
+    padding: 20px 0px;
+}
+
+.addParaStyl {
+    font-size: 14px;
+    font-family: SF-Regular;
+    color: #323643;
+    text-align: center;
+}
+
+.signStyl {
+    font-size: 14px;
+    padding: 30px 0px;
+    font-family: SF-SemiBold;
+    color: #323643;
+    border-bottom: none;
+    text-decoration: none;
+}
+
+.linkStyle {
+    text-decoration: none;
+}
+
+.bottomContainer {
+    width: 100%;
+    height: 47vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+}
+
+@media screen and (max-width: 767px) {
+    .container {
+        box-sizing: border-box;
+        width: 375px;
+        max-width: calc(100% - 40px);
+        margin: 0 auto;
+    }
+
+    .heading {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: left;
+    }
+
+    .boardingHead {
+        margin-top: 50px;
+        font-size: 28px;
+        font-weight: bold;
+        font-family: SF-Bold;
+    }
+
+    .backButton {
+        position: absolute;
+        bottom: 20px;
+        background: #F5F5F5;
+        padding: 7px 9px;
+        border-radius: 16px;
+    }
+
+    .boardingPara {
+        font-size: 16px;
+        color: rgb(194, 192, 192);
+        margin-top: -14px;
+        font-family: 'SF-Regular', sans-serif;
+        text-align: left;
+    }
+
+    .addAccount {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .addAccountPara {
+        font-size: 14px;
+        padding: 30px 0px;
+    }
+
+    .mobileForm {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        margin-top: 50px;
+    }
+
+    .formGroup {
+        width: 100%;
+        display: block;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .icon {
+        width: 24px;
+        margin-right: 10px;
+    }
+
+    .inputField {
+        width: 94%;
+        height: 32px;
+        padding: 10px;
+        border: 1px solid #EBEAEB;
+        border-radius: 10px;
+        margin-top: 8px;
+        background: transparent;
+    }
+
+    .inputField::placeholder {
+        color: grey;
+    }
+
+    .submitButton {
+        background-color: #AB987A;
+        color: #fff;
+        padding: 10px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        width: 100%;
+        height: 42px;
+        position: relative;
+        font-size: 14px;
+        font-family: SF-Medium;
+        letter-spacing: 1px;
+    }
+
+    .inputLabel {
+        font-size: 12px;
+        font-family: SF-Medium;
+        color: #474461;
+    }
+
+    .passwordIcon {
+        position: absolute;
+        right: 10px;
+        top: 30px;
+    }
+
+    .paswordBox {
+        position: relative;
+    }
+
+    .checkboxGroup {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+    }
+
+    .checkbox {
+        width: 20px;
+        height: 20px;
+        background-color: #F9F9F9;
+        border-radius: 5px;
+    }
+
+
+    .checkboxLabel {
+        margin-left: 10px;
+        font-family: 'SF-Regular', sans-serif;
+        color: rgba(0, 0, 0, 0.25);
+    }
+
+    .forgotPassword {
+        margin-right: 6px;
+        text-decoration: none;
+        color: black;
+        font-size: 14px;
+        font-family: 'SF-Regular', sans-serif;
+    }
+
+    .loginIcon {
+        position: absolute;
+        left: 18px;
+    }
+
+    .btnPosition {
+        width: 100%;
+        padding: 20px 0px;
+    }
+
+    .addParaStyl {
+        font-size: 14px;
+        font-family: SF-Regular;
+        color: #323643;
+        text-align: center;
+    }
+
+    .signStyl {
+        font-size: 14px;
+        padding: 30px 0px;
+        font-family: SF-SemiBold;
+        color: #323643;
+    }
+
+    .bottomContainer {
+        width: 100%;
+        height: 39vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+    }
+}
