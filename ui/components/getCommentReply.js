@@ -9,7 +9,7 @@ import menuicon from "../public/images/menu.svg";
 import bookmark from "../public/images/outlinebookmark.svg";
 import filledbookmark from "../public/images/filledbookmark.svg";
 import { useRouter } from 'next/router';
-import getAllCommentReplyApi from "../api/replyComment";
+import {getAllCommentReplyApi} from "../api/commentApi";
 import DateTimeFormate from "./date-time-formate";
 import postDetailsStyles from "../styles/post-detail.module.css";
 import like from "../public/images/like.svg";

@@ -19,7 +19,7 @@ import bookmarkApi from "../api/addBookmarks";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import removeBookmarkApi from "../api/removebookmark";
-import getAllChannelApi from "../api/getAllChannel";
+import {getAllChannelApi} from "../api/channelApi";
 import filterPostApi from "../api/filterPostByTopics";
 import profileImage from "../public/images/defaultProfile.svg";
 import FormatDate from "./formateDate";
