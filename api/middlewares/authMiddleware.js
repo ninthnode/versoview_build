@@ -6,33 +6,40 @@ const path = require("path");
 
 module.exports.protectUser = asyncHandler(async (req, res, next) => {
   let token;
-  
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
-  ) {
+
+  if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
     try {
       token = req.headers.authorization.split(" ")[1];
 
+      // Ensure the certificate is loaded correctly
       const cert = fs.readFileSync("jwtRS256.pem");
 
+      // Verify the token using the public key
       const decoded = jwt.verify(token, cert, { algorithms: ["RS256"] });
-      req.user = await User.findOne({ _id: decoded.id, username: decoded.username, userType: { $in: ["user", "publisher"] } });
 
+      // Fetch the user from the database
+      req.user = await User.findOne({
+        _id: decoded.id,
+        username: decoded.username,
+        userType: { $in: ["user", "publisher"] }
+      });
+
+      // Check if the user exists
       if (!req.user) {
-        return res.status(401).json({status:401,  message: "Not authorized" });
+        return res.status(401).json({ status: 401, message: "Not authorized" });
       }
+
+      // Call next middleware or route handler
       next();
     } catch (error) {
-      return res.status(401).json({status:401,  message: "Not authorized" });
+      console.error("Token verification or user lookup failed:", error);
+      return res.status(401).json({ status: 401, message: "Token verification or user lookup failed Not authorized" });
     }
-  }
-
-  if (!token) {
-    res.status(401);
-    throw new Error("Not authorized");
+  } else {
+    return res.status(401).json({ status: 401, message: "Not authorized" });
   }
 });
+
 
 module.exports.protectAdmin = asyncHandler(async (req, res, next) => {
   let token;
