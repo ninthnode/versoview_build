@@ -24,7 +24,7 @@ export const loginUser = (formData) => async (dispatch) => {
       `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/users/login`,
       formData
     );
-    if (+response.status === 200 || +response.status === 201) {
+    if (response.status == 200 || response.status == 201) {
       dispatch(loginSuccess(response));
       localStorage.setItem("token", JSON.stringify(response.data.data.token));
       window.location.href = "/home";
