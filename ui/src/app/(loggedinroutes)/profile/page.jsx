@@ -22,7 +22,7 @@ import axios from "../../../redux/axiosConfig";
 import dynamic from "next/dynamic";
 import "@shoelace-style/shoelace/dist/themes/light.css";
 import "react-image-picker-editor/dist/index.css";
-import ReactImagePickerEditor from "react-image-picker-editor";
+// import ReactImagePickerEditor from "react-image-picker-editor";
 
 import useSWR from "swr";
 import ChannelName from "./channel-name";
@@ -85,25 +85,25 @@ const naImage =
 
 const uploadToS3 = async (i) => i;
 
-const UploadImage = memo(({ defaultImage, setImage }) => (
-  <ReactImagePickerEditor
-    config={{
-      borderRadius: "8px",
-      language: "en",
-      width: "80px",
-      height: "80px",
-      objectFit: "cover",
-      compressInitial: 0.5,
-      hideEditBtn: true,
-      hideDownloadBtn: true,
-      hideAddBtn: true,
-    }}
-    imageSrcProp={defaultImage}
-    imageChanged={(newDataUri) => {
-      uploadToS3(newDataUri).then((img) => setImage(img));
-    }}
-  />
-));
+// const UploadImage = memo(({ defaultImage, setImage }) => (
+//   <ReactImagePickerEditor
+//     config={{
+//       borderRadius: "8px",
+//       language: "en",
+//       width: "80px",
+//       height: "80px",
+//       objectFit: "cover",
+//       compressInitial: 0.5,
+//       hideEditBtn: true,
+//       hideDownloadBtn: true,
+//       hideAddBtn: true,
+//     }}
+//     imageSrcProp={defaultImage}
+//     imageChanged={(newDataUri) => {
+//       uploadToS3(newDataUri).then((img) => setImage(img));
+//     }}
+//   />
+// ));
 
 function Profile() {
   const authState = useSelector((s) => s.auth?.user?.user);
@@ -177,10 +177,10 @@ function Profile() {
       >
         <HStack justify={"space-between"} align={"flex-start"}>
           {isEditing ? (
-            <UploadImage
+            {/* <UploadImage
               defaultImage={user.profileImageUrl || naImage}
               setImage={setImg}
-            />
+            /> */}
           ) : (
             <Image
               src={user.profileImageUrl || naImage}
