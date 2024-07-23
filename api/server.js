@@ -112,9 +112,8 @@ io.on("connection", (socket) => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-app.use(limiter);
 
-// app.use(cors({origin :["https://versoview-frontend-7bz1wofvj-trikara.vercel.app" , "http://localhost:3000"]}));
+app.use(cors({origin :["https://versoview-ui.vercel.app" , "http://localhost:3000"]}));
 app.use(cors());
 app.options("*", cors());
 app.use("/api/v1/s3", s3Router);
