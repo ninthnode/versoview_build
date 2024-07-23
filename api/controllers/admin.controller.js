@@ -31,7 +31,7 @@ module.exports.adminLogin = asyncHandler(async (req, res) => {
     res.status(401);
     res.json({ error: "Incorrect email or password" });
   } else {
-    var isValidLogin = await bcrypt.compare(password, user.password);
+    const isValidLogin = await bcrypt.compare(password, user.password);
 
     if (isValidLogin) {
       let data = {
@@ -53,7 +53,7 @@ module.exports.createUser = asyncHandler(async (req, res) => {
   const { firstName, lastName, email, password } = req.body;
 
   const salt = await bcrypt.genSalt(10);
-  var hashedPassword = await bcrypt.hash(password, salt);
+  const hashedPassword = await bcrypt.hash(password, salt);
 
   const user = await User.create({
     firstName: firstName,

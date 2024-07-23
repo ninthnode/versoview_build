@@ -11,8 +11,10 @@ const {
   deletePost,
   upvotePost,
   downvotePost,
-  bookmarkPost,
+  addBookmark,
   getAllBookmark,
+  getBookmarkPosts,
+  getBookmarkComments,
   removeBookmarkPost,
   addToFavorite,
   removeToFavorite,
@@ -32,7 +34,9 @@ const {
   deleteUnreadPost,
   deletePostComment,
   deleteCommentReply,
-  postOwner
+  postOwner,
+  getPostIfUserNotLoggedIn,
+  getRecentlyViewedPosts
 } = require("../../controllers/post.controller");
 const { protectUser } = require("../../middlewares/authMiddleware");
 const { upload } = require("../../config/multerUpload");
@@ -40,8 +44,9 @@ const { upload } = require("../../config/multerUpload");
 const router = express.Router();
 
 router.post("/createPost", protectUser, create);
-router.get("/getAllPost", getAllPost);
-router.get("/getPost/:_id", getPostById);
+router.get("/getAllPost",protectUser, getAllPost);
+router.get("/getPostIfUserNotLoggedIn", getPostIfUserNotLoggedIn);
+router.get("/getPost/:_id", protectUser,getPostById);
 router.get("/getPostByChannelId/:_id", getPostByChannelId);
 router.put("/updatePost/:_id", protectUser, updatePost);
 router.delete("/deletePost/:_id", protectUser, deletePost);
@@ -51,8 +56,10 @@ router.post("/upvoteComment/:_id", protectUser, upvoteComment);
 router.put("/downvoteComment/:_id", protectUser, downvoteComment);
 router.get("/voting/:postId", protectUser, voting);
 router.get("/commentVoting/:postCommentId", protectUser, commentVoting);
-router.post("/addBookmark/:_id", protectUser, bookmarkPost);
+router.post("/addBookmark/:_id", protectUser, addBookmark);
 router.delete("/removeBookmark/:_id", protectUser, removeBookmarkPost);
+router.get("/getBookmarkPosts", protectUser, getBookmarkPosts);
+router.get("/getBookmarkComments", protectUser, getBookmarkComments);
 router.get("/getBookmark", protectUser, getAllBookmark);
 router.post("/addFavorite/:_id", protectUser, addToFavorite);
 router.delete("/removeFavorite/:_id", protectUser, removeToFavorite);
@@ -70,5 +77,6 @@ router.delete("/deleteUnreadPost/:_id", protectUser, deleteUnreadPost);
 router.delete("/deletePostComment/:_id", protectUser, deletePostComment);
 router.delete("/deleteCommentReply/:_id", protectUser, deleteCommentReply);
 router.get("/postOwner/:_id", protectUser, postOwner);
+router.get("/getRecentlyViewedPosts/", protectUser, getRecentlyViewedPosts);
 
 module.exports = router;

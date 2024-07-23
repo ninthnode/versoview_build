@@ -1,8 +1,8 @@
 const express = require("express");
 const { upload } = require("../../config/multerUpload");
 
-var multer = require("multer");
-var multerGoogleStorage = require("multer-cloud-storage");
+const multer = require("multer");
+const multerGoogleStorage = require("multer-cloud-storage");
 
 const {
   signUp,
@@ -10,7 +10,8 @@ const {
   forgotPassword,
   resetPassword,
   updateUser,
-  getUser
+  getUser,
+  verifyUser
 } = require("../../controllers/user.controller");
 
 const { protectUser } = require("../../middlewares/authMiddleware");
@@ -22,6 +23,7 @@ const router = express.Router();
 // Login and sign up manually
 router.post("/signUp", signUp);
 router.post("/login", login);
+router.get("/verify-user", verifyUser);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password/:id/:token", resetPassword);
 router.put("/updateUser/:_id", protectUser, updateUser);

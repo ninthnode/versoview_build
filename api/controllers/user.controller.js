@@ -8,9 +8,10 @@ const { sendMail } = require("../config/nodemailer");
 
 const { generateToken } = require("../utils/generateToken");
 
-const path = require("path");
-const mongoose = require("mongoose");
-
+const path = require("node:path");
+// const mongoose = require("mongoose");
+const { Verify } = require("node:crypto");
+const fs = require("node:fs").promises;
 // Sign Up
 module.exports.signUp = asyncHandler(async (req, res) => {
   const { channelName, username, email, password, genre } = req.body;
@@ -84,11 +85,11 @@ module.exports.login = asyncHandler(async (req, res) => {
     res.status(200);
     res.json({ message: "Incorrect email or password" });
   } else {
-    var isValidLogin = await bcrypt.compare(password, user.password);
+    const isValidLogin = await bcrypt.compare(password, user.password);
 
     if (isValidLogin) {
       if (user.userType === "publisher") {
-        let data = {
+        const data = {
           user,
           token: await generateToken(user._id, user.username),
         };
@@ -98,7 +99,7 @@ module.exports.login = asyncHandler(async (req, res) => {
           message: "User Login successfully",
         });
       } else if(user.userType === "user"){
-        let data = {
+        const data = {
           user,
           token: await generateToken(user._id, user.username),
         };
@@ -156,7 +157,7 @@ module.exports.resetPassword = asyncHandler(async (req, res) => {
     return res.send({ message: "User not exist !!" });
   }
 
-  const secret = "versoview#secret" + user.password;
+  const secret = `versoview#secret${user.password}`;
   try {
     const verify = jwt.verify(token, secret);
     res.send("verify");
@@ -167,32 +168,63 @@ module.exports.resetPassword = asyncHandler(async (req, res) => {
 
 // Udate User
 module.exports.updateUser = asyncHandler(async (req, res) => {
-  try {
     const updateData = req.body;
     const userId = req.params._id;
-   
+   // try{}
     const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true });
 
     if (!updatedUser) {
-      return res.status(200).json({ status: 404, message: "User not found" });
+      return res.status(404).json({ status: 404, message: "User not found" });
     }
 
-    return res.status(200).json({ status: 200, message: "User updated successfully", data: updatedUser });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ status: 500, message: "Internal Server Error" });
-  }
+    return res.status(200).json({ status: 200, message: "User updated successfully", user: updatedUser });
+ 
 })
 
 // Get user
 module.exports.getUser = asyncHandler(async (req, res) => {
   try {
-    const username = req.params._id;
-    const userData = await User.findOne({username : username});
-    const genre = userData.genre;
-    return res.status(200).json({satus : 200, genre})
+    const {_id} = req.params;
+    const userData = await User.findOne({_id });
+    if (!userData){
+      return res.status(404).json({status:404, message: `User wih Id ${_id} Not Found !`})
+    }
+    // const genre = userData?.genre;
+    return res.status(200).json({status : 200, user: userData})
   } catch(error){
     console.error(error);
     res.status(500).json({ status: 500, message: "Internal Server Error" });
+  }
+})
+// Verify if user token is Valid
+module.exports.verifyUser = asyncHandler(async (req, res) => {
+  try {
+    const token = req.headers.authorization;
+    const filePath = path.resolve(__dirname, "../jwtRS256.pem");
+ 
+    // Read the file
+    const cert = await fs.readFile(filePath);
+    let userDecoded
+    jwt.verify(token, cert, (err, decoded) => {
+      if (err) {
+        return res.status(401).json({ message: 'Invalid token' });
+      }
+  
+      userDecoded = decoded;
+    });
+    const user = await User.findById(userDecoded.id);
+
+    if (!user) {
+      return res.status(401).json({ status: "ERROR", message: "User not registered or token malfunctioned", isAuthenticated: false });
+    }
+
+    if (user._id.toString() !== userDecoded.id) {
+      return res.status(401).json({ status: "ERROR", message: "Access UnAuthorized", isAuthenticated: false });
+    }
+
+    return res.status(200).json({ status: "OK", isAuthenticated: true, user: { id:user._id,name: user.name, email: user.email } });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ status: "ERROR", message: error.message, isAuthenticated: false });
   }
 })

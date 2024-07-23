@@ -14,7 +14,7 @@ module.exports.protectUser = asyncHandler(async (req, res, next) => {
     try {
       token = req.headers.authorization.split(" ")[1];
 
-      var cert = fs.readFileSync("jwtRS256.pem");
+      const cert = fs.readFileSync("jwtRS256.pem");
 
       const decoded = jwt.verify(token, cert, { algorithms: ["RS256"] });
       req.user = await User.findOne({ _id: decoded.id, username: decoded.username, userType: { $in: ["user", "publisher"] } });
@@ -44,7 +44,7 @@ module.exports.protectAdmin = asyncHandler(async (req, res, next) => {
     try {
       token = req.headers.authorization.split(" ")[1];
 
-      var cert = fs.readFileSync("jwtRS256.pem"); // get private key
+      const cert = fs.readFileSync("jwtRS256.pem"); // get private key
 
       const decoded = jwt.verify(token, cert, { algorithms: ["RS256"] });
 

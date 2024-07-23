@@ -42,7 +42,49 @@ const userSchema = mongoose.Schema(
       type: String,
       default: "",
     },
+    profileBgColor: {
+      type: String,
+      default: "c8e1e1",
+    },
+    profileAbout: {
+      type: String,
+      default: "",
+    },
+    profileUrl: {
+      type: String,
+      default: "",
+    },
+    profilePhone: {
+      type: String,
+      default: "",
+    },
+    
+    profileLocation: {
+      type: String,
+      default: "",
+    },
+    profileInstagram: {
+      type: String,
+      default: "",
+    },
+    profileTelegram: {
+      type: String,
+      default: "",
+    },
+    profileFacebook: {
+      type: String,
+      default: "",
+    },
+    profileTwitter: {
+      type: String,
+      default: "",
+    },
+    
     genre: {
+      type: [String],
+      default: ["array"],
+    },
+    subGenre: {
       type: [String],
       default: ["array"],
     },

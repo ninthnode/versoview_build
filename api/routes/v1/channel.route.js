@@ -9,10 +9,11 @@ const {
   unfollowChannel,
   getChannelById,
   followChannelList,
-  pinnedChannel,
-  unpinnedChannel,
+  pinChannel,
+  unpinChannel,
   getFollowChannel,
-  followersList
+  followersList ,
+  doesChannelExist,
 } = require("../../controllers/channel.controller");
 const { protectUser } = require("../../middlewares/authMiddleware");
 const { upload } = require("../../config/multerUpload");
@@ -21,6 +22,10 @@ const router = express.Router();
 router.post("/createChannel", protectUser, create);
 router.get("/getAllChannel", getAllChannel);
 router.get("/getChannelByName", protectUser, getChannelByName);
+
+// ryan
+router.get("/doesChannelExist/:channelName", doesChannelExist);
+
 router.get("/getChannel/:_id", getChannelById);
 router.put("/updateChannel/:_id", protectUser, updateChannel);
 router.delete("/deleteChannel/:_id", protectUser, deleteChannel);
@@ -29,7 +34,7 @@ router.get("/followChannelList", protectUser, followChannelList);
 router.get("/followersList/:_id", protectUser, followersList);
 router.delete("/unfollowChannel/:_id", protectUser, unfollowChannel);
 router.get("/getFollowChannel/:_id", protectUser, getFollowChannel);
-router.put("/pinnedChannel/:_id", protectUser, pinnedChannel);
-router.put("/unpinnedChannel/:_id", protectUser, unpinnedChannel);
+router.put("/pinChannel/:_id", protectUser, pinChannel);
+router.put("/unpinChannel/:_id", protectUser, unpinChannel);
 
 module.exports = router;
