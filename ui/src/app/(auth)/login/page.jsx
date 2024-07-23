@@ -115,7 +115,7 @@ function Login({ loginUser }) {
           )}
           <Text my={8} textAlign="center">
             <Link color="primary" href="/signup">
-              Don't have account? SignUp
+              Dont have account? SignUp
             </Link>
           </Text>
         </Box>

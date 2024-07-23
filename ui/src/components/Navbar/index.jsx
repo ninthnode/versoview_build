@@ -66,7 +66,7 @@ const Navbar = ({ routeName, children }) => {
                 
               >
                 {SidebarRoutes.map((route) => (
-                  <BottomNavigationItem onClick={()=>window.location.href=route.url}>
+                  <BottomNavigationItem key={route.name} onClick={()=>window.location.href=route.url}>
                     <BottomNavigationIcon as={route.icon} fontSize='2xl' fontWeight='bold'/>
                     <BottomNavigationLabel fontSize='md' fontWeight='bold'>{route.name}</BottomNavigationLabel>
                   </BottomNavigationItem>
