@@ -12,7 +12,7 @@ module.exports.protectUser = asyncHandler(async (req, res, next) => {
       token = req.headers.authorization.split(" ")[1];
 
       // Ensure the certificate is loaded correctly
-      const cert = fs.readFileSync("jwtRS256.pem");
+      const cert = fs.readFileSync("../jwtRS256.pem");
 
       // Verify the token using the public key
       const decoded = jwt.verify(token, cert, { algorithms: ["RS256"] });
