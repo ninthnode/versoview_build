@@ -21,7 +21,7 @@ import { useSelector } from "react-redux";
 import axios from "../../../redux/axiosConfig";
 import dynamic from "next/dynamic";
 import "@shoelace-style/shoelace/dist/themes/light.css";
-import "react-image-picker-editor/dist/index.css";
+// import "react-image-picker-editor/dist/index.css";
 // import ReactImagePickerEditor from "react-image-picker-editor";
 
 import useSWR from "swr";
