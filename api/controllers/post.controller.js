@@ -90,6 +90,8 @@ module.exports.create = asyncHandler(async (req, res) => {
 module.exports.getAllPost = asyncHandler(async (req, res) => {
   try {
     const userId = req.user._id;
+    console.log(userId)
+
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
@@ -108,7 +110,6 @@ module.exports.getAllPost = asyncHandler(async (req, res) => {
       }));
   
     const totalPosts = await Post.countDocuments();
-
     res.status(200).json({
       message: "Success",
       data: postsWithBookmarkStatus,
