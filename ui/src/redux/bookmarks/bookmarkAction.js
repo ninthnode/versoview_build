@@ -22,13 +22,13 @@ export const getCommentsBookmarksSuccess = (bookmarks) => ({
 });
 
 // Thunk action for fetching bookmarks
-export const fetchPostsBookmarks = () => {
+export const fetchBookmarks = () => {
   return async (dispatch) => {
     dispatch(getPostsBookmarksRequest());
     try {
       const token = localStorage.getItem("token").replaceAll('"', "");
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/getBookmarkPosts`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/getBookmark`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -58,26 +58,6 @@ export const addRemoveBookmarks = (bookmarktype,postId) => {
         }
       );
       return response.data
-    } catch (error) {
-      console.log(error);
-    }
-  };
-};
-export const fetchCommentsBookmarks = () => {
-  return async (dispatch) => {
-    dispatch(getPostsBookmarksRequest());
-    try {
-      const token = localStorage.getItem("token").replaceAll('"', "");
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/getBookmarkComments`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      const data = await response.data.data;
-      dispatch(getCommentsBookmarksSuccess(data));
     } catch (error) {
       console.log(error);
     }

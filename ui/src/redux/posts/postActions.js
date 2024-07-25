@@ -54,7 +54,7 @@ export const fetchRecentlyViewedPosts = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-
+          console.log(response)
       const data = await response.data.data
       dispatch({
         type: GET_RECENT_POSTS_SUCCESS,
@@ -121,6 +121,80 @@ export const updatePostDownvote = (postId) => {
         }
       );
       dispatch(getPostsRequest());
+    } catch (error) {
+      // dispatch(getPostsFailure(error.message));
+    }
+  };
+};
+
+
+const getSignedUrl = async ({ key, content_type }) => {
+  const response = await axios.post(
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/s3/signed_url`,
+    {
+      key,
+      content_type,
+    }
+  );
+  return response.data;
+};
+
+const uploadFileToSignedUrl = (
+  signedUrl,
+  file,
+  contentType,
+  onProgress,
+  onComplete
+) => {
+  axios
+    .put(signedUrl, file, {
+      onUploadProgress: onProgress,
+      headers: {
+        "Content-Type": contentType,
+      },
+    })
+    .then(onComplete)
+    .catch((err) => {
+      console.error(err.response);
+    });
+};
+const extractImageUrl = (url) => {
+  const urlObj = new URL(url);
+  const pathname = urlObj.pathname;
+  const segments = pathname.split("/");
+  const filename = segments.pop();
+  return url.substring(0, url.indexOf(filename) + filename.length);
+};
+export const createNewPost = (key, content_type,uploadedImage,formData) => {
+  return async (dispatch) => {
+    try {
+      getSignedUrl({ key, content_type }).then((response) => {
+
+        uploadFileToSignedUrl(
+          response.data.signedUrl,
+          uploadedImage,
+          content_type,
+          null,
+          async (response2) => {
+            console.log(response2);
+            let newImageUrl = extractImageUrl(response2.config.url);
+            formData.mainImageURL = newImageUrl;
+
+            const token = localStorage.getItem("token").replaceAll('"', "");
+            const responsefile = await axios.post(
+              `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/createPost`,
+              formData,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
+            window.location.href = "/home";
+          }
+        );
+      });
+
     } catch (error) {
       // dispatch(getPostsFailure(error.message));
     }

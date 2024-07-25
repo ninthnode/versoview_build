@@ -8,131 +8,173 @@ const { sendMail } = require("../config/nodemailer");
 
 const { generateToken } = require("../utils/generateToken");
 
+const v = require("valibot");
+
+const signUpSchema = v.object({
+	channelName: v.string(),
+	username: v.string(),
+	email: v.pipe(v.string(), v.email()),
+	password: v.pipe(
+		v.string(),
+		v.regex(/[A-Z]+/, "must contain upper case characters"),
+		v.regex(/[a-z]+/, "must contain lowercase letter"),
+		v.regex(/[0-9]{6,}/, "must contain 6 digits"),
+		v.regex(/[\$|\.|#|%|&|-]+/, "Must contain a symbol"),
+	),
+
+	genre: v.any(),
+});
+
 const path = require("node:path");
 // const mongoose = require("mongoose");
 const { Verify } = require("node:crypto");
 const fs = require("node:fs").promises;
+const filesys = require("fs");
+const MailMessage = require("nodemailer/lib/mailer/mail-message");
 // Sign Up
 module.exports.signUp = asyncHandler(async (req, res) => {
-  const { channelName, username, email, password, genre } = req.body;
+	// parse using valibot
+	const parsed = v.safeParse(signUpSchema, req.body);
+  console.log('success;', parsed.success)
+	if (!parsed.success) {
+		return res.status(400).json({ status: 400, message: parsed.issues.map(i=>i.message).join(', ') });
+	}
+	const { channelName, username, email, password, genre } = parsed.output;
 
-  // Check if user already exists
-  const isUserExist = await User.findOne({ email: email });
-  const isChannelExist = await Channel.findOne({ channelName: channelName });
-  if (isUserExist) {
-    return res
-      .status(200)
-      .json({ status: 403, message: "User already exists" });
-  }
+	// Check if user already exists
+	const isUserExist = await User.findOne({ email: email });
+	const isChannelExist = await Channel.findOne({ channelName: channelName });
+	if (isUserExist) {
+		return res
+			.status(200)
+			.json({ status: 403, message: "User already exists" });
+	}
 
-  if (isChannelExist) {
-    return res
-      .status(200)
-      .json({ status: 403, message: "ChannelName already exists" });
-  }
+	if (isChannelExist) {
+		return res
+			.status(200)
+			.json({ status: 403, message: "ChannelName already exists" });
+	}
 
-  // Hash password
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(password, salt);
+	// Hash password
+	const salt = await bcrypt.genSalt(10);
+	const hashedPassword = await bcrypt.hash(password, salt);
 
-  // Create new user
-  const user = await User.create({
-    channelName: `@${channelName}`,
-    username: username,
-    email: email,
-    userType: "user",
-    status: "active",
-    password: hashedPassword,
-    genre: req.body.genre || [],
-  });
+	// Create new user
+	const user = await User.create({
+		channelName: `@${channelName}`,
+		username: username,
+		email: email,
+		userType: "user",
+		status: "active",
+		password: hashedPassword,
+		genre: req.body.genre || [],
+	});
 
-  // create new channel
-  const channelData = {
-    userId: user._id,
-    channelName: `@${req.body.channelName}` || '',
-    about: req.body.about || '',
-    genre: req.body.genre || '',
-    subGenre: req.body.subGenre || '',
-    profileHandle: req.body.profileHandle || '',
-    profileTitle: req.body.profileTitle || '',
-    url: req.body.url || '',
-    email: req.body.email || '',
-    phone: req.body.phone || '',
-    location: req.body.location || '',
-    backgroundColor: req.body.backgroundColor || '',
-    channelIconImageUrl: req.body.location || '',
-    status: req.body.status,
-  };
+	// create new channel
+	const channelData = {
+		userId: user._id,
+		channelName: `@${req.body.channelName}` || "",
+		about: req.body.about || "",
+		genre: req.body.genre || "",
+		subGenre: req.body.subGenre || "",
+		profileHandle: req.body.profileHandle || "",
+		profileTitle: req.body.profileTitle || "",
+		url: req.body.url || "",
+		email: req.body.email || "",
+		phone: req.body.phone || "",
+		location: req.body.location || "",
+		backgroundColor: req.body.backgroundColor || "",
+		channelIconImageUrl: req.body.location || "",
+		status: req.body.status,
+	};
 
-  const channel = await Channel.create(channelData);
+	const channel = await Channel.create(channelData);
 
-  // Generate token
-  const token = await generateToken(user._id, user.username);
-  res.status(201).json({
-    status: 200,
-    data: { user, token },
-    message: "User signed up successfully",
-  });
+	// Generate token
+	const token = await generateToken(user._id, user.username);
+	res.status(201).json({
+		status: 200,
+		data: { user, token },
+		message: "User signed up successfully",
+	});
 });
 
 // User Login
-module.exports.login = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
-
-  const user = await User.findOne({ email: email, status: "active" });
-
-  if (!user) {
-    res.status(200);
-    res.json({ message: "Incorrect email or password" });
-  } else {
-    const isValidLogin = await bcrypt.compare(password, user.password);
-
-    if (isValidLogin) {
-      if (user.userType === "publisher") {
-        const data = {
-          user,
-          token: await generateToken(user._id, user.username),
-        };
-        res.status(200);
-        res.json({
-          data: data,
-          message: "User Login successfully",
-        });
-      } else if(user.userType === "user"){
-        const data = {
-          user,
-          token: await generateToken(user._id, user.username),
-        };
-        res.status(200);
-        res.json({
-          data: data,
-          message: "User Login successfully",
-        });
-      } else {
-        res.status(200);
-        res.json({ message: "Unauthorized." });
-      }
-    } else {
-      res.status(200);
-      res.json({ message: "Incorrect email or password" });
-    }
-  }
+const loginSchema = v.object({
+	email: v.pipe(v.string(), v.email()),
+	password: v.pipe(
+		v.string(),
+		v.regex(/[A-Z]+/, "Password must contain upper case characters"),
+		v.regex(/[a-z]+/, "Password must contain lowercase letter"),
+		v.regex(/[0-9]{6,}/, "Password must contain 6 digits"),
+		v.regex(/[\$|\.|#|%|&|-]+/, "Password Must contain a symbol"),
+	),
 });
+// User Login
+module.exports.login = asyncHandler(async (req, res) => {
+	const parsed = v.safeParse(loginSchema, req.body);
 
+	if (!parsed.success) {
+		return res.status(200).json({ status: 400, message: parsed.issues.map(i=>i.message).join(', ')});
+	}
+
+	const { email, password } = parsed.output;
+	// const { email, password } = req.body;
+
+	const user = await User.findOne({ email: email, status: "active" });
+
+	if (!user) {
+		res.status(200);
+		res.json({ message: "Incorrect email or password" });
+	} else {
+		const isValidLogin = await bcrypt.compare(password, user.password);
+
+		if (isValidLogin) {
+			if (user.userType === "publisher") {
+				const data = {
+					user,
+					token: await generateToken(user._id, user.username),
+				};
+				res.status(200);
+				res.json({
+					data: data,
+					message: "User Login successfully",
+				});
+			} else if (user.userType === "user") {
+				const data = {
+					user,
+					token: await generateToken(user._id, user.username),
+				};
+				res.status(200);
+				res.json({
+					data: data,
+					message: "User Login successfully",
+				});
+			} else {
+				res.status(200);
+				res.json({ message: "Unauthorized." });
+			}
+		} else {
+			res.status(200);
+			res.json({ message: "Incorrect email or password" });
+		}
+	}
+});
 // Forgot Password
 module.exports.forgotPassword = asyncHandler(async (req, res) => {
   const { email } = req.body;
 
   try {
     const user = await User.findOne({ email });
-
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const secret = process.env.JWT_SECRET || "default_secret";
-    const token = jwt.sign({ email: user.email, id: user._id }, secret, {
+    const cert = filesys.readFileSync(path.join(__dirname, '../jwtRS256.pem'));
+    const token = jwt.sign({ email: user.email, id: user._id }, cert, {
       expiresIn: "10m",
+      algorithm: "RS256"
     });
 
     const resetLink = `${process.env.CLIENT_URL}/reset-password/${user._id}/${token}`;
@@ -141,26 +183,41 @@ module.exports.forgotPassword = asyncHandler(async (req, res) => {
 
     res
       .status(200)
-      .json({ message: "Reset password link has been sent to your email" });
+      .json({ message: "Password sucessfully Reset" });
   } catch (error) {
-    console.error("Error sending reset password email:", error);
-    res.status(500).json({ error: "Failed to send reset password link" });
+    console.error("Error reset password:", error);
+    res.status(500).json({ error: "Failed to reset password" });
   }
 });
 
 // Reset Password
 module.exports.resetPassword = asyncHandler(async (req, res) => {
   const { id, token } = req.params;
-  console.log(id, token, "id and token is there");
+  const { password } = req.body;
+  // console.log(id, token, "id and token is there");
   const user = await User.findOne({ _id: id });
+  
   if (!user) {
     return res.send({ message: "User not exist !!" });
   }
-
-  const secret = `versoview#secret${user.password}`;
+  const cert = filesys.readFileSync(path.join(__dirname, '../jwtRS256.pem'));
+  const verify = jwt.verify(token, cert, { algorithms: ["RS256"] });  
+  
+  
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(password, salt);
   try {
-    const verify = jwt.verify(token, secret);
-    res.send("verify");
+    if(user&&verify){
+
+      await User.findByIdAndUpdate(
+        id,
+        { password: hashedPassword },
+        { new: true }
+      );
+  
+    res.status(200)
+    .json({message:"password updated"});
+    }
   } catch (error) {
     res.send("Not verified");
   }

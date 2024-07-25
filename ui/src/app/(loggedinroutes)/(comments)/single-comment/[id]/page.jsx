@@ -61,7 +61,7 @@ function SingleComment({
       {comment && (
         <>
           <Box
-            w="100%"
+            maxW="2xl"
             p={4}
             bg="bglight"
             borderWidth="1px"
@@ -75,7 +75,7 @@ function SingleComment({
                 <Text fontSize="sm" color="gray.500">
                   {comment.createdAt}
                 </Text>
-                <Box
+                {comment.excerpt&&<Box
                   bg="#fff"
                   borderWidth="1px"
                   borderRadius="md"
@@ -87,7 +87,7 @@ function SingleComment({
                     {comment.excerpt}
                     {'"'}
                   </Text>
-                </Box>
+                </Box>}
               </VStack>
             </HStack>
             <HStack spacing={2}>
@@ -124,7 +124,7 @@ function SingleComment({
               </Flex>
             </HStack>
           </Box>
-          <Flex my='4' alignItems='flex-end'>
+          <Flex my='4' alignItems='flex-end' maxW="2xl">
             <Textarea
               type="replay"
               placeholder="Enter Reply..."
@@ -136,7 +136,7 @@ function SingleComment({
                   Post
                 </Button>
           </Flex>
-          <Box bg="lightgray" p="4" borderRadius="md">
+          <Box bg="lightgray" p="4" borderRadius="md" maxW="2xl">
             <Heading as="h6" size="sm">
               {" "}
               Replies to {comment.userId.username}
@@ -145,7 +145,7 @@ function SingleComment({
           {replies.map((replay) => (
             <Box
               key={replay._id}
-              w="100%"
+              maxW="2xl"
               p={4}
               borderWidth="1px"
               borderRadius="md"

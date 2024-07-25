@@ -13,12 +13,18 @@ const genreRoutesV1 = require("./routes/v1/genre.route");
 const s3Router = require("./routes/v1/s3");
 const messageRouter = require("./routes/v1/message.route");
 const searchRouter = require("./routes/v1/search.route");
+const rateLimit = require("express-rate-limit");
 const fs = require("node:fs");
 const path = require("node:path");
 const { exec } = require("node:child_process");
 const Message = require("./models/message.model");
 const morgan = require("morgan");
-
+const limiter = rateLimit({
+	windowMs: 30 * 1000, // 30 seconds
+	max: 10000, // Limit each IP to 100 requests per `window` (here, per 30 seconds)
+	standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+	legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
 const folderPath = path.join(__dirname, "uploads");
 // fs.chmod(folderPath, 0o700, (err) => {
 //   if (err) {
@@ -105,6 +111,8 @@ io.on("connection", (socket) => {
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+app.use(limiter);
 
 // app.use(cors({origin :["https://versoview-frontend-7bz1wofvj-trikara.vercel.app" , "http://localhost:3000"]}));
 app.use(cors());

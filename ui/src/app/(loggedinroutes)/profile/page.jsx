@@ -15,8 +15,9 @@ import {
   VStack,
   Input,
   Textarea,
+  Button
 } from "@chakra-ui/react";
-import { FaInstagram, FaTelegram, FaTwitter, FaFacebook } from "react-icons/fa";
+import { MdLogout } from "react-icons/md";
 import { useSelector } from "react-redux";
 import axios from "../../../redux/axiosConfig";
 import dynamic from "next/dynamic";
@@ -163,12 +164,20 @@ function Profile() {
       .catch((e) => setUpdating(false));
   };
 
-  return (
-    <Box ml="4" >
-      <Divider />
+  const handleLogout = () => {
+    localStorage.clear();
+    window.location.href='/login'
+  }
 
+  return (
+    <Box ml="4" 
+        maxW="2xl">
+      <Flex w='100%' justifyContent='flex-end'>
+        <Button leftIcon={<MdLogout/>} variant="ghost" onClick={handleLogout}>
+          Logout
+        </Button>
+      </Flex>
       <Box
-        maxW="lg"
         borderWidth="1px"
         borderRadius="lg"
         overflow="hidden"

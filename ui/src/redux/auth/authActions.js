@@ -118,10 +118,10 @@ export const editUserProfile = (newProfile) => async (dispatch) => {
 };
 export const ForgotPasswordRequest = (email) => async (dispatch) => {
   try {
-    const response = await axios.get(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/forgot-password?email=${email}`
+    const response = await axios.post(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/users/forgot-password`,{email}
     );
-    if (+response.status === 200) {
+    if (response.status == 200) {
       return response.data;
     }
   } catch (error) {
@@ -129,20 +129,14 @@ export const ForgotPasswordRequest = (email) => async (dispatch) => {
   }
 };
 export const ResetPasswordRequest =
-  (password, passkey, hashkey) => async (dispatch) => {
+  (password, id,token) => async (dispatch) => {
     try {
-      const userdata = new FormData();
-      userdata.append("passkey", passkey);
-      userdata.append("hashkey", hashkey);
-      userdata.append("password", password);
 
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/forgot-password`,
-        userdata
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/users/reset-password/${id}/${token}`,{password}
       );
-      if (+response.status === 200 || +response.status === 201) {
-        console.log(response.data);
-        return response.data;
+      if (response.status == 200 || response.status == 201 ||response.status == 204) {
+        return response;
       }
     } catch (error) {
       console.log("Error:", error);

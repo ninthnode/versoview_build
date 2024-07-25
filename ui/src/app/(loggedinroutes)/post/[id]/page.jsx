@@ -49,14 +49,14 @@ function SinglePost({ params, postState, getPostById, addCommentToPost,updatePos
 
   useEffect(() => {
     getPostById(params.id);
-  }, []);
+  }, [getPostById, params.id]);
 
   const handleChangeComment = (text) => {
     setCommentText(text);
   };
 
   const submitComment = () => {
-    let commentObj = {
+    const commentObj = {
       excerpt: selectedText,
       commentText: commentText,
     };
@@ -73,7 +73,7 @@ function SinglePost({ params, postState, getPostById, addCommentToPost,updatePos
   return (
     <Box>
       <Flex alignItems="center" ml="4" mb={4}>
-        <Link href={`/home`}>
+        <Link href={"/home"}>
           <Image m="0" src={"/assets/back.svg"} mr={2} />
         </Link>
       </Flex>
@@ -156,7 +156,7 @@ function SinglePost({ params, postState, getPostById, addCommentToPost,updatePos
               <ModalCloseButton />
               <ModalBody>
               <Text mb='4'>{`"${selectedText}"`}</Text>
-                <Textarea defaultValue={commentText} onChange={(e) => handleChangeComment(e.target.value)} placeholder="type here to post to chat.."></Textarea>
+                <Textarea defaultValue={commentText} onChange={(e) => handleChangeComment(e.target.value)} placeholder="type here to post to chat.." />
               </ModalBody>
               <ModalFooter>
                 <Button colorScheme="green" mr={3} onClick={()=>submitComment()}>

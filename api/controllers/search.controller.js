@@ -3,18 +3,37 @@ const Message  = require("../models/message.model");
 const { Post } = require("../models/post.model");
 const { User } = require("../models/user.model");
 
+/*
+const workflowData: Array<WorkflowType> = await workflow
+      .aggregate()
+      .search({
+        // queryString: { defaultPath: "title", query: args },
+        text: {
+          query: args,
+          path: {
+            wildcard: "*",
+          },
+        },
+        index: "index3",
+      });
+*/
+
 module.exports.searchArticles = asyncHandler(async (req, res) => {
 	try {
 		const query = req.params.article;
 		console.log({ query });
 
-		const searchedChannels = await Post.aggregate().search({
-			text: {
-				query,
-				path: { wildcard: "*" },
-			},
-			index: "idx_channelName",
-		});
+		const searchedChannels = await Post
+			.aggregate()
+			.search({
+				text: {
+					query,
+					path: {
+			        	wildcard: "*",
+			        },
+				},
+				index: "idx_channelName",
+			});
 
 		if (!searchedChannels)
 			return res

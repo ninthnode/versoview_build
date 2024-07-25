@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Box,
   Tabs,
@@ -18,6 +18,8 @@ import { addRemoveBookmarks } from "@/redux/bookmarks/bookmarkAction";
 import PostCard from "./postCard";
 import StatusSlider from "./StatusSlider";
 import Following from "./following";
+import useSWR from "swr";
+import get from "@/app/utils/get";
 
 const Home = ({
   postsState,
@@ -27,6 +29,23 @@ const Home = ({
   fetchRecentlyViewedPosts,
   addRemoveBookmarks,
 }) => {
+  const {
+    data: followedChannels = [],
+    // isLoading: followingLoading,
+    // mutate,
+  } = useSWR("channel/followChannelList", (k) =>
+    get(k, true).then((r) =>
+      r.data
+        .map((i) => ({ channelId: i.channelId._id }))
+        .filter((i) => i.pinned)
+    )
+  );
+
+  const pinnedChannels = useMemo(
+    () => followedChannels.filter((i) => i.pinned),
+    [followedChannels]
+  );
+
   const [tabIndex, setTabIndex] = useState(0);
   const [postList, setPostList] = useState([]);
   const [recentPostList, setRecentPostList] = useState([]);
@@ -65,6 +84,16 @@ const Home = ({
     );
   };
 
+  const pinnedPosts = useMemo(
+    () =>
+      postList.filter(
+        (p) =>
+          pinnedChannels.length &&
+          pinnedChannels.map((c) => c._id).includes(p.channelId._id)
+      ),
+    [pinnedChannels, postList]
+  );
+
   return (
     <Box>
       <Tabs index={tabIndex} onChange={(index) => setTabIndex(index)}>
@@ -82,8 +111,13 @@ const Home = ({
               ) : (
                 <>
                   {posts.length && <StatusSlider />}
-                  {postList &&
-                    postList.map((post) => (
+                  {postList
+                    ?.toSorted((a, b) =>
+                      pinnedPosts.includes(a) && !pinnedPosts.includes(b)
+                        ? -1
+                        : 1
+                    )
+                    ?.map?.((post) => (
                       <PostCard
                         key={post._id || crypto.randomUUID()}
                         post={post}
@@ -100,10 +134,12 @@ const Home = ({
             ) : (
               <>
                 {recentPostList && <StatusSlider />}
-                {tabIndex == 1 &&
+                {tabIndex === 1 &&
                   recentPostList.length > 0 &&
                   recentPostList.map((post) => (
-                    <PostCard key={post.id} post={post} 
+                    <PostCard
+                      key={post.id}
+                      post={post}
                       submitBookmark={submitBookmarkRecentPost}
                     />
                   ))}

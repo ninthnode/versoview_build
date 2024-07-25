@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -34,13 +34,13 @@ function ChangePassword({ params, ResetPasswordRequest }) {
     setLoading(true);
     setError("");
     const res = await ResetPasswordRequest(
-      password,
-      params.passkey,
-      params.hashkey
+      '123',
+      params.id,
+      params.token
     );
     setLoading(false);
     setIsSubmitted(true);
-    if (res.success) {
+    if (res.status == 200) {
       setChangeSuccess(true);
     }
   };
@@ -57,8 +57,6 @@ function ChangePassword({ params, ResetPasswordRequest }) {
           bg="white"
         >
           <Image
-            src={"/victo.png"}
-            alt="victo logo"
             borderRadius="lg"
             maxW="184px"
             mx="auto"

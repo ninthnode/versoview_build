@@ -40,7 +40,6 @@ module.exports.protectUser = asyncHandler(async (req, res, next) => {
   }
 });
 
-
 module.exports.protectAdmin = asyncHandler(async (req, res, next) => {
   let token;
 

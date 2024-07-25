@@ -43,8 +43,6 @@ const ForgotPassword = ({ ForgotPasswordRequest }) => {
           bg="white"
         >
           <Image
-            src={"/victo.png"}
-            alt="victo logo"
             borderRadius="lg"
             maxW="184px"
             mx="auto"
@@ -54,10 +52,10 @@ const ForgotPassword = ({ ForgotPasswordRequest }) => {
           {!isSend ? (
             <>
               <Text mb={2} fontWeight="normal" textAlign="center">
-                Can’t log in?
+                Can't log in?
               </Text>
               <Text mb={2} fontWeight="normal" textAlign="center">
-                We’ll send a recovery link to email
+                We'll send a recovery link to email
               </Text>
               <FormControl id="email" mt={4} isRequired>
                 <Input

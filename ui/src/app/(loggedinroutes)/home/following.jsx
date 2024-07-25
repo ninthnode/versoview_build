@@ -69,7 +69,7 @@ function ViewBy({ view, setView, mutate }) {
               <div key={option} className="px-1 py-1">
                 <Menu.Item>
                   {({ hover }) => (
-                    <button
+                    <button type="button"
                       className={`${
                         hover ? "text-white bg-gray-500" : "text-gray-900"
                       } group flex w-full items-center rounded-md px-2 py-2 text-sm`}
@@ -153,7 +153,7 @@ const Following = () => {
           <div className="flex flex-row justify-start items-center px-2 space-x-3">
             <div className="flex flex-col justify-end items-end">
               <img
-                src={user.profileImageUrl || "https://picsum.photos/100/100"}
+                src={user.profileImageUrl || "/assets/default-post-image.svg"}
                 alt=""
                 className="m-2 rounded-md size-16"
               />
@@ -196,7 +196,7 @@ const Following = () => {
         {followingLoading && <Spinner />}
         {followings?.map?.((following) => (
           <div
-            key={following._id}
+            key={following._id || crypto.randomUUID()}
             className="flex flex-row justify-between items-center pr-6 transition-shadow hover:shadow hover:bg-gray-50 transition-color"
           >
             <div className="flex flex-row justify-start items-center px-2 my-2 space-x-3">
@@ -240,7 +240,7 @@ const Following = () => {
                 <img
                   src={
                     following?.channelIconImageUrl ||
-                    "https://picsum.photos/100/100"
+                    "/assets/default-post-image.svg"
                   }
                   alt=""
                   className="rounded-md size-12"

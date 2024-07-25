@@ -7,6 +7,7 @@ import { useSelector } from "react-redux";
 const TopicSelection = () => {
   const [topics, setTopics] = useState([]);
   const [selectedTopics, setSelectedTopics] = useState(new Set());
+  const [error, setError] = useState(false);
   const authState = useSelector((s) => s.auth.user.user);
   const token = localStorage.getItem("token").replaceAll('"', "");;
 
@@ -42,7 +43,10 @@ const TopicSelection = () => {
     const selectedTopicsArray = Array.from(selectedTopics);
     const formData ={}
     formData.genre = selectedTopicsArray;
-
+    if(selectedTopicsArray.length<3)
+      return setError(true)
+    else
+    setError(false)
     axios.put(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/users/updateUser/${authState.id}`, formData,
       {
         headers: {
@@ -68,6 +72,7 @@ const TopicSelection = () => {
     <Box p={4} textAlign='center'>
       <Text fontSize="2xl" fontWeight="bold" mb={4}>Welcome</Text>
       <Text mb={4}>Choose three or more topics which interest you</Text>
+      {error&&<Text mb={4} color='red'>Choose atleast three or more topics</Text>}
       <Flex wrap="wrap" gap={4}>
       {topics.length>0 && topics.map((topic, index) => (
           <Button

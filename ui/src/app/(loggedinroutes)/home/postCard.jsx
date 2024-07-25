@@ -62,7 +62,7 @@ const PostCard = ({ post, small = false,submitBookmark }) => {
         </Flex>
       </CardHeader>
       {!small && (
-        <Image objectFit="cover" src={post.mainImageURL} alt={post.header} />
+        <Image objectFit="cover" src={post.mainImageURL || '/assets/default-post-image.svg'} alt={post.header} />
       )}
       <CardBody pt="0">
         <Text

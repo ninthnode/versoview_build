@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import {
   Button,
@@ -9,9 +11,33 @@ import {
   InputRightElement,
   Spinner,
 } from "@chakra-ui/react";
-import { FaEye,FaEyeSlash } from "react-icons/fa";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
-function LoginForm({show,loading,handleSubmit,handleChange,handleClick}) {
+
+function LoginForm({ show, loading, handleSubmit, handleChange, handleClick }) {
+  // const [errors, setErrors] = React.useState({ email: false, password: false });
+
+  // const handleEmailInput = (e) => {
+  //   const email = e.target.value;
+  //   // const isValid =
+  //   const parsed = v.safeParse(emailSchema, email);
+  //   if (!parsed.success) {
+  //     setErrors((prev) => ({ ...prev, email: "Must be a valid email" }));
+  //   }
+  // };
+  // const handlePasswordInput = (e) => {
+  //   const password = e.target.value;
+  //   // const isValid =
+  //   const parsed = v.safeParse(passwordSchema, password);
+  //   if (!parsed.success) {
+  //     setErrors((prev) => ({
+  //       ...prev,
+  //       password:
+  //         "Password must contain 6 digits, A capital letter, A small letter & a symbol",
+  //     }));
+  //   }
+  // };
+
   return (
     <form onSubmit={handleSubmit}>
       <FormControl id="email" isRequired>
@@ -20,6 +46,8 @@ function LoginForm({show,loading,handleSubmit,handleChange,handleClick}) {
           placeholder="Enter your email"
           name="email"
           onChange={handleChange}
+          // isInvalid={errors.email}
+          // onInput={handleEmailInput}
         />
       </FormControl>
       <InputGroup size="md" mt={4}>
@@ -29,6 +57,8 @@ function LoginForm({show,loading,handleSubmit,handleChange,handleClick}) {
           placeholder="Enter password"
           name="password"
           onChange={handleChange}
+          // isInvalid={errors.password}
+          // onInput={handlePasswordInput}
         />
         <InputRightElement width="4.5rem">
           <Button h="1.75rem" size="sm" onClick={handleClick}>

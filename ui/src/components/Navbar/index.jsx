@@ -45,7 +45,7 @@ const Navbar = ({ routeName, children }) => {
             mr={{ base: 0, md: 5 }}
             mt={{ base: 4, md: 4 }}
           >
-            <Box w={{ base: "100%", lg: "60%", md: "70%", sm: "100%" }}>
+            <Box w={{ base: "100%", lg: "100%", md: "70%", sm: "100%" }}>
               {children}
             </Box>
             <BottomNavigation

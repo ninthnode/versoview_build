@@ -40,7 +40,7 @@ const Comment = ({
   upvoteComment,
   downvoteComment,
 }) => (
-  <Box w="100%" p={4} borderWidth="1px" borderRadius="md">
+  <Box w='100%' p={4} borderWidth="1px" borderRadius="md">
     <HStack spacing={4} position="relative">
       <Avatar name={userId.username} />
       <VStack align="start" spacing={1}>
@@ -157,7 +157,7 @@ const Comments = ({ params }) => {
         </Link>
       </Flex>
 
-      <Flex my="4" alignItems="flex-end">
+      <Flex  maxW="2xl" my="4" alignItems="flex-end">
         <Textarea
           type="comment"
           placeholder="Enter Comment..."
@@ -176,8 +176,8 @@ const Comments = ({ params }) => {
           Post
         </Button>
       </Flex>
-      <VStack spacing={4}>
-        {commentList.map((comment) => (
+      <VStack maxW="2xl" spacing={4}>
+        {commentList.length?commentList.map((comment) => (
           <Comment
             key={comment._id}
             {...comment}
@@ -185,7 +185,8 @@ const Comments = ({ params }) => {
             downvoteComment={downvoteComment}
             submitBookmark={submitBookmark}
           />
-        ))}
+        )):
+        <Text>No Comments</Text>}
       </VStack>
     </Box>
   );

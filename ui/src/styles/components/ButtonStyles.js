@@ -1,3 +1,5 @@
+import { border } from "@chakra-ui/react";
+
 export const ButtonStyles = {
   baseStyle: {},
   sizes: {},
@@ -38,6 +40,9 @@ export const ButtonStyles = {
         bg: "primary",
         color: "#fff",
       },
+    }),
+    ghost: (props) => ({
+      border:'1px solid #e5e5e5'
     }),
   },
   // default values for size and variant

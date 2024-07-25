@@ -17,8 +17,6 @@ import {
 } from "@chakra-ui/react";
 
 import About from "./about";
-import MagPost from "./mag-post";
-import axios from "axios";
 import useSWR from "swr";
 import PostCard from "@/app/(loggedinroutes)/home/postCard";
 
@@ -72,7 +70,7 @@ export default function Channel({
               {posts?.length ? (
                 posts.map((post) => <PostCard key={post._id} post={post}/>)
               ) : (
-                <p className="text-sm mt-4 text-gray-600 italic text-center font-light">
+                <p className="mt-4 text-sm italic font-light text-center text-gray-600">
                   This channel has no posts !
                 </p>
               )}

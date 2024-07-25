@@ -1,6 +1,7 @@
 import { Text, VStack, Input } from "@chakra-ui/react";
 import get from "@/app/utils/get";
 import useSWR from "swr";
+import { useEffect, useState } from "react";
 
 const ChannelName = ({
   channelName,
@@ -8,10 +9,14 @@ const ChannelName = ({
   defaultValue,
   isEditing,
 }) => {
-  const { data: { data: exists } = { data: "" } } = useSWR(
-    `channel/doesChannelExist/${channelName}`,
-    get
-  );
+  const [exists, setExists] = useState(false);
+
+  useEffect(() => {
+    get(`channel/doesChannelExist/${channelName}`).then((r) => {
+      if (r.data) setExists(true);
+      else setExists(false);
+    });
+  }, [channelName]);
 
   return !isEditing ? (
     <Text fontWeight="bold">{defaultValue}</Text>
