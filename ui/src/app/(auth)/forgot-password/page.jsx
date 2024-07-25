@@ -52,10 +52,10 @@ const ForgotPassword = ({ ForgotPasswordRequest }) => {
           {!isSend ? (
             <>
               <Text mb={2} fontWeight="normal" textAlign="center">
-                Can't log in?
+                Cant log in?
               </Text>
               <Text mb={2} fontWeight="normal" textAlign="center">
-                We'll send a recovery link to email
+                Well send a recovery link to email
               </Text>
               <FormControl id="email" mt={4} isRequired>
                 <Input
