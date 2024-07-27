@@ -1,7 +1,9 @@
 import {
   SET_AUTHENTICATION,
   LOGIN_SUCCESS,
+  LOGIN_FAILURE,
   SIGNUP_SUCCESS,
+  SIGNUP_FAILURE,
   LOGOUT_SUCCESS,
   LOADING_START,
 } from "./types";
@@ -34,6 +36,14 @@ const authReducer = (state = initialState, action = { type: null }) => {
         loading: false,
         error: null,
       };
+      case LOGIN_FAILURE:
+      return {
+        ...state,
+        isAuthenticated: false,
+        user: [],
+        loading: false,
+        error: action.payload,
+      };
     case SIGNUP_SUCCESS:
       return {
         ...state,
@@ -41,6 +51,14 @@ const authReducer = (state = initialState, action = { type: null }) => {
         user: action.payload,
         loading: false,
         error: null,
+      };
+    case SIGNUP_FAILURE:
+      return {
+        ...state,
+        isAuthenticated: false,
+        user: [],
+        loading: false,
+        error: action.payload,
       };
     case LOGOUT_SUCCESS:
       return {

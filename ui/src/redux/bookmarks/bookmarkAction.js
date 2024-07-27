@@ -5,7 +5,7 @@ import {
 } from "./bookmarkActionType";
 import axios from "axios";
 import { fetchPosts } from "@/redux/posts/postActions";
-
+import { toast } from 'react-toastify';
 // Action creator for initiating the fetch
 export const getPostsBookmarksRequest = () => ({
   type: GET_POSTS_BOOKMARKS_REQUEST,
@@ -44,8 +44,6 @@ export const fetchBookmarks = () => {
 };
 export const addRemoveBookmarks = (bookmarktype,postId) => {
   return async (dispatch) => {
-    // dispatch(getPostsBookmarksRequest());
-    console.log(bookmarktype,postId)
     try {
       const token = localStorage.getItem("token").replaceAll('"', "");
 
@@ -57,6 +55,10 @@ export const addRemoveBookmarks = (bookmarktype,postId) => {
           },
         }
       );
+      toast(response.data.message,{
+        autoClose: 3000,
+        type:'success'
+      })
       return response.data
     } catch (error) {
       console.log(error);

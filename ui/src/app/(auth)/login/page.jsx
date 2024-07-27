@@ -17,7 +17,7 @@ import { connect } from "react-redux";
 import LoginBtns from "./LoginBtns";
 import LoginForm from "./LoginForm";
 
-function Login({ loginUser }) {
+function Login({ loginUser,error }) {
   const [show, setShow] = useState(false);
   const [showForm, setShowForm] = useState(false);
 
@@ -87,6 +87,7 @@ function Login({ loginUser }) {
               handleSubmit={handleSubmit}
               handleChange={handleChange}
               handleClick={handleClick}
+              backendError={error}
             />
           ) : (
             <LoginBtns />
@@ -126,6 +127,7 @@ function Login({ loginUser }) {
 
 const mapStateToProps = (state) => ({
   loading: state.auth.loading,
+  error:state.auth.error
 });
 
 const mapDispatchToProps = {

@@ -14,32 +14,12 @@ import {
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 
-function LoginForm({ show, loading, handleSubmit, handleChange, handleClick }) {
-  // const [errors, setErrors] = React.useState({ email: false, password: false });
-
-  // const handleEmailInput = (e) => {
-  //   const email = e.target.value;
-  //   // const isValid =
-  //   const parsed = v.safeParse(emailSchema, email);
-  //   if (!parsed.success) {
-  //     setErrors((prev) => ({ ...prev, email: "Must be a valid email" }));
-  //   }
-  // };
-  // const handlePasswordInput = (e) => {
-  //   const password = e.target.value;
-  //   // const isValid =
-  //   const parsed = v.safeParse(passwordSchema, password);
-  //   if (!parsed.success) {
-  //     setErrors((prev) => ({
-  //       ...prev,
-  //       password:
-  //         "Password must contain 6 digits, A capital letter, A small letter & a symbol",
-  //     }));
-  //   }
-  // };
-
+function LoginForm({ show, loading, handleSubmit, handleChange, handleClick,backendError }) {
   return (
     <form onSubmit={handleSubmit}>
+    {backendError && (
+        <small className="text-xs font-thin text-red-500">{backendError}</small>
+      )}
       <FormControl id="email" isRequired>
         <Input
           type="email"

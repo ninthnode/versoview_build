@@ -17,7 +17,7 @@ const getChannelData = (endpoint) =>
 
 const getPostsByChannel = (endpoint) =>
   fetch(
-    `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/channel/${endpoint}`
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/${endpoint}`
   ).then((r) => r.json());
 // .then((r) => r.data);
 

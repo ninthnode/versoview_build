@@ -3,6 +3,8 @@ import { GET_POSTS_REQUEST, GET_POSTS_SUCCESS, GET_POSTS_FAILURE,
   GET_RECENT_POSTS_SUCCESS,
   GET_SINGLE_POST_VOTES_SUCCESS } from './postType';
 import axios from 'axios';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export const getPostsRequest = () => ({
   type: GET_POSTS_REQUEST,
@@ -102,6 +104,10 @@ export const updatePostUpvote = (postId) => {
         }
       );
       dispatch(getPostsRequest());
+      toast('Post '+response.data.message,{
+        autoClose: 3000,
+        type:'success'
+      })
     } catch (error) {
     }
   };
@@ -121,6 +127,10 @@ export const updatePostDownvote = (postId) => {
         }
       );
       dispatch(getPostsRequest());
+      toast('Post '+response.data.message,{
+        autoClose: 3000,
+        type:'success'
+      })
     } catch (error) {
       // dispatch(getPostsFailure(error.message));
     }
@@ -165,7 +175,7 @@ const extractImageUrl = (url) => {
   const filename = segments.pop();
   return url.substring(0, url.indexOf(filename) + filename.length);
 };
-export const createNewPost = (key, content_type,uploadedImage,formData) => {
+export const createNewPost = (key,content_type,uploadedImage,formData) => {
   return async (dispatch) => {
     try {
       getSignedUrl({ key, content_type }).then((response) => {

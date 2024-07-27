@@ -15,12 +15,12 @@ import {
   Text,
 } from "@chakra-ui/react";
 import Link from "next/link";
-import { BsThreeDotsVertical } from "react-icons/bs";
 import { CiSearch, CiBookmark, CiUser } from "react-icons/ci";
 import { FaBookmark as BookmarkFilled  } from "react-icons/fa6";
 
 import { GoCommentDiscussion } from "react-icons/go";
 import { formatDate, TimeFromNow } from "../../utils/DateUtils";
+import ShareButton from "@/components/ShareButton";
 
 const PostCard = ({ post, small = false,submitBookmark }) => {
   const getExcerpt = (text, length) => {
@@ -28,28 +28,34 @@ const PostCard = ({ post, small = false,submitBookmark }) => {
     if (text.length <= length) return text;
     return `${text.substring(0, length)}...`;
   };
+  const defaultImageUrl = "/assets/default-post-image.svg";
+
   return (
     <Card maxW="2xl" mt={2} mb={4}>
       <CardHeader p={2}>
         <Flex spacing="4">
           <Flex flex="1" gap="4" alignItems="center" flexWrap="wrap">
+          {post.channelId?.channelIconImageUrl ? (
             <Avatar
               size="sm"
               borderRadius={10}
               name={"test"}
-              src={"https://bit.ly/code-beast"}
+              src={post.channelId?.channelIconImageUrl}
             />
+          ) : (
+            <Avatar
+              size="sm"
+              borderRadius={10}
+              name={"test"}
+              src={defaultImageUrl}
+            />
+          )}
             <Box>
               <Heading size="sm">{post.channelId?.channelName}</Heading>
             </Box>
           </Flex>
           {!small && (
-            <IconButton
-              variant="ghost"
-              colorScheme="gray"
-              aria-label="See menu"
-              icon={<BsThreeDotsVertical />}
-            />
+            <ShareButton url={`${process.env.NEXT_PUBLIC_FRONTEND_URL}/post/${post._id}`} title={post.header}/>
           )}
           <IconButton
             variant="ghost"

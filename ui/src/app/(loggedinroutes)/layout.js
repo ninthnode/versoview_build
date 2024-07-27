@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import { usePathname } from "next/navigation";
 import { RoutesList } from "@/routes/index";
 
+
 export default function DashboardLayout({ children }) {
   const pathname = usePathname();
   const getRouteName = (path) => {
@@ -14,6 +15,9 @@ export default function DashboardLayout({ children }) {
     }
     return null;
   };
-  console.log(getRouteName(pathname));
-  return <Navbar routeName={getRouteName(pathname)}>{children}</Navbar>;
+  return (
+    <Navbar routeName={getRouteName(pathname)}>
+      {children}
+    </Navbar>
+  );
 }

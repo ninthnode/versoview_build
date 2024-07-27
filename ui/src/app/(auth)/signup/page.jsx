@@ -14,7 +14,7 @@ import { signupUser } from "@/redux/auth/authActions";
 import { connect } from "react-redux";
 import SignupForm from "./SignupForm";
 
-function Signup({ signupUser }) {
+function Signup({ signupUser,error }) {
   const [show, setShow] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -33,12 +33,7 @@ function Signup({ signupUser }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(formData)
     await signupUser(formData);
-  };
-
-  const handleClick = () => {
-    setShow(!show);
   };
 
   return (
@@ -69,7 +64,7 @@ function Signup({ signupUser }) {
               show={show}
               handleSubmit={handleSubmit}
               handleChange={handleChange}
-              handleClick={handleClick}
+              backendError={error}
             />
           <Text my={8} textAlign="center">
             <Link color="primary" href="/login">
@@ -84,6 +79,7 @@ function Signup({ signupUser }) {
 
 const mapStateToProps = (state) => ({
   loading: state.auth.loading,
+  error: state.auth.error,
 });
 
 const mapDispatchToProps = {

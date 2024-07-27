@@ -1,10 +1,15 @@
 import axios from "axios";
 import {
   LOGIN_SUCCESS,
+  LOGIN_FAILURE,
   SIGNUP_SUCCESS,
+  SIGNUP_FAILURE,
   LOGOUT_SUCCESS,
   LOADING_START,
 } from "./types";
+
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const loginSuccess = (user) => ({
   type: LOGIN_SUCCESS,
@@ -16,6 +21,7 @@ const signupsuccess = (user) => ({
 });
 
 export const loginUser = (formData) => async (dispatch) => {
+
   try {
     dispatch({
       type: LOADING_START,
@@ -25,6 +31,10 @@ export const loginUser = (formData) => async (dispatch) => {
       formData
     );
     if (response.status == 200 || response.status == 201) {
+      toast('User LoggedIn Succesfully ',{
+        autoClose: 3000,
+        type:'success'
+      })
       dispatch(loginSuccess(response));
       localStorage.setItem("token", JSON.stringify(response.data.data.token));
       window.location.href = "/home";
@@ -33,6 +43,10 @@ export const loginUser = (formData) => async (dispatch) => {
     }
   } catch (error) {
     console.log("Error during login:", error);
+    dispatch({
+      type: LOGIN_FAILURE,
+      payload: error.response.data.message,
+    });
   }
 };
 
@@ -46,12 +60,20 @@ export const signupUser = (formData) => async (dispatch) => {
       formData
     );
     if (response.status == 200 || response.status == 201) {
+      toast('User Created Succesfully',{
+        autoClose: 3000,
+        type:'success'
+      })
       dispatch(signupsuccess(response));
       localStorage.setItem("token", JSON.stringify(response.data.data.token));
       window.location.href = "/choose-topics";
     }
   } catch (error) {
     console.log(error);
+    dispatch({
+      type: SIGNUP_FAILURE,
+      payload: error.response.data.message,
+    });
   }
 };
 

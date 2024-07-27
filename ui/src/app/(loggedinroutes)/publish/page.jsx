@@ -13,24 +13,27 @@ import {
   Radio,
   RadioGroup,
   Image,
+  Select
 } from "@chakra-ui/react";
 import axios from "axios";
 import {createNewPost} from "@/redux/posts/postActions"
 import { useDispatch } from "react-redux";
-
+import genres from "../../../static-data/Genres.json";
 const PublishPost = () => {
   const dispatch = useDispatch();
 
   const [uploadType, setUploadType] = useState("upload");
   const [postImageLink, setPostImageLink] = useState("");
   const [uploadedImage, setUploadedImage] = useState(null);
+  const [selectedSection, setSelectedSection] = useState("");
+  const [selectedSubSection, setSelectedSubSection] = useState("");
   const [formData, setFormData] = useState({
-    section: "",
-    subsection: "",
+    section: selectedSection,
+    subSection: selectedSubSection,
     header: "",
     standFirst: "",
     credits: "",
-    bodyCopy: "",
+    bodyRichText: "",
     mainImageURL: "",
   });
 
@@ -42,6 +45,8 @@ const PublishPost = () => {
     try {
       const content_type = uploadedImage.type;
       const key = `test/image/${uploadedImage.name}`;
+      formData.section=genres[selectedSection].genre
+      formData.subSection=selectedSubSection
       
       dispatch(createNewPost(key, content_type,uploadedImage,formData))
     } catch (error) {
@@ -50,7 +55,7 @@ const PublishPost = () => {
   };
 
   return (
-    <Box ml="4">
+    <Box mb={'60px'}>
       <Flex p={5}>
         {/* PDF Preview Section */}
         <Box
@@ -126,27 +131,35 @@ const PublishPost = () => {
                 <Flex mb="4">
                   <FormControl id="section" mr={4}>
                     <FormLabel fontSize="sm">SECTION*</FormLabel>
-                    <Input
+                    <Select
                       size="sm"
-                      type="text"
-                      placeholder="Entertaining"
-                      value={formData.section}
-                      onChange={(e) =>
-                        setFormData({ ...formData, section: e.target.value })
-                      }
-                    />
+                      value={selectedSection}
+                      onChange={(e) => setSelectedSection(e.target.value)}
+                    >
+                      <option value="">Select a section</option>
+                      {Object.keys(genres).map((genre) => (
+                        <option key={genre} value={genre}>
+                          {genres[genre].genre}
+                        </option>
+                      ))}
+                    </Select>
                   </FormControl>
-                  <FormControl id="subsection">
-                    <FormLabel fontSize="sm">SUBSECTION*</FormLabel>
-                    <Input
+                  <FormControl id="subSection">
+                    <FormLabel fontSize="sm">SUB SECTION*</FormLabel>
+                    <Select
                       size="sm"
-                      type="text"
-                      placeholder="Outdoor Living"
-                      value={formData.subsection}
-                      onChange={(e) =>
-                        setFormData({ ...formData, subsection: e.target.value })
-                      }
-                    />
+                      value={selectedSubSection}
+                      onChange={(e) => setSelectedSubSection(e.target.value)}
+                      disabled={!selectedSection}
+                    >
+                      <option value="">Select a sub-section</option>
+                      {selectedSection &&
+                        genres[selectedSection].subGenres.map((subGenre) => (
+                          <option key={subGenre} value={subGenre}>
+                            {subGenre}
+                          </option>
+                        ))}
+                    </Select>
                   </FormControl>
                 </Flex>
                 <FormControl id="header" mb="4">
@@ -187,14 +200,14 @@ const PublishPost = () => {
                 </FormControl>
               </Box>
             </Flex>
-            <FormControl id="bodyCopy">
+            <FormControl id="bodyRichText">
               <FormLabel fontSize="sm">BODY COPY*</FormLabel>
               <Textarea
                 size="sm"
                 placeholder="Enter body text..."
-                value={formData.bodyCopy}
+                value={formData.bodyRichText}
                 onChange={(e) =>
-                  setFormData({ ...formData, bodyCopy: e.target.value })
+                  setFormData({ ...formData, bodyRichText: e.target.value })
                 }
                 rows={10}
               />

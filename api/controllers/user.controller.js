@@ -18,8 +18,7 @@ const signUpSchema = v.object({
 		v.string(),
 		v.regex(/[A-Z]+/, "must contain upper case characters"),
 		v.regex(/[a-z]+/, "must contain lowercase letter"),
-		v.regex(/[0-9]{6,}/, "must contain 6 digits"),
-		v.regex(/[\$|\.|#|%|&|-]+/, "Must contain a symbol"),
+		v.regex(/[\$|\.|#|%|&|@|-]+/, "Must contain a symbol")
 	),
 
 	genre: v.any(),
@@ -35,7 +34,6 @@ const MailMessage = require("nodemailer/lib/mailer/mail-message");
 module.exports.signUp = asyncHandler(async (req, res) => {
 	// parse using valibot
 	const parsed = v.safeParse(signUpSchema, req.body);
-  console.log('success;', parsed.success)
 	if (!parsed.success) {
 		return res.status(400).json({ status: 400, message: parsed.issues.map(i=>i.message).join(', ') });
 	}
@@ -46,14 +44,14 @@ module.exports.signUp = asyncHandler(async (req, res) => {
 	const isChannelExist = await Channel.findOne({ channelName: channelName });
 	if (isUserExist) {
 		return res
-			.status(200)
-			.json({ status: 403, message: "User already exists" });
+			.status(403)
+			.json({ status: 403, message: "User Email already exists" });
 	}
 
 	if (isChannelExist) {
 		return res
-			.status(200)
-			.json({ status: 403, message: "ChannelName already exists" });
+			.status(403)
+			.json({ status: 403, message: "Channel @username already exists" });
 	}
 
 	// Hash password
@@ -62,7 +60,7 @@ module.exports.signUp = asyncHandler(async (req, res) => {
 
 	// Create new user
 	const user = await User.create({
-		channelName: `@${channelName}`,
+		channelName: channelName,
 		username: username,
 		email: email,
 		userType: "user",
@@ -74,7 +72,7 @@ module.exports.signUp = asyncHandler(async (req, res) => {
 	// create new channel
 	const channelData = {
 		userId: user._id,
-		channelName: `@${req.body.channelName}` || "",
+		channelName: req.body.channelName || "",
 		about: req.body.about || "",
 		genre: req.body.genre || "",
 		subGenre: req.body.subGenre || "",
@@ -101,31 +99,15 @@ module.exports.signUp = asyncHandler(async (req, res) => {
 });
 
 // User Login
-const loginSchema = v.object({
-	email: v.pipe(v.string(), v.email()),
-	password: v.pipe(
-		v.string(),
-		v.regex(/[A-Z]+/, "Password must contain upper case characters"),
-		v.regex(/[a-z]+/, "Password must contain lowercase letter"),
-		v.regex(/[0-9]{6,}/, "Password must contain 6 digits"),
-		v.regex(/[\$|\.|#|%|&|-]+/, "Password Must contain a symbol"),
-	),
-});
-// User Login
 module.exports.login = asyncHandler(async (req, res) => {
-	const parsed = v.safeParse(loginSchema, req.body);
 
-	if (!parsed.success) {
-		return res.status(200).json({ status: 400, message: parsed.issues.map(i=>i.message).join(', ')});
-	}
-
-	const { email, password } = parsed.output;
+	const { email, password } = req.body;
 	// const { email, password } = req.body;
 
 	const user = await User.findOne({ email: email, status: "active" });
 
 	if (!user) {
-		res.status(200);
+		res.status(403);
 		res.json({ message: "Incorrect email or password" });
 	} else {
 		const isValidLogin = await bcrypt.compare(password, user.password);
@@ -152,7 +134,7 @@ module.exports.login = asyncHandler(async (req, res) => {
 					message: "User Login successfully",
 				});
 			} else {
-				res.status(200);
+				res.status(403);
 				res.json({ message: "Unauthorized." });
 			}
 		} else {

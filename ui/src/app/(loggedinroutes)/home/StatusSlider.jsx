@@ -15,7 +15,7 @@ const StatusItem = ({ status }) => {
   );
 
   return (
-    <Flex direction="column" alignItems="center" mx={2}>
+    <Flex direction="column" alignItems="center" mx={2} position="relative">
       <Link href={`/channel/${status.id}`}>
         <Avatar
           size="md"
@@ -23,13 +23,19 @@ const StatusItem = ({ status }) => {
           name={status.name}
           src={status.avatar}
         />
-        {unread ? (
-          <div
-            className="z-10 self-end px-2 -mt-4 w-min text-xs text-white bg-black rounded-xl"
-            style={{ display: !unread ? "none" : "block" }}
-          >
-            {unread}
-          </div>
+        {!unreadLoading ? (
+          unread > 0 && (
+            <div
+              className="z-10 self-end px-2 -mt-4 w-min text-xs text-white bg-black rounded-xl"
+              style={{
+                display: !unread ? "none" : "block",
+                position: "absolute",
+                right: 0,
+              }}
+            >
+              {unread}
+            </div>
+          )
         ) : (
           <Spinner size={5} />
         )}

@@ -69,6 +69,7 @@ const About = ({
   followingCount = 0,
   refetchFollowers,
 }) => {
+  const defaultImageUrl = "/assets/default-post-image.svg";
   return (
     <div
       className="container flex flex-row p-3 min-w-full bg-gray-100 rounded"
@@ -76,11 +77,15 @@ const About = ({
     >
       <div className="flex flex-col justify-between">
         <div>
-          <img
-            src={channelIconImageUrl}
-            className="rounded-md size-16"
-            alt="Channel"
-          />
+        {channelIconImageUrl ? (
+            <img
+              src={channelIconImageUrl.toString()}
+              className="rounded-md size-16"
+              alt="Channel"
+            />
+          ) : (
+            <img src={defaultImageUrl} className="rounded-md size-16" alt="Channel" />
+          )}
         </div>
 
         <div className="flex flex-col justify-between items-center">

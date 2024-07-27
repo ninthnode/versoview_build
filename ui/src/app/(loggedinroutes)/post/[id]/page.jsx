@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useState, useEffect } from "react";
 import {
   Box,
@@ -22,19 +22,31 @@ import {
   ModalBody,
   ModalCloseButton,
   useDisclosure,
-  Textarea
+  Textarea,
 } from "@chakra-ui/react";
 import { FaRegComment } from "react-icons/fa";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { BiUpvote, BiDownvote } from "react-icons/bi";
 import { CiBookmark, CiShare2 } from "react-icons/ci";
-import { connect } from 'react-redux';
-import { getPostById,updatePostUpvote,updatePostDownvote } from '@/redux/posts/postActions';
-import { addCommentToPost } from '@/redux/comments/commentAction';
-import { FaBookmark as BookmarkFilled  } from "react-icons/fa6";
+import { connect } from "react-redux";
+import {
+  getPostById,
+  updatePostUpvote,
+  updatePostDownvote,
+} from "@/redux/posts/postActions";
+import { addCommentToPost } from "@/redux/comments/commentAction";
+import { FaBookmark as BookmarkFilled } from "react-icons/fa6";
 import { addRemoveBookmarks } from "@/redux/bookmarks/bookmarkAction";
 
-function SinglePost({ params, postState, getPostById, addCommentToPost,updatePostUpvote,updatePostDownvote,addRemoveBookmarks}) {
+function SinglePost({
+  params,
+  postState,
+  getPostById,
+  addCommentToPost,
+  updatePostUpvote,
+  updatePostDownvote,
+  addRemoveBookmarks,
+}) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedText, setSelectedText] = useState("");
   const [commentText, setCommentText] = useState("");
@@ -61,7 +73,7 @@ function SinglePost({ params, postState, getPostById, addCommentToPost,updatePos
       commentText: commentText,
     };
     addCommentToPost(params.id, commentObj);
-    getPostById(params.id)
+    getPostById(params.id);
     onClose();
   };
 
@@ -79,17 +91,27 @@ function SinglePost({ params, postState, getPostById, addCommentToPost,updatePos
       </Flex>
       {postState.post ? (
         <>
-          <Card maxW="2xl" mt={2} mb={4} style={{ "--card-shadow": "transparent" }}>
+      {console.log(postState.channel.channelIconImageUrl!='')}
+          <Card
+            maxW="2xl"
+            mt={2}
+            mb={4}
+            style={{ "--card-shadow": "transparent" }}
+          >
             <CardHeader p={2}>
               <Flex spacing="4">
                 <Flex flex="1" gap="4" alignItems="center" flexWrap="wrap">
                   <Avatar
                     size="sm"
                     borderRadius={10}
-                    src="https://bit.ly/sage-adebayo"
+                    src={
+                      postState.channel.channelIconImageUrl!=''
+                        ? postState.channel.channelIconImageUrl
+                        : "../assets/default-post-image.svg"
+                    }
                   />
                   <Box>
-                    <Heading size="sm">{postState.user.channelName}</Heading>
+                    <Heading size="sm">{postState.channel.channelName}</Heading>
                   </Box>
                 </Flex>
                 <IconButton
@@ -102,17 +124,19 @@ function SinglePost({ params, postState, getPostById, addCommentToPost,updatePos
                   variant="ghost"
                   aria-label="See menu"
                   fontSize="20px"
-                  colorScheme={!postState.isBookmarked?"gray":'green'}
-                  icon={!postState.isBookmarked?<CiBookmark />:<BookmarkFilled />}
-                  onClick={()=>submitBookmarkPost('post',postState.post._id)}
+                  colorScheme={!postState.isBookmarked ? "gray" : "green"}
+                  icon={
+                    !postState.isBookmarked ? (
+                      <CiBookmark />
+                    ) : (
+                      <BookmarkFilled />
+                    )
+                  }
+                  onClick={() => submitBookmarkPost("post", postState.post._id)}
                 />
               </Flex>
             </CardHeader>
-            <Image
-              objectFit="cover"
-              src={postState.post.mainImageURL}
-              alt=""
-            />
+            <Image objectFit="cover" src={postState.post.mainImageURL} alt="" />
             <CardBody>
               <Text mb="2" fontSize="14px">
                 Explore - Maldives • 6min read
@@ -120,30 +144,54 @@ function SinglePost({ params, postState, getPostById, addCommentToPost,updatePos
               <Divider />
               <Flex py="1">
                 <Flex w="40%" justify="space-between">
-                <Link href={`/comments/${params.id}`}>
-                  <Button variant="ghost" leftIcon={<FaRegComment />}>
-                    {postState.commentsCount}
-                  </Button>
-                </Link>
-                  <Button variant="ghost" leftIcon={<BiUpvote />} onClick={()=>{updatePostUpvote(params.id);getPostById(params.id)}}>
+                  <Link href={`/comments/${params.id}`}>
+                    <Button variant="ghost" leftIcon={<FaRegComment />}>
+                      {postState.commentsCount}
+                    </Button>
+                  </Link>
+                  <Button
+                    variant="ghost"
+                    leftIcon={<BiUpvote />}
+                    onClick={() => {
+                      updatePostUpvote(params.id);
+                      getPostById(params.id);
+                    }}
+                  >
                     {postState.votes.trueCount}
                   </Button>
-                  <Button variant="ghost" leftIcon={<BiDownvote />} onClick={()=>{updatePostDownvote(params.id);getPostById(params.id)}}>
+                  <Button
+                    variant="ghost"
+                    leftIcon={<BiDownvote />}
+                    onClick={() => {
+                      updatePostDownvote(params.id);
+                      getPostById(params.id);
+                    }}
+                  >
                     {postState.votes.falseCount}
                   </Button>
                 </Flex>
                 <Flex w="60%" justify="flex-end" mr="10">
-                  <Button variant="ghost" leftIcon={<CiShare2 fontSize='20px' />}>
+                  <Button
+                    variant="ghost"
+                    leftIcon={<CiShare2 fontSize="20px" />}
+                  >
                     15
                   </Button>
                 </Flex>
               </Flex>
               <Divider />
-              <Text mt='4' bg='lightgray' w='fit-content' p='1'>By {postState.user.channelName}</Text>
+              <Text mt="4" bg="lightgray" w="fit-content" p="1">
+                By {postState.user.channelName}
+              </Text>
               <Heading size="md" as="h6" my="4">
                 {postState.post.header}
               </Heading>
-              <Text size="sm" fontSize="14px" textAlign="justify" onMouseUp={handleTextSelection}>
+              <Text
+                size="sm"
+                fontSize="14px"
+                textAlign="justify"
+                onMouseUp={handleTextSelection}
+              >
                 {postState.post.bodyRichText}
               </Text>
             </CardBody>
@@ -155,18 +203,28 @@ function SinglePost({ params, postState, getPostById, addCommentToPost,updatePos
               <ModalHeader>{postState.user.channelName}</ModalHeader>
               <ModalCloseButton />
               <ModalBody>
-              <Text mb='4'>{`"${selectedText}"`}</Text>
-                <Textarea defaultValue={commentText} onChange={(e) => handleChangeComment(e.target.value)} placeholder="type here to post to chat.." />
+                <Text mb="4">{`"${selectedText}"`}</Text>
+                <Textarea
+                  defaultValue={commentText}
+                  onChange={(e) => handleChangeComment(e.target.value)}
+                  placeholder="type here to post to chat.."
+                />
               </ModalBody>
               <ModalFooter>
-                <Button colorScheme="green" mr={3} onClick={()=>submitComment()}>
+                <Button
+                  colorScheme="green"
+                  mr={3}
+                  onClick={() => submitComment()}
+                >
                   Post
                 </Button>
               </ModalFooter>
             </ModalContent>
           </Modal>
         </>
-      ) : ""}
+      ) : (
+        ""
+      )}
     </Box>
   );
 }
@@ -181,8 +239,8 @@ const mapDispatchToProps = (dispatch) => ({
   addCommentToPost: (id, comment) => dispatch(addCommentToPost(id, comment)),
   updatePostUpvote: (id) => dispatch(updatePostUpvote(id)),
   updatePostDownvote: (id) => dispatch(updatePostDownvote(id)),
-  addRemoveBookmarks: (type,postId) => dispatch(addRemoveBookmarks(type,postId)),
+  addRemoveBookmarks: (type, postId) =>
+    dispatch(addRemoveBookmarks(type, postId)),
 });
-
 
 export default connect(mapStateToProps, mapDispatchToProps)(SinglePost);

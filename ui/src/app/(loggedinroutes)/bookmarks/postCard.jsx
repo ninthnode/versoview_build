@@ -20,8 +20,8 @@ import { CiSearch, CiBookmark, CiUser } from "react-icons/ci";
 import { GoCommentDiscussion } from "react-icons/go";
 import { formatDate, TimeFromNow } from "../../utils/DateUtils";
 import { FaBookmark as BookmarkFilled  } from "react-icons/fa6";
-
-const PostCard = ({ post, small = false,submitBookmark }) => {
+import ShareButton from "@/components/ShareButton";
+const PostCard = ({ post, small = false,submitBookmark,showBookmark }) => {
   const getExcerpt = (text, length) => {
     if (!text | !length) return;
     if (text.length <= length) return text;
@@ -43,21 +43,17 @@ const PostCard = ({ post, small = false,submitBookmark }) => {
             </Box>
           </Flex>
           {!small && (
-            <IconButton
-              variant="ghost"
-              colorScheme="gray"
-              aria-label="See menu"
-              icon={<BsThreeDotsVertical />}
-            />
+            <ShareButton url={`${process.env.NEXT_PUBLIC_FRONTEND_URL}/post/${post._id}`} title={post.header}/>
           )}
-          <IconButton
+          {showBookmark&&
+            <IconButton
             variant="ghost"
             colorScheme={'green'}
             aria-label="See menu"
             fontSize="20px"
             icon={<BookmarkFilled />}
             onClick={()=>submitBookmark('post',post._id)}
-          />
+          />}
         </Flex>
       </CardHeader>
       {!small && (

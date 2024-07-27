@@ -19,17 +19,10 @@ const passwordSchema = v.pipe(
   v.string(),
   v.regex(/[A-Z]+/, "must contain upper case characters"),
   v.regex(/[a-z]+/, "must contain lowercase letter"),
-  v.regex(/[0-9]{6,}/, "must contain 6 digits"),
-  v.regex(/[\$|\.|#|%|&|-]+/, "Must contain a symbol")
+  v.regex(/[\$|\.|#|%|&|@|-]+/, "Must contain a symbol")
 );
 
-function SignupForm({
-  show,
-  loading,
-  handleSubmit,
-  handleChange,
-  handleClick,
-}) {
+function SignupForm({ loading, handleSubmit, handleChange, backendError }) {
   const [errors, setErrors] = useState({ email: false, password: false });
 
   const handleEmailInput = (e) => {
@@ -53,10 +46,13 @@ function SignupForm({
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} style={{ maxWidth: "400px" }}>
+      {backendError && (
+        <small className="text-xs font-thin text-red-500">{backendError}</small>
+      )}
       <FormControl id="first_name" isRequired>
         <Flex>
-          <label> Channel Name</label>
+          <label>Channel Name</label>
         </Flex>
         <Input
           type="text"
@@ -73,7 +69,6 @@ function SignupForm({
           placeholder="UserName"
           name="username"
           onChange={handleChange}
-          // isInvalid={errors.username}
         />
       </FormControl>
       <FormControl id="email" mt={4} isRequired>

@@ -15,7 +15,7 @@ import {
   VStack,
   Input,
   Textarea,
-  Button
+  Button,
 } from "@chakra-ui/react";
 import { MdLogout } from "react-icons/md";
 import { useSelector } from "react-redux";
@@ -166,14 +166,13 @@ function Profile() {
 
   const handleLogout = () => {
     localStorage.clear();
-    window.location.href='/login'
-  }
+    window.location.href = "/login";
+  };
 
   return (
-    <Box ml="4" 
-        maxW="2xl">
-      <Flex w='100%' justifyContent='flex-end'>
-        <Button leftIcon={<MdLogout/>} variant="ghost" onClick={handleLogout}>
+    <Box ml="4" maxW="2xl">
+      <Flex w="100%" justifyContent="flex-end">
+        <Button leftIcon={<MdLogout />} variant="ghost" onClick={handleLogout}>
           Logout
         </Button>
       </Flex>
@@ -185,24 +184,17 @@ function Profile() {
         p={5}
       >
         <HStack justify={"space-between"} align={"flex-start"}>
-          {isEditing ? (
-            {/* <UploadImage
-              defaultImage={user.profileImageUrl || naImage}
-              setImage={setImg}
-            /> */}
-          ) : (
-            <Image
-              src={user.profileImageUrl || naImage}
-              alt="Home Beautiful"
-              boxSize="80px"
-              objectFit="cover"
-            />
-          )}
+          <Image
+            src={user.profileImageUrl || naImage}
+            alt="Home Beautiful"
+            boxSize="80px"
+            objectFit="cover"
+          />
           <SlColorPicker
             disabled={!isEditing}
             label="Select a color"
             // defaultValue={user.profileBgColor}
-            value={bg}           
+            value={bg}
             onSlInput={(e) => {
               setBG(e.target.value);
             }}

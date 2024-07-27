@@ -12,6 +12,7 @@ import {
   Flex,
   Textarea,
   Image,
+  Spinner
 } from "@chakra-ui/react";
 import { FaTelegramPlane } from "react-icons/fa";
 import { BiUpvote, BiDownvote } from "react-icons/bi";
@@ -106,7 +107,7 @@ const Comments = ({ params }) => {
   const dispatch = useDispatch();
 
   const commentState = useSelector((state) => state.comment.comments);
-
+  const loading = useSelector((state) => state.comment.loading);
   const [commentList, setCommentList] = useState([]);
   const [commentText, setCommentText] = useState('');
 
@@ -137,13 +138,13 @@ const Comments = ({ params }) => {
     dispatch(updateCommentDownvote(commentId, params.id));
     dispatch(getCommentByPostId(params.id));
   };
-  const submitComment = () => {
+  const submitComment = async() => {
     let commentObj = {
       excerpt: "",
       commentText: commentText,
     };
-    dispatch(addCommentToPost(params.id, commentObj));
-    dispatch(getCommentByPostId(params.id));
+    await dispatch(addCommentToPost(params.id, commentObj));
+    await dispatch(getCommentByPostId(params.id));
     setCommentText("");
   };
   const handleChangeComment = (e) => {
@@ -173,7 +174,7 @@ const Comments = ({ params }) => {
           rightIcon={<FaTelegramPlane />}
           colorScheme="green"
         >
-          Post
+          Post {loading?<Spinner size="sm" color="white" />:''}
         </Button>
       </Flex>
       <VStack maxW="2xl" spacing={4}>

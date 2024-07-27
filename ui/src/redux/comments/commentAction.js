@@ -5,6 +5,8 @@ import {
   GET_COMMENTS_FAILURE,
   GET_COMMENT_REPLIES_SUCCESS,
 } from "./commentType";
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const getCommentsRequest = () => ({
   type: GET_COMMENTS_REQUEST,
@@ -42,6 +44,7 @@ export const getCommentByPostId = (postId) => {
 };
 export const addCommentToPost = (postId, commentObj) => {
   return async (dispatch) => {
+    dispatch(getCommentsRequest());
     try {
       const token = localStorage.getItem("token").replaceAll('"', "");
       const response = await axios.post(
@@ -53,13 +56,22 @@ export const addCommentToPost = (postId, commentObj) => {
           },
         }
       );
+      toast(response.data.statusText,{
+        autoClose: 3000,
+        type:'success'
+      })
     } catch (error) {
+      toast("Error Adding Comment",{
+        autoClose: 3000,
+        type:'error'
+      })
       dispatch(getCommentsFailure(error));
     }
   };
 };
 export const getCommentRepliesByCommentId = (commentId) => {
   return async (dispatch) => {
+    dispatch(getCommentsRequest());
     try {
       const token = localStorage.getItem("token").replaceAll('"', "");
 
@@ -76,7 +88,9 @@ export const getCommentRepliesByCommentId = (commentId) => {
         type: GET_COMMENT_REPLIES_SUCCESS,
         payload: data,
       });
-    } catch (error) {}
+  
+    } catch (error) {
+    }
   };
 };
 
@@ -93,6 +107,10 @@ export const updateCommentUpvote = (commentId) => {
           },
         }
       );
+      toast('Comment '+response.data.message,{
+        autoClose: 3000,
+        type:'success'
+      })
     } catch (error) {}
   };
 };
@@ -109,6 +127,10 @@ export const updateCommentDownvote = (commentId) => {
           },
         }
       );
+      toast('Comment '+response.data.message,{
+        autoClose: 3000,
+        type:'success'
+      })
     } catch (error) {}
   };
 };
@@ -127,6 +149,10 @@ export const updateCommentReplayUpvote = (commentId, replayId) => {
         }
       );
       dispatch(getCommentRepliesByCommentId(commentId));
+      toast('Comment Replay'+response.data.message,{
+        autoClose: 3000,
+        type:'success'
+      })
     } catch (error) {}
   };
 };
@@ -145,6 +171,10 @@ export const updateCommentReplayDownvote = (commentId, replayId) => {
         }
       );
       dispatch(getCommentRepliesByCommentId(commentId));
+      toast('Comment Replay'+response.data.message,{
+        autoClose: 3000,
+        type:'success'
+      })
     } catch (error) {}
   };
 };
@@ -162,6 +192,15 @@ export const replayToPostComment = (commentId, commentReply) => {
         }
       );
       dispatch(getCommentRepliesByCommentId(commentId));
-    } catch (error) {}
+      toast(response.data.statusText,{
+        autoClose: 3000,
+        type:'success'
+      })
+    } catch (error) {      
+      toast("Error Adding Comment Replay",{
+        autoClose: 3000,
+        type:'error'
+      })
+    }
   };
 };
