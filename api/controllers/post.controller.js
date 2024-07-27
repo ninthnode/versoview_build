@@ -1047,8 +1047,10 @@ module.exports.getAllUnreadPost = asyncHandler(async (req, res) => {
         .json({ status: 400, message: "channelId and userId are required" });
     }
 
-    // const unreadPosts = await UnreadPost.find({ channelId, userId });
-    const unreadPosts = await Post.find({ readBy: { $ne: userId } });
+
+		// const unreadPosts = await UnreadPost.find({ channelId, userId });
+		const unreadPosts = await Post.find({ channelId, readBy: { $ne: userId } });
+
 
     if (!unreadPosts) {
       return res.status(200).json({ status: 404, data: null });

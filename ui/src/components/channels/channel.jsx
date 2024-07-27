@@ -67,7 +67,7 @@ export default function Channel({
                 {...channelDetail}
                 isFollowed={isFollowed}
               />
-              {posts.data.length>0 ? (
+              {posts.data&&posts.data.length ? (
                 posts.data.map((post) => <PostCard key={post._id} post={post}/>)
               ) : (
                 <p className="mt-4 text-sm italic font-light text-center text-gray-600">
