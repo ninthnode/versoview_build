@@ -24,33 +24,34 @@ const ShareChannel = ({
   faceRef,
 }) =>
   !isEditing ? (
-    <HStack spacing={4} mt="4">
-      {user.profileInstagram && (
+    <HStack spacing={4} mt="4" justify='flex-start'>
+      { (
         <Link href={user.profileInstagram}>
-          <IconButton color="#fff" bg="#333" icon={<FaInstagram />} />
+          <IconButton fontSize='20px' color="#fff" bg="#333" icon={<FaInstagram />} />
         </Link>
       )}
-      {user.profileTelegram && (
+      { (
         <Link href={user.profileTelegram}>
-          <IconButton color="#fff" bg="#333" icon={<FaTelegram />} />
+          <IconButton fontSize='20px' color="#fff" bg="#333" icon={<FaTelegram />} />
         </Link>
       )}
-      {user.profileTwitter && (
+      { (
         <Link href={user.profileTwitter}>
-          <IconButton color="#fff" bg="#333" icon={<FaTwitter />} />
+          <IconButton fontSize='20px' color="#fff" bg="#333" icon={<FaTwitter />} />
         </Link>
       )}
-      {user.profileFacebook && (
+      { (
         <Link href={user.profileFacebook}>
-          <IconButton color="#fff" bg="#333" icon={<FaFacebook />} />
+          <IconButton fontSize='20px' color="#fff" bg="#333" icon={<FaFacebook />} />
         </Link>
       )}
     </HStack>
   ) : (
-    <VStack>
+    <VStack alignItems='flex-start'>
       <HStack>
         <IconButton color="#fff" bg="#333" icon={<FaInstagram />} />
         <Input
+          bg='#fff'
           defaultValue={user.profileInstagram}
           placeholder="Instagram"
           onChange={(e) => instaRef(e.target.value)}
@@ -59,6 +60,7 @@ const ShareChannel = ({
       <HStack>
         <IconButton color="#fff" bg="#333" icon={<FaTelegram />} />
         <Input
+          bg='#fff'
           defaultValue={user.profileTelegram}
           placeholder="Telegram"
           onChange={(e) => teleRef(e.target.value)}
@@ -67,6 +69,7 @@ const ShareChannel = ({
       <HStack>
         <IconButton color="#fff" bg="#333" icon={<FaTwitter />} />
         <Input
+          bg='#fff'
           defaultValue={user.profileTwitter}
           placeholder="Twitter"
           onChange={(e) => twiRef(e.target.value)}
@@ -75,6 +78,7 @@ const ShareChannel = ({
       <HStack>
         <IconButton color="#fff" bg="#333" icon={<FaFacebook />} />
         <Input
+          bg='#fff'
           defaultValue={user.profileFacebook}
           placeholder="Facebook"
           onChange={(e) => faceRef(e.target.value)}

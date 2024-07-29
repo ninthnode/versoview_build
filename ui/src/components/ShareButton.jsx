@@ -21,7 +21,7 @@ import {
   ModalCloseButton,
   IconButton,
 } from "@chakra-ui/react";
-import { BsThreeDotsVertical } from "react-icons/bs";
+import { FiMoreHorizontal } from 'react-icons/fi';
 
 const ShareButton = ({ url, title }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -35,7 +35,7 @@ const ShareButton = ({ url, title }) => {
         variant="ghost"
         colorScheme="gray"
         aria-label="See menu"
-        icon={<BsThreeDotsVertical />}
+        icon={<FiMoreHorizontal />}
         onClick={openModal}
       />
       <Modal isOpen={isOpen} onClose={closeModal}>

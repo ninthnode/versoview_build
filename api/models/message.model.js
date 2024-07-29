@@ -1,17 +1,19 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const messageSchema = new mongoose.Schema({
-  participants: {
-    type: [String],
-    required: true
-  },
-  messages: [{
-    senderId: String,
-    message: String,
-    timestamp: { type: Date, default: Date.now }
-  }]
+	participants: {
+		type: [String],
+		required: true,
+	},
+	messages: [
+		{
+			senderId: String,
+			message: String,
+			timestamp: { type: Date, default: Date.now },
+		},
+	],
 });
 
-const Message = mongoose.model('Message', messageSchema);
+const Message = mongoose.model("Message", messageSchema);
 
 module.exports = Message;

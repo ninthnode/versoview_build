@@ -5,13 +5,13 @@ const multer = require("multer");
 const multerGoogleStorage = require("multer-cloud-storage");
 
 const {
-  signUp,
-  login,
-  forgotPassword,
-  resetPassword,
-  updateUser,
-  getUser,
-  verifyUser
+	signUp,
+	login,
+	forgotPassword,
+	resetPassword,
+	updateUser,
+	getUser,
+	verifyUser,
 } = require("../../controllers/user.controller");
 
 const { protectUser } = require("../../middlewares/authMiddleware");

@@ -28,6 +28,8 @@ import "@shoelace-style/shoelace/dist/themes/light.css";
 import useSWR from "swr";
 import ChannelName from "./channel-name";
 import ShareChannel from "./share-channel";
+import Publications from "./publications";
+import RewardsList from "./rewardsList";
 
 const SlColorPicker = dynamic(
   () => import("@shoelace-style/shoelace/dist/react/color-picker/index.js"),
@@ -117,6 +119,7 @@ function Profile() {
   const [genre, setGenre] = useState([]);
   const [subGenre, setSubGenre] = useState([]);
   const [url, setUrl] = useState();
+  const [username, setUsername] = useState();
   const [email, setEmail] = useState();
   const [location, setLocation] = useState();
   const [twitter, setTwitter] = useState();
@@ -149,7 +152,7 @@ function Profile() {
       profileFacebook: facebook,
       email: email,
       channelName: channelName,
-
+      username: username,
       profileBgColor: bg,
       ...(user.newImage ? { profileImageUrl: user.newImage } : {}),
     };
@@ -169,8 +172,14 @@ function Profile() {
     window.location.href = "/login";
   };
 
+  useEffect(() => {
+    setGenre(user.genre)
+    setSubGenre(user.subGenre)
+  }, [user])
+  
+
   return (
-    <Box ml="4" maxW="2xl">
+    <Box ml="4" mb="60px" maxW="2xl">
       <Flex w="100%" justifyContent="flex-end">
         <Button leftIcon={<MdLogout />} variant="ghost" onClick={handleLogout}>
           Logout
@@ -181,9 +190,9 @@ function Profile() {
         borderRadius="lg"
         overflow="hidden"
         bgColor={bg}
-        p={5}
+        p={4}
       >
-        <HStack justify={"space-between"} align={"flex-start"}>
+        <HStack justify={"space-between"} align={"flex-start"} mb="4">
           <Image
             src={user.profileImageUrl || naImage}
             alt="Home Beautiful"
@@ -193,7 +202,6 @@ function Profile() {
           <SlColorPicker
             disabled={!isEditing}
             label="Select a color"
-            // defaultValue={user.profileBgColor}
             value={bg}
             onSlInput={(e) => {
               setBG(e.target.value);
@@ -206,7 +214,14 @@ function Profile() {
           />
         </HStack>
 
-        <VStack spacing={4} bg="#fff" p="2" borderRadius="md" textAlign="left">
+        <VStack
+          spacing={4}
+          bg="#f4f4f4"
+          p="4"
+          borderRadius="md"
+          textAlign="left"
+          alignItems="normal"
+        >
           <Box alignSelf="end">
             {isEditing ? (
               isUpdating ? (
@@ -228,7 +243,7 @@ function Profile() {
               </SlButton>
             )}
           </Box>
-          <Box textAlign="left">
+          <Box w="100%" textAlign="left">
             <Text fontSize="lg" fontWeight="bold" textAlign="left">
               About
             </Text>
@@ -242,7 +257,29 @@ function Profile() {
               <Text fontSize="sm">{user.profileAbout}</Text>
             )}
           </Box>
-          <Divider h="2px" bg="#333" />
+          <Flex spacing={2} gap={4} w="60%" justify="flex-start">
+            <Box>
+              <Text>{user.totalPosts}</Text>
+              <Text>Post</Text>
+            </Box>
+            <Box>
+              <Text>7</Text>
+              <Text>Editions</Text>
+            </Box>
+            <Box>
+              <Text>7</Text>
+              <Text>Articles</Text>
+            </Box>
+            <Box>
+              <Text>{user.channelFollowings}</Text>
+              <Text>Followings</Text>
+            </Box>
+            <Box>
+              <Text>{user.channelFollowers}</Text>
+              <Text>Followers</Text>
+            </Box>
+          </Flex>
+          <Divider h="1px" bg="#333" />
           <Box textAlign="left" w="100%">
             <Text fontSize="lg" fontWeight="bold">
               Share Channel
@@ -256,44 +293,68 @@ function Profile() {
               user={user}
             />
           </Box>
-          <Divider h="2px" bg="#333" />
+          <Divider h="1px" bg="#333" />
           <Box textAlign="left" w="100%">
-            <Text fontWeight="bold">Genre</Text>
-            {isEditing ? (
-              <Input
-                defaultValue={user.genre?.join(",")}
-                placeholder="Comma-Separated"
-                onChange={(e) =>
-                  setGenre(e.target.value.split(",").map((i) => i.trim()))
-                }
+            <Flex gap={4}>
+              <Text fontWeight="bold">Genre</Text>
+              {isEditing ? (
+                <Input
+                bg='#fff'
+                  defaultValue={user.genre?.join(",")}
+                  placeholder="Comma-Separated"
+                  onChange={(e) =>
+                    setGenre(e.target.value.split(",").map((i) => i.trim()))
+                  }
+                />
+              ) : (
+                <Text>{user.genre?.join(" & ")}</Text>
+              )}
+            </Flex>
+            <Flex gap={4}>
+              <Text fontWeight="bold">Subgenre</Text>
+              {isEditing ? (
+                <Input
+                bg='#fff'
+                  on
+                  defaultValue={user.subGenre?.join(",")}
+                  placeholder="Comma-Separated"
+                  onChange={(e) =>
+                    setSubGenre(e.target.value.split(",").map((i) => i.trim()))
+                  }
+                />
+              ) : (
+                <Text>{user.subGenre?.join(" & ")}</Text>
+              )}
+            </Flex>
+          </Box>
+          <Divider h="1px" bg="#333" />
+          <Box>
+            <Flex w="100%" gap={4} alignItems='center'>
+              <Text fontSize='2xl' fontWeight="bold">Profile:</Text>
+              <ChannelName
+                defaultValue={user.channelName}
+                isEditing={isEditing}
+                channelName={channelName}
+                setChannelName={setChannelName}
               />
-            ) : (
-              <Text>{user.genre?.join(" & ")}</Text>
-            )}
-            <Text fontWeight="bold">Subgenre</Text>
-            {isEditing ? (
-              <Input
-                on
-                defaultValue={user.subGenre?.join(",")}
-                placeholder="Comma-Separated"
-                onChange={(e) =>
-                  setSubGenre(e.target.value.split(",").map((i) => i.trim()))
-                }
-              />
-            ) : (
-              <Text>{user.subGenre?.join(" & ")}</Text>
-            )}
-            <Text fontWeight="bold">Profile</Text>
-            <ChannelName
-              defaultValue={user.channelName}
-              isEditing={isEditing}
-              channelName={channelName}
-              setChannelName={setChannelName}
-            />
+            </Flex>
+            <Flex w="100%" gap={4} flexDirection={isEditing ? "column" : "row"}>
+              Name
+              {isEditing ? (
+                <Input
+                  bg='#fff'
+                  onChange={(e) => setUsername(e.target.value)}
+                  defaultValue={user.username}
+                />
+              ) : (
+                <Text>{user.username}</Text>
+              )}
+            </Flex>
             <Text>
               URL:{" "}
               {isEditing ? (
                 <Input
+                bg='#fff'
                   onChange={(e) => setUrl(e.target.value)}
                   defaultValue={user.profileUrl}
                 />
@@ -307,6 +368,7 @@ function Profile() {
               Email:{" "}
               {isEditing ? (
                 <Input
+                bg='#fff'
                   onChange={(e) => setEmail(e.target.value)}
                   defaultValue={user.email}
                 />
@@ -320,6 +382,7 @@ function Profile() {
               Location:{" "}
               {isEditing ? (
                 <Input
+                bg='#fff'
                   onChange={(e) => setLocation(e.target.value)}
                   defaultValue={user.profileLocation}
                 />
@@ -328,30 +391,16 @@ function Profile() {
               )}
             </Text>
           </Box>
-          <Divider h="2px" bg="#333" />
+          <Divider h="1px" bg="#333" />
+          <Text fontSize="lg" fontWeight="bold">
+            Library
+          </Text>
           <Box textAlign="left" w="100%">
-            <Text fontWeight="bold">Publications - 3</Text>
-            <Box>
-              <Text>Special update: Festival Happiness</Text>
-              <Text>Competition: Win our featured cushions</Text>
-              <Text>30% Off Offer: Warm tapestry sales</Text>
-              <Text>Working article: Mats or runners?</Text>
-              <Text>Special update: Easter around the corner</Text>
-              <Text>Competition: Win this Swedish cooker</Text>
-              <Text>Open Days: Royal HNL common space</Text>
-            </Box>
+            <Publications userPosts={user.posts} />
           </Box>
-          <Divider h="2px" bg="#333" />
+          <Divider h="1px" bg="#333" />
           <Box textAlign="left" w="100%">
-            <Text fontWeight="bold">VersoRewards</Text>
-            <Box>
-              <Text>Joel Books: 124 points</Text>
-              <Text>Colors Magazine: 187 points</Text>
-              <Text>Sleeve face: 10 points</Text>
-              <Text>The Economist: 5,862 points</Text>
-              <Text>Whisky Appreciation: 10 points</Text>
-              <Text>Underdog Collectibles: 560 points</Text>
-            </Box>
+            <RewardsList />
           </Box>
         </VStack>
       </Box>

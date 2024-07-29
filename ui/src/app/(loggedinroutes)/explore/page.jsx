@@ -8,17 +8,16 @@ import { Spinner } from "@chakra-ui/react";
 
 const Search = () => {
   const [search, setSearch] = useState();
-  const [category, setCategory] = useState("article");
+  const [category, setCategory] = useState("articles");
 
-  const { data: searchResults = [], isLoading: isSearching } = useSWR(
-    `search/${category}/${search}`,
-    get,
-    {
-      revalidateOnMount: false,
-      revalidateOnFocus: true,
-      keepPreviousData: true,
-    }
-  );
+  const {
+    data: { data: searchResults } = { data: [] },
+    isLoading: isSearching,
+  } = useSWR(`search/${category}/${search}`, get, {
+    revalidateOnMount: false,
+    revalidateOnFocus: true,
+    keepPreviousData: true,
+  });
 
   return (
     <div className="px-5 mt-2 divide-y-2">
@@ -55,18 +54,44 @@ const Search = () => {
           >
             <option value="articles">Articles</option>
             <option value="users">Users</option>
-            <option value="messages">💬 Chats</option>
+            {/* <option value="messages">💬 Chats</option> */}
           </select>
         </div>
       </div>
       <div className="container mt-2 space-y-4 divider-y-2">
         {isSearching ? (
-          <Spinner className="mt-10" />
-        ) : (
-          searchResults?.map?.((result) => (
-            <PostCard small={true} post={result} key={result._id} />
-          ))
-        )}
+          <Spinner className="container self-center mt-10" />
+        ) : null}
+        {searchResults?.length
+          ? searchResults.map((result) =>
+              category === "articles" ? (
+                <PostCard small={true} post={result} key={result._id} />
+              ) : (
+                <div
+                  key={result.id}
+                  className="container flex p-4 my-1 rounded shadow"
+                  style={{backgroundColor: result.profileBgColor}}
+                >
+                  <div className="flex flex-start">
+                    <img
+                      src={
+                        result.profileImageUrl || "/assets/default-post-image.svg"
+                      }
+                      alt="userprofile img"
+                      className="m-1 mr-3 rounded-full size-10"
+                    />
+                    <div className="flex flex-col">
+                      <div className="font-bold">{result.channelName}</div>
+                      <div class="font-semibold">{result.username}</div>
+                      <div class="italic font-thin text-gray-500">
+                        {result.email}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )
+            )
+          : search && !isSearching && <p>No results matched your search</p>}
       </div>
     </div>
   );

@@ -13,14 +13,16 @@ import {
   Radio,
   RadioGroup,
   Image,
-  Select
+  Select,
+  Spinner
 } from "@chakra-ui/react";
 import axios from "axios";
 import {createNewPost} from "@/redux/posts/postActions"
-import { useDispatch } from "react-redux";
+import { useDispatch,useSelector } from "react-redux";
 import genres from "../../../static-data/Genres.json";
 const PublishPost = () => {
   const dispatch = useDispatch();
+  const postLoading = useSelector((s) => s.post.loading);
 
   const [uploadType, setUploadType] = useState("upload");
   const [postImageLink, setPostImageLink] = useState("");
@@ -212,8 +214,8 @@ const PublishPost = () => {
                 rows={10}
               />
             </FormControl>
-            <Button size="sm" colorScheme="green" onClick={handleSubmit}>
-              Save
+            <Button disabled={postLoading} size="sm" colorScheme="green" onClick={handleSubmit}>
+              {postLoading&&<Spinner size="sm" color="white" />}{postLoading?'Creating Post..':'Save'}
             </Button>
           </Stack>
         </Box>

@@ -37,6 +37,7 @@ import {
 import { addCommentToPost } from "@/redux/comments/commentAction";
 import { FaBookmark as BookmarkFilled } from "react-icons/fa6";
 import { addRemoveBookmarks } from "@/redux/bookmarks/bookmarkAction";
+import ShareButton from "@/components/ShareButton";
 
 function SinglePost({
   params,
@@ -91,7 +92,6 @@ function SinglePost({
       </Flex>
       {postState.post ? (
         <>
-      {console.log(postState.channel.channelIconImageUrl!='')}
           <Card
             maxW="2xl"
             mt={2}
@@ -114,12 +114,7 @@ function SinglePost({
                     <Heading size="sm">{postState.channel.channelName}</Heading>
                   </Box>
                 </Flex>
-                <IconButton
-                  variant="ghost"
-                  colorScheme="gray"
-                  aria-label="See menu"
-                  icon={<BsThreeDotsVertical />}
-                />
+                <ShareButton url={`${process.env.NEXT_PUBLIC_FRONTEND_URL}/post/${postState.post._id}`} title={postState.post.header}/>
                 <IconButton
                   variant="ghost"
                   aria-label="See menu"
@@ -170,14 +165,14 @@ function SinglePost({
                     {postState.votes.falseCount}
                   </Button>
                 </Flex>
-                <Flex w="60%" justify="flex-end" mr="10">
+                {/* <Flex w="60%" justify="flex-end" mr="10">
                   <Button
                     variant="ghost"
                     leftIcon={<CiShare2 fontSize="20px" />}
                   >
-                    15
+                    
                   </Button>
-                </Flex>
+                </Flex> */}
               </Flex>
               <Divider />
               <Text mt="4" bg="lightgray" w="fit-content" p="1">

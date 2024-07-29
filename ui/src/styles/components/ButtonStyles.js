@@ -41,9 +41,6 @@ export const ButtonStyles = {
         color: "#fff",
       },
     }),
-    ghost: (props) => ({
-      border:'1px solid #e5e5e5'
-    }),
   },
   // default values for size and variant
   defaultProps: {},

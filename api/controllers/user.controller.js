@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const asyncHandler = require("express-async-handler");
 const { User } = require("../models/user.model");
 const { Channel } = require("../models/channel.model");
+const { Post } = require("../models/post.model")
 const bcrypt = require("bcryptjs");
 const { sendMail } = require("../config/nodemailer");
 
@@ -28,14 +29,20 @@ const path = require("node:path");
 // const mongoose = require("mongoose");
 const { Verify } = require("node:crypto");
 const fs = require("node:fs").promises;
-const filesys = require("fs");
+const filesys = require("node:fs");
 const MailMessage = require("nodemailer/lib/mailer/mail-message");
 // Sign Up
 module.exports.signUp = asyncHandler(async (req, res) => {
 	// parse using valibot
 	const parsed = v.safeParse(signUpSchema, req.body);
+	console.log("success;", parsed.success);
 	if (!parsed.success) {
-		return res.status(400).json({ status: 400, message: parsed.issues.map(i=>i.message).join(', ') });
+		return res
+			.status(400)
+			.json({
+				status: 400,
+				message: parsed.issues.map((i) => i.message).join(", "),
+			});
 	}
 	const { channelName, username, email, password, genre } = parsed.output;
 
@@ -100,6 +107,11 @@ module.exports.signUp = asyncHandler(async (req, res) => {
 
 // User Login
 module.exports.login = asyncHandler(async (req, res) => {
+	const parsed = v.safeParse(loginSchema, req.body);
+
+	if (!parsed.success) {
+		return res.status(200).json({ status: 400, message: parsed.issues.map(i=>i.message).join(', ')});
+	}
 
 	const { email, password } = req.body;
 	// const { email, password } = req.body;
@@ -145,80 +157,82 @@ module.exports.login = asyncHandler(async (req, res) => {
 });
 // Forgot Password
 module.exports.forgotPassword = asyncHandler(async (req, res) => {
-  const { email } = req.body;
+	const { email } = req.body;
 
-  try {
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+	try {
+		const user = await User.findOne({ email });
+		if (!user) {
+			return res.status(404).json({ message: "User not found" });
+		}
 
-    const cert = filesys.readFileSync(path.join(__dirname, '../jwtRS256.pem'));
-    const token = jwt.sign({ email: user.email, id: user._id }, cert, {
-      expiresIn: "10m",
-      algorithm: "RS256"
-    });
+		const cert = filesys.readFileSync(path.join(__dirname, "../jwtRS256.pem"));
+		const token = jwt.sign({ email: user.email, id: user._id }, cert, {
+			expiresIn: "10m",
+			algorithm: "RS256",
+		});
 
-    const resetLink = `${process.env.CLIENT_URL}/reset-password/${user._id}/${token}`;
+		const resetLink = `${process.env.CLIENT_URL}/reset-password/${user._id}/${token}`;
 
-    await sendMail(email, "Reset Password", resetLink);
+		await sendMail(email, "Reset Password", resetLink);
 
-    res
-      .status(200)
-      .json({ message: "Password sucessfully Reset" });
-  } catch (error) {
-    console.error("Error reset password:", error);
-    res.status(500).json({ error: "Failed to reset password" });
-  }
+		res.status(200).json({ message: "Password sucessfully Reset" });
+	} catch (error) {
+		console.error("Error reset password:", error);
+		res.status(500).json({ error: "Failed to reset password" });
+	}
 });
 
 // Reset Password
 module.exports.resetPassword = asyncHandler(async (req, res) => {
-  const { id, token } = req.params;
-  const { password } = req.body;
-  // console.log(id, token, "id and token is there");
-  const user = await User.findOne({ _id: id });
-  
-  if (!user) {
-    return res.send({ message: "User not exist !!" });
-  }
-  const cert = filesys.readFileSync(path.join(__dirname, '../jwtRS256.pem'));
-  const verify = jwt.verify(token, cert, { algorithms: ["RS256"] });  
-  
-  
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(password, salt);
-  try {
-    if(user&&verify){
+	const { id, token } = req.params;
+	const { password } = req.body;
+	// console.log(id, token, "id and token is there");
+	const user = await User.findOne({ _id: id });
 
-      await User.findByIdAndUpdate(
-        id,
-        { password: hashedPassword },
-        { new: true }
-      );
-  
-    res.status(200)
-    .json({message:"password updated"});
-    }
-  } catch (error) {
-    res.send("Not verified");
-  }
+	if (!user) {
+		return res.send({ message: "User not exist !!" });
+	}
+	const cert = filesys.readFileSync(path.join(__dirname, "../jwtRS256.pem"));
+	const verify = jwt.verify(token, cert, { algorithms: ["RS256"] });
+
+	const salt = await bcrypt.genSalt(10);
+	const hashedPassword = await bcrypt.hash(password, salt);
+	try {
+		if (user && verify) {
+			await User.findByIdAndUpdate(
+				id,
+				{ password: hashedPassword },
+				{ new: true },
+			);
+
+			res.status(200).json({ message: "password updated" });
+		}
+	} catch (error) {
+		res.send("Not verified");
+	}
 });
 
 // Udate User
 module.exports.updateUser = asyncHandler(async (req, res) => {
-    const updateData = req.body;
-    const userId = req.params._id;
-   // try{}
-    const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true });
+	const updateData = req.body;
+	const userId = req.params._id;
+	// try{}
+	const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
+		new: true,
+	});
 
-    if (!updatedUser) {
-      return res.status(404).json({ status: 404, message: "User not found" });
-    }
+	if (!updatedUser) {
+		return res.status(404).json({ status: 404, message: "User not found" });
+	}
 
-    return res.status(200).json({ status: 200, message: "User updated successfully", user: updatedUser });
- 
-})
+	return res
+		.status(200)
+		.json({
+			status: 200,
+			message: "User updated successfully",
+			user: updatedUser,
+		});
+});
 
 // Get user
 module.exports.getUser = asyncHandler(async (req, res) => {
@@ -237,33 +251,57 @@ module.exports.getUser = asyncHandler(async (req, res) => {
 })
 // Verify if user token is Valid
 module.exports.verifyUser = asyncHandler(async (req, res) => {
-  try {
-    const token = req.headers.authorization;
-    const filePath = path.resolve(__dirname, "../jwtRS256.pem");
- 
-    // Read the file
-    const cert = await fs.readFile(filePath);
-    let userDecoded
-    jwt.verify(token, cert, (err, decoded) => {
-      if (err) {
-        return res.status(401).json({ message: 'Invalid token' });
-      }
-  
-      userDecoded = decoded;
-    });
-    const user = await User.findById(userDecoded.id);
+	try {
+		const token = req.headers.authorization;
+		const filePath = path.resolve(__dirname, "../jwtRS256.pem");
 
-    if (!user) {
-      return res.status(401).json({ status: "ERROR", message: "User not registered or token malfunctioned", isAuthenticated: false });
-    }
+		// Read the file
+		const cert = await fs.readFile(filePath);
+		let userDecoded;
+		jwt.verify(token, cert, (err, decoded) => {
+			if (err) {
+				return res.status(401).json({ message: "Invalid token" });
+			}
 
-    if (user._id.toString() !== userDecoded.id) {
-      return res.status(401).json({ status: "ERROR", message: "Access UnAuthorized", isAuthenticated: false });
-    }
+			userDecoded = decoded;
+		});
+		const user = await User.findById(userDecoded.id);
 
-    return res.status(200).json({ status: "OK", isAuthenticated: true, user: { id:user._id,name: user.name, email: user.email } });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ status: "ERROR", message: error.message, isAuthenticated: false });
-  }
-})
+		if (!user) {
+			return res
+				.status(401)
+				.json({
+					status: "ERROR",
+					message: "User not registered or token malfunctioned",
+					isAuthenticated: false,
+				});
+		}
+
+		if (user._id.toString() !== userDecoded.id) {
+			return res
+				.status(401)
+				.json({
+					status: "ERROR",
+					message: "Access UnAuthorized",
+					isAuthenticated: false,
+				});
+		}
+
+		return res
+			.status(200)
+			.json({
+				status: "OK",
+				isAuthenticated: true,
+				user: { id: user._id, name: user.name, email: user.email },
+			});
+	} catch (error) {
+		console.error(error);
+		return res
+			.status(500)
+			.json({
+				status: "ERROR",
+				message: error.message,
+				isAuthenticated: false,
+			});
+	}
+});

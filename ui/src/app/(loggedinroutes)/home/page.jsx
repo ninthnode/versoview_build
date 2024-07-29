@@ -8,6 +8,7 @@ import {
   Tab,
   TabPanel,
   Spinner,
+  Text
 } from "@chakra-ui/react";
 import { connect } from "react-redux";
 import {
@@ -52,11 +53,11 @@ const Home = ({
 
   useEffect(() => {
     if (tabIndex === 0) {
-      fetchPosts();
+      fetchPosts(); 
     } else {
       fetchRecentlyViewedPosts();
     }
-  }, [tabIndex]);
+  }, [tabIndex, fetchPosts, fetchRecentlyViewedPosts]);
 
   useEffect(() => {
     if (posts.length > 0) setPostList(posts);
@@ -135,7 +136,7 @@ const Home = ({
               <>
                 {recentPostList && <StatusSlider />}
                 {tabIndex === 1 &&
-                  recentPostList.length > 0 &&
+                  recentPostList.length == 0 ? <Text>No Post Viewed!</Text>:
                   recentPostList.map((post) => (
                     <PostCard
                       key={post.id}

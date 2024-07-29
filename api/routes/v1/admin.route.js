@@ -1,16 +1,16 @@
 const express = require("express");
 const router = express.Router();
 const {
-  adminLogin,
-  createUser,
-  updateUser,
-  deleteUser,
-  listUsers,
-  listPosts,
-  deletePost,
-  banUser,
-  unbanUser,
-  addGenre
+	adminLogin,
+	createUser,
+	updateUser,
+	deleteUser,
+	listUsers,
+	listPosts,
+	deletePost,
+	banUser,
+	unbanUser,
+	addGenre,
 } = require("../../controllers/admin.controller");
 
 const { protectAdmin } = require("../../middlewares/authMiddleware");

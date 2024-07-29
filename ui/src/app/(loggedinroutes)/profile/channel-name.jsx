@@ -19,10 +19,11 @@ const ChannelName = ({
   }, [channelName]);
 
   return !isEditing ? (
-    <Text fontWeight="bold">{defaultValue}</Text>
+    <Text fontWeight="bold">{'@'+defaultValue}</Text>
   ) : (
     <VStack>
       <Input
+        bg='#fff'
         placeholder="@channel"
         defaultValue={defaultValue}
         onBlur={(e) => {
@@ -31,6 +32,7 @@ const ChannelName = ({
         value={channelName}
         isInvalid={!!exists}
         errorBorderColor="crimson"
+        w='100%'
       />
       {exists && (
         <small className="text-xs text-red-600">

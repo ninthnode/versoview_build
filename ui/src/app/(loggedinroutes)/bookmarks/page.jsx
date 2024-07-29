@@ -26,24 +26,20 @@ import Link from "next/link";
 import { CiBookmark } from "react-icons/ci";
 
 const Comment = ({ id, isBookmarked, singleComment, submitBookmark }) => (
-  <Box maxW="2xl" bg='lightgray' 
-  borderWidth="1px"
-  borderRadius="md">
-  <Box m='2' mb='0'>
-    <PostCard
-      key={singleComment.postId._id || crypto.randomUUID()}
-      post={singleComment.postId}
-      showBookmark={false}
-      // submitBookmark={submitPostBookmark}
-    />
-  </Box>
+  <Box>
+      <PostCard
+        key={singleComment.postId._id || crypto.randomUUID()}
+        post={singleComment.postId}
+        showBookmark={false}
+        // submitBookmark={submitPostBookmark}
+      />
     <Box
       maxW="2xl"
       p={4}
       position="relative"
-      bg='#fff'
-      m='2'
-      mt='0'
+      bg="#fff"
+      m="2"
+      mt="0"
       borderRadius="md"
     >
       <Link href={`comments/${singleComment.postId._id}`}>
@@ -110,32 +106,36 @@ const Bookmark = ({
   };
 
   return (
-    <Box>
-      <Box mt={2}>
-        {postBookmarks.length>0?bookmarkState.loading ? (
-          <Spinner size="sm" color="#333" />
-        ) : (
-          postBookmarks.map((post) =>
-            post.postId ? (
-              <PostCard
-                key={post._id || crypto.randomUUID()}
-                post={post.postId}
-                showBookmark={true}
-                submitBookmark={submitPostBookmark}
-              />
-            ) : (
-              post.postCommentId && (
-                <Comment
-                  key={post._id}
-                  id={post.postCommentId._id}
-                  isBookmarked={post.isBookmarked}
-                  singleComment={post.postCommentId}
-                  submitBookmark={submitCommentBookmark}
+    <Box mb='60px'>
+      <Box mt={2} maxW="2xl" bg="lightgray" borderWidth="1px" borderRadius="md">
+        {postBookmarks.length > 0 ? (
+          bookmarkState.loading ? (
+            <Spinner size="sm" color="#333" />
+          ) : (
+            postBookmarks.map((post) =>
+              post.postId ? (
+                <PostCard
+                  key={post._id || crypto.randomUUID()}
+                  post={post.postId}
+                  showBookmark={true}
+                  submitBookmark={submitPostBookmark}
                 />
+              ) : (
+                post.postCommentId && (
+                  <Comment
+                    key={post._id}
+                    id={post.postCommentId._id}
+                    isBookmarked={post.isBookmarked}
+                    singleComment={post.postCommentId}
+                    submitBookmark={submitCommentBookmark}
+                  />
+                )
               )
             )
           )
-        ):<Text color='gray.500'>No Bookmarks Available</Text>}
+        ) : (
+          <Text color="gray.500">No Bookmarks Available</Text>
+        )}
       </Box>
     </Box>
   );

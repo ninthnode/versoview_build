@@ -1,5 +1,8 @@
 const express = require("express");
-const { createGenre, getAllGenre } = require("../../controllers/genre.controller");
+const {
+	createGenre,
+	getAllGenre,
+} = require("../../controllers/genre.controller");
 const { protectUser } = require("../../middlewares/authMiddleware");
 
 const router = express.Router();

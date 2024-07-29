@@ -12,6 +12,6 @@ const router = express.Router();
 
 router.get("/articles/:article", searchArticles);
 router.get("/users/:user", searchUsers);
-router.get("/messages/:message", searchMessages);
+// router.get("/messages/:message", searchMessages);
 
 module.exports = router;

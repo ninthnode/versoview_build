@@ -1,18 +1,18 @@
 const mongoose = require("mongoose");
 
 const topicSchema = new mongoose.Schema(
-  {
-    topicName: {
-      type: String,
-      required: true,
-    },
-    status: {
-      type: String,
-    },
-  },
-  {
-    timestamps: true,
-  }
+	{
+		topicName: {
+			type: String,
+			required: true,
+		},
+		status: {
+			type: String,
+		},
+	},
+	{
+		timestamps: true,
+	},
 );
 
 const Topic = mongoose.model("Topic", topicSchema);

@@ -1,19 +1,19 @@
 const express = require("express");
 const {
-  create,
-  getAllChannel,
-  getChannelByName,
-  updateChannel,
-  deleteChannel,
-  followChannel,
-  unfollowChannel,
-  getChannelById,
-  followChannelList,
-  pinChannel,
-  unpinChannel,
-  getFollowChannel,
-  followersList ,
-  doesChannelExist,
+	create,
+	getAllChannel,
+	getChannelByName,
+	updateChannel,
+	deleteChannel,
+	followChannel,
+	unfollowChannel,
+	getChannelById,
+	followChannelList,
+	pinChannel,
+	unpinChannel,
+	getFollowChannel,
+	followersList,
+	doesChannelExist,
 } = require("../../controllers/channel.controller");
 const { protectUser } = require("../../middlewares/authMiddleware");
 const { upload } = require("../../config/multerUpload");

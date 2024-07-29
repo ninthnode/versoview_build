@@ -1,43 +1,42 @@
-
 const express = require("express");
 const multer = require("multer");
 const path = require("path");
 const {
-  create,
-  extractPDFSlides,
-  getAllPdfSlides,
-  getAllPost,
-  getPostById,
-  updatePost,
-  deletePost,
-  upvotePost,
-  downvotePost,
-  addBookmark,
-  getAllBookmark,
-  getBookmarkPosts,
-  getBookmarkComments,
-  removeBookmarkPost,
-  addToFavorite,
-  removeToFavorite,
-  voting,
-  getPostByChannelId,
-  postComment,
-  postCommentReply,
-  getAllComment,
-  getAllCommentReplies,
-  upvoteComment,
-  downvoteComment,
-  commentVoting,
-  commentReply,
-  getCommentReplies,
-  unreadPost,
-  getAllUnreadPost,
-  deleteUnreadPost,
-  deletePostComment,
-  deleteCommentReply,
-  postOwner,
-  getPostIfUserNotLoggedIn,
-  getRecentlyViewedPosts
+	create,
+	extractPDFSlides,
+	getAllPdfSlides,
+	getAllPost,
+	getPostById,
+	updatePost,
+	deletePost,
+	upvotePost,
+	downvotePost,
+	addBookmark,
+	getAllBookmark,
+	getBookmarkPosts,
+	getBookmarkComments,
+	removeBookmarkPost,
+	addToFavorite,
+	removeToFavorite,
+	voting,
+	getPostByChannelId,
+	postComment,
+	postCommentReply,
+	getAllComment,
+	getAllCommentReplies,
+	upvoteComment,
+	downvoteComment,
+	commentVoting,
+	commentReply,
+	getCommentReplies,
+	unreadPost,
+	getAllUnreadPost,
+	deleteUnreadPost,
+	deletePostComment,
+	deleteCommentReply,
+	postOwner,
+	getPostIfUserNotLoggedIn,
+	getRecentlyViewedPosts,
 } = require("../../controllers/post.controller");
 const { protectUser } = require("../../middlewares/authMiddleware");
 const { upload } = require("../../config/multerUpload");
@@ -45,9 +44,9 @@ const { upload } = require("../../config/multerUpload");
 const router = express.Router();
 
 router.post("/createPost", protectUser, create);
-router.get("/getAllPost",protectUser, getAllPost);
+router.get("/getAllPost", protectUser, getAllPost);
 router.get("/getPostIfUserNotLoggedIn", getPostIfUserNotLoggedIn);
-router.get("/getPost/:_id", protectUser,getPostById);
+router.get("/getPost/:_id", protectUser, getPostById);
 router.get("/getPostByChannelId/:_id", getPostByChannelId);
 router.put("/updatePost/:_id", protectUser, updatePost);
 router.delete("/deletePost/:_id", protectUser, deletePost);

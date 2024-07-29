@@ -177,6 +177,7 @@ const extractImageUrl = (url) => {
 };
 export const createNewPost = (key,content_type,uploadedImage,formData) => {
   return async (dispatch) => {
+    dispatch(getPostsRequest());
     try {
       getSignedUrl({ key, content_type }).then((response) => {
 

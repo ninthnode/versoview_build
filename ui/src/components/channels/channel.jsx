@@ -18,7 +18,7 @@ import {
 
 import About from "./about";
 import useSWR from "swr";
-import PostCard from "@/app/(loggedinroutes)/home/postCard";
+import PostCard from "./postCard";
 
 const getFollowing = (endpoint) =>
   fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/channel/${endpoint}`, {
@@ -45,7 +45,7 @@ export default function Channel({
   const { data: followings = [] } = useSWR("followChannelList", getFollowing);
 
   return (
-    <Box ml="4">
+    <Box maxW='2xl'>
       <Box>
         <Tabs>
           <TabList>
@@ -54,7 +54,6 @@ export default function Channel({
             <Tab>Explore</Tab>
             <Tab>Inspire</Tab>
             <Tab>Dine</Tab>
-            <Tab>Stay</Tab>
           </TabList>
 
           <TabPanels>
