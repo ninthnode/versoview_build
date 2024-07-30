@@ -24,7 +24,7 @@ import dynamic from "next/dynamic";
 import "@shoelace-style/shoelace/dist/themes/light.css";
 // import "react-image-picker-editor/dist/index.css";
 // import ReactImagePickerEditor from "react-image-picker-editor";
-
+import UploadImage from "@/components/UploadImage";
 import useSWR from "swr";
 import ChannelName from "./channel-name";
 import ShareChannel from "./share-channel";
@@ -83,38 +83,13 @@ const updateUser = (id, data) =>
     }
   );
 
-const naImage =
-  "https://via.assets.so/img.svg?w=100&h=100&tc=darkgray&bg=gray&t=N/A";
-
-const uploadToS3 = async (i) => i;
-
-// const UploadImage = memo(({ defaultImage, setImage }) => (
-//   <ReactImagePickerEditor
-//     config={{
-//       borderRadius: "8px",
-//       language: "en",
-//       width: "80px",
-//       height: "80px",
-//       objectFit: "cover",
-//       compressInitial: 0.5,
-//       hideEditBtn: true,
-//       hideDownloadBtn: true,
-//       hideAddBtn: true,
-//     }}
-//     imageSrcProp={defaultImage}
-//     imageChanged={(newDataUri) => {
-//       uploadToS3(newDataUri).then((img) => setImage(img));
-//     }}
-//   />
-// ));
-
 function Profile() {
   const authState = useSelector((s) => s.auth?.user?.user);
   const [isEditing, setIsEditing] = useState(false);
   const [isUpdating, setUpdating] = useState(false);
 
   const [bg, setBG] = useState();
-  const [img, setImg] = useState();
+  const [selectedImage, setSelectedImage] = useState(null);
   const [about, setAbout] = useState();
   const [genre, setGenre] = useState([]);
   const [subGenre, setSubGenre] = useState([]);
@@ -154,7 +129,7 @@ function Profile() {
       channelName: channelName,
       username: username,
       profileBgColor: bg,
-      ...(user.newImage ? { profileImageUrl: user.newImage } : {}),
+      // ...(img ? { profileImageUrl: img } : {}),
     };
     setUpdating(true);
     updateUser(authState.id, data)
@@ -173,11 +148,20 @@ function Profile() {
   };
 
   useEffect(() => {
-    setGenre(user.genre)
-    setSubGenre(user.subGenre)
-  }, [user])
-  
+    setGenre(user.genre);
+    setSubGenre(user.subGenre);
+  }, [user]);
 
+  const handleImageChange = (event) => {
+    if (event.target.files && event.target.files[0]) {
+      const file = event.target.files[0];
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setSelectedImage(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
   return (
     <Box ml="4" mb="60px" maxW="2xl">
       <Flex w="100%" justifyContent="flex-end">
@@ -193,11 +177,11 @@ function Profile() {
         p={4}
       >
         <HStack justify={"space-between"} align={"flex-start"} mb="4">
-          <Image
-            src={user.profileImageUrl || naImage}
-            alt="Home Beautiful"
-            boxSize="80px"
-            objectFit="cover"
+          <UploadImage
+            handleImageChange={handleImageChange}
+            setSelectedImage={setSelectedImage}
+            selectedImage={selectedImage}
+            isEditing={isEditing}
           />
           <SlColorPicker
             disabled={!isEditing}
@@ -259,7 +243,7 @@ function Profile() {
           </Box>
           <Flex spacing={2} gap={4} w="60%" justify="flex-start">
             <Box>
-              <Text>{user.totalPosts}</Text>
+              <Text>{user.totalPosts?user.totalPosts:0}</Text>
               <Text>Post</Text>
             </Box>
             <Box>
@@ -271,11 +255,11 @@ function Profile() {
               <Text>Articles</Text>
             </Box>
             <Box>
-              <Text>{user.channelFollowings}</Text>
+              <Text>{user.channelFollowings?user.channelFollowings:0}</Text>
               <Text>Followings</Text>
             </Box>
             <Box>
-              <Text>{user.channelFollowers}</Text>
+              <Text>{user.channelFollowers?user.channelFollowers:0}</Text>
               <Text>Followers</Text>
             </Box>
           </Flex>
@@ -299,7 +283,7 @@ function Profile() {
               <Text fontWeight="bold">Genre</Text>
               {isEditing ? (
                 <Input
-                bg='#fff'
+                  bg="#fff"
                   defaultValue={user.genre?.join(",")}
                   placeholder="Comma-Separated"
                   onChange={(e) =>
@@ -314,7 +298,7 @@ function Profile() {
               <Text fontWeight="bold">Subgenre</Text>
               {isEditing ? (
                 <Input
-                bg='#fff'
+                  bg="#fff"
                   on
                   defaultValue={user.subGenre?.join(",")}
                   placeholder="Comma-Separated"
@@ -329,8 +313,10 @@ function Profile() {
           </Box>
           <Divider h="1px" bg="#333" />
           <Box>
-            <Flex w="100%" gap={4} alignItems='center'>
-              <Text fontSize='2xl' fontWeight="bold">Profile:</Text>
+            <Flex w="100%" gap={4} alignItems="center">
+              <Text fontSize="2xl" fontWeight="bold">
+                Profile:
+              </Text>
               <ChannelName
                 defaultValue={user.channelName}
                 isEditing={isEditing}
@@ -342,7 +328,7 @@ function Profile() {
               Name
               {isEditing ? (
                 <Input
-                  bg='#fff'
+                  bg="#fff"
                   onChange={(e) => setUsername(e.target.value)}
                   defaultValue={user.username}
                 />
@@ -354,7 +340,7 @@ function Profile() {
               URL:{" "}
               {isEditing ? (
                 <Input
-                bg='#fff'
+                  bg="#fff"
                   onChange={(e) => setUrl(e.target.value)}
                   defaultValue={user.profileUrl}
                 />
@@ -368,7 +354,7 @@ function Profile() {
               Email:{" "}
               {isEditing ? (
                 <Input
-                bg='#fff'
+                  bg="#fff"
                   onChange={(e) => setEmail(e.target.value)}
                   defaultValue={user.email}
                 />
@@ -382,7 +368,7 @@ function Profile() {
               Location:{" "}
               {isEditing ? (
                 <Input
-                bg='#fff'
+                  bg="#fff"
                   onChange={(e) => setLocation(e.target.value)}
                   defaultValue={user.profileLocation}
                 />

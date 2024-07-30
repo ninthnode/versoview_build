@@ -180,6 +180,7 @@ export const updateCommentReplayDownvote = (commentId, replayId) => {
 };
 export const replayToPostComment = (commentId, commentReply) => {
   return async (dispatch) => {
+    dispatch(getCommentsRequest());
     try {
       const token = localStorage.getItem("token").replaceAll('"', "");
       const response = await axios.post(

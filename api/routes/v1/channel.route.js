@@ -30,7 +30,7 @@ router.get("/getChannel/:_id", getChannelById);
 router.put("/updateChannel/:_id", protectUser, updateChannel);
 router.delete("/deleteChannel/:_id", protectUser, deleteChannel);
 router.post("/followChannel/:_id", protectUser, followChannel);
-router.get("/followChannelList", protectUser, followChannelList);
+router.get("/followChannelList/:_id", protectUser, followChannelList);
 router.get("/followersList/:_id", protectUser, followersList);
 router.delete("/unfollowChannel/:_id", protectUser, unfollowChannel);
 router.get("/getFollowChannel/:_id", protectUser, getFollowChannel);

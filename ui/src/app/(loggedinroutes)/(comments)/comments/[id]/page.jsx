@@ -158,7 +158,7 @@ const Comments = ({ params }) => {
         </Link>
       </Flex>
 
-      <Flex  maxW="2xl" my="4" alignItems="flex-end">
+      <Box maxW="2xl" my="4" textAlign='right'>
         <Textarea
           type="comment"
           placeholder="Enter Comment..."
@@ -174,9 +174,9 @@ const Comments = ({ params }) => {
           rightIcon={<FaTelegramPlane />}
           colorScheme="green"
         >
-          Post {loading?<Spinner size="sm" color="white" />:''}
+          Post {commentText!=''&&loading?<Spinner size="sm" color="white" />:''}
         </Button>
-      </Flex>
+      </Box>
       <VStack maxW="2xl" spacing={4}>
         {commentList.length?commentList.map((comment) => (
           <Comment

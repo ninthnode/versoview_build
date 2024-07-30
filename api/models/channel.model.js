@@ -7,6 +7,10 @@ const channelSchema = new mongoose.Schema(
 			ref: "User",
 			required: true,
 		},
+		username: {
+			type: String,
+			required: true,
+		},
 		channelName: {
 			type: String,
 			required: true,

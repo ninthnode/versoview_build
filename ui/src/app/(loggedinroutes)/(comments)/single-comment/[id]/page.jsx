@@ -13,10 +13,11 @@ import {
   Heading,
   Image,
   Link,
-  Textarea
+  Textarea,
+  Spinner,
 } from "@chakra-ui/react";
 import { BiUpvote, BiDownvote } from "react-icons/bi";
-import { FaRegComment,FaTelegramPlane } from "react-icons/fa";
+import { FaRegComment, FaTelegramPlane } from "react-icons/fa";
 import { connect } from "react-redux";
 import {
   getCommentRepliesByCommentId,
@@ -24,7 +25,7 @@ import {
   updateCommentDownvote,
   updateCommentReplayUpvote,
   updateCommentReplayDownvote,
-  replayToPostComment
+  replayToPostComment,
 } from "../../../../../redux/comments/commentAction";
 
 function SingleComment({
@@ -36,21 +37,21 @@ function SingleComment({
   updateCommentDownvote,
   updateCommentReplayUpvote,
   updateCommentReplayDownvote,
-  replayToPostComment
+  replayToPostComment,
+  loading
 }) {
-
-  const [replayText,setReplayText] = React.useState('')
+  const [replayText, setReplayText] = React.useState("");
   React.useEffect(() => {
     getCommentRepliesByCommentId(params.id);
   }, [getCommentRepliesByCommentId]);
 
-  const handleChangeReplayText =(e)=>{
-    setReplayText(e.target.value)
-  }
-  const submitReplayText =(commentId,replayText)=>{
-    replayToPostComment(commentId,replayText)
-    setReplayText("")
-  }
+  const handleChangeReplayText = (e) => {
+    setReplayText(e.target.value);
+  };
+  const submitReplayText = (commentId, replayText) => {
+    replayToPostComment(commentId, replayText);
+    setReplayText("");
+  };
   return (
     <Box px={{ base: 0, sm: "20px" }}>
       <Flex alignItems="center" ml="4" mb={4}>
@@ -75,19 +76,21 @@ function SingleComment({
                 <Text fontSize="sm" color="gray.500">
                   {comment.createdAt}
                 </Text>
-                {comment.excerpt&&<Box
-                  bg="#fff"
-                  borderWidth="1px"
-                  borderRadius="md"
-                  boxShadow="lg"
-                  p="2"
-                >
-                  <Text>
-                    {'"'}
-                    {comment.excerpt}
-                    {'"'}
-                  </Text>
-                </Box>}
+                {comment.excerpt && (
+                  <Box
+                    bg="#fff"
+                    borderWidth="1px"
+                    borderRadius="md"
+                    boxShadow="lg"
+                    p="2"
+                  >
+                    <Text>
+                      {'"'}
+                      {comment.excerpt}
+                      {'"'}
+                    </Text>
+                  </Box>
+                )}
               </VStack>
             </HStack>
             <HStack spacing={2}>
@@ -101,9 +104,9 @@ function SingleComment({
                   leftIcon={<BiUpvote />}
                   aria-label="Upvote"
                   onClick={() => {
-                    updateCommentUpvote(comment._id)
-                    getCommentRepliesByCommentId(comment._id)
-                    }}
+                    updateCommentUpvote(comment._id);
+                    getCommentRepliesByCommentId(comment._id);
+                  }}
                 >
                   {comment.upvoteCount}
                 </Button>
@@ -112,8 +115,8 @@ function SingleComment({
                   leftIcon={<BiDownvote />}
                   aria-label="Upvote"
                   onClick={() => {
-                  updateCommentDownvote(comment._id)
-                  getCommentRepliesByCommentId(comment._id)
+                    updateCommentDownvote(comment._id);
+                    getCommentRepliesByCommentId(comment._id);
                   }}
                 >
                   {comment.downvoteCount}
@@ -124,7 +127,7 @@ function SingleComment({
               </Flex>
             </HStack>
           </Box>
-          <Flex my='4' alignItems='flex-end' maxW="2xl">
+          <Box my="4" textAlign="right" maxW="2xl">
             <Textarea
               type="replay"
               placeholder="Enter Reply..."
@@ -132,10 +135,17 @@ function SingleComment({
               value={replayText}
               onChange={handleChangeReplayText}
             />
-            <Button onClick={()=>{submitReplayText(comment._id,replayText)}} size="md" rightIcon={<FaTelegramPlane />} colorScheme='green'>
-                  Post
-                </Button>
-          </Flex>
+            <Button
+              onClick={() => {
+                submitReplayText(comment._id, replayText);
+              }}
+              size="md"
+              rightIcon={<FaTelegramPlane />}
+              colorScheme="green"
+            >
+              Post {replayText!=''&&loading?<Spinner size="sm" color="white" />:''}
+            </Button>
+          </Box>
           <Box bg="lightgray" p="4" borderRadius="md" maxW="2xl">
             <Heading as="h6" size="sm">
               {" "}
@@ -203,6 +213,7 @@ const mapStateToProps = (state) => ({
   replies:
     state.comment.singleCommentReplies &&
     state.comment.singleCommentReplies.replies,
+  loading: state.comment.loading,
 });
 
 const mapDispatchToProps = {
@@ -211,7 +222,7 @@ const mapDispatchToProps = {
   updateCommentDownvote,
   updateCommentReplayUpvote,
   updateCommentReplayDownvote,
-  replayToPostComment
+  replayToPostComment,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(SingleComment);

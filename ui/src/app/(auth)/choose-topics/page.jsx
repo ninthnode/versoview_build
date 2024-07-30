@@ -10,7 +10,6 @@ const TopicSelection = () => {
   const [error, setError] = useState(false);
   const authState = useSelector((s) => s.auth.user.user);
   const token = localStorage.getItem("token").replaceAll('"', "");;
-
   useEffect(() => {
     axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/genre/getAllGenre`, {
         headers: {
@@ -19,7 +18,6 @@ const TopicSelection = () => {
       })
       .then(response => {
         const genreNames = response.data.data.map(topic => topic.genreName);
-        console.log(genreNames)
         setTopics(genreNames);
       })
       .catch(error => {
@@ -84,7 +82,7 @@ const TopicSelection = () => {
           </Button>
         ))}
       </Flex>
-      <Button mt={4} colorScheme="blue" onClick={handleSubmit}>Enter</Button>
+      <Button mt={4} colorScheme={Array.from(selectedTopics).length<3?"gray":"blue"} onClick={()=>{Array.from(selectedTopics).length<3?"":handleSubmit()}}>Enter</Button>
     </Box>
     </Container>
     </>

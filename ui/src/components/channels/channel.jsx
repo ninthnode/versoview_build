@@ -42,7 +42,7 @@ export default function Channel({
     `followersList/${channelId}`,
     getFollowing
   );
-  const { data: followings = [] } = useSWR("followChannelList", getFollowing);
+  const { data: followings = [] } = useSWR(`followChannelList/${channelId}`, getFollowing);
 
   return (
     <Box maxW='2xl'>
