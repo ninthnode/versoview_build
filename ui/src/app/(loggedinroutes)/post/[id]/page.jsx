@@ -76,15 +76,8 @@ function SinglePost({
   };
 
   const handleSelection = () => {
-    // const text = window.getSelection().toString().trim();
-    let text = "";
-    if (window.getSelection) {
-      text = window.getSelection();
-    } else if (window.document.getSelection) {
-      text = window.document.getSelection();
-    } else if (window.document.selection) {
-      text = window.document.selection.createRange().text;
-    }
+    const text = window.getSelection().toString().trim();
+   
     if (text) {
       setSelectedText(text);
       onOpen();
