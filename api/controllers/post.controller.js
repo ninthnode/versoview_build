@@ -933,7 +933,7 @@ module.exports.upvoteComment = asyncHandler(async (req, res) => {
 		await newVote.save();
 		return res
 			.status(200)
-			.json({ status: 201, message: "Success", data: newVote });
+			.json({ status: 201, message: "upvoted", data: newVote });
 	} catch (error) {
 		console.error(error);
 		return res.status(500).json({ error: "Internal Server Error" });
@@ -969,7 +969,7 @@ module.exports.downvoteComment = asyncHandler(async (req, res) => {
 		await newVote.save();
 		return res
 			.status(201)
-			.json({ status: 201, message: "Success", data: newVote });
+			.json({ status: 201, message: "downvoted", data: newVote });
 	} catch (error) {
 		console.error(error);
 		return res.status(500).json({ error: "Internal Server Error" });
