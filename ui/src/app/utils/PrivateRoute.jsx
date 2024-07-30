@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { verifyUser } from '@/redux/auth/authActions';
 import { useRouter, usePathname } from 'next/navigation';
-import { DashboardRoutes, AuthRoutes } from '@/routes/index';
+import { DashboardRoutes, AuthRoutes, RoutesList } from '@/routes/index';
 import Loader from '@/components/Loader';
 
 const PrivateRoute = ({ children }) => {
@@ -22,8 +22,8 @@ const PrivateRoute = ({ children }) => {
           if(AuthRoutes.find((route) => path.startsWith(route.url)) &&user)
             router.push('/home');
         }else{
-          // if(DashboardRoutes.find((route) => path.startsWith(route.url)) &&!user)
-          //   router.push('/login');
+          if(!AuthRoutes.find((route) => path.startsWith(route.url))&& !path.startsWith('/home')&&!user)
+            router.push('/login');
         }
       } catch (error) {
         router.push('/login');
@@ -33,7 +33,7 @@ const PrivateRoute = ({ children }) => {
     };
 
     fetchData();
-  }, [dispatch, router]);
+  }, [dispatch, router,path]);
 
   if (loading) {
     return <Loader messages={null} showtext={false} />;
