@@ -200,6 +200,7 @@ function SinglePost({
                 ontouchend={handleSelection}
                 onMouseUp={handleSelection}
                 onTouchEnd={handleSelection}
+                onClick={handleSelection}
               >
                 <Text mt="4" bg="lightgray" w="fit-content" p="1">
                   By {postState.user.channelName}
