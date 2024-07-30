@@ -149,7 +149,7 @@ export const updateCommentReplayUpvote = (commentId, replayId) => {
         }
       );
       dispatch(getCommentRepliesByCommentId(commentId));
-      toast('Comment Replay'+response.data.message,{
+      toast('Comment Replay '+response.data.message,{
         autoClose: 3000,
         type:'success'
       })
@@ -171,7 +171,7 @@ export const updateCommentReplayDownvote = (commentId, replayId) => {
         }
       );
       dispatch(getCommentRepliesByCommentId(commentId));
-      toast('Comment Replay'+response.data.message,{
+      toast('Comment Replay '+response.data.message,{
         autoClose: 3000,
         type:'success'
       })

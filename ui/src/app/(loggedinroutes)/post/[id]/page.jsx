@@ -187,7 +187,6 @@ function SinglePost({
               </Flex>
               <Divider />
               <div
-                ontouchend={handleSelection}
                 onMouseUp={handleSelection}
                 onTouchEnd={handleSelection}
                 onClick={()=>handleSelection}
