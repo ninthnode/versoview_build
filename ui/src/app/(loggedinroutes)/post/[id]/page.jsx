@@ -91,16 +91,6 @@ function SinglePost({
     }
   };
 
-  useEffect(() => {
-    document.addEventListener("mouseup", handleSelection);
-    document.addEventListener("touchend", handleSelection);
-
-    return () => {
-      document.removeEventListener("mouseup", handleSelection);
-      document.removeEventListener("touchend", handleSelection);
-    };
-  }, []);
-
   return (
     <Box>
       <Flex alignItems="center" ml="4" mb={4}>
