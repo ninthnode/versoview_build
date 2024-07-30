@@ -38,7 +38,7 @@ function SingleComment({
   updateCommentReplayUpvote,
   updateCommentReplayDownvote,
   replayToPostComment,
-  loading
+  loading,
 }) {
   const [replayText, setReplayText] = React.useState("");
   React.useEffect(() => {
@@ -54,13 +54,13 @@ function SingleComment({
   };
   return (
     <Box px={{ base: 0, sm: "20px" }}>
-      <Flex alignItems="center" ml="4" mb={4}>
-        <Link href={`/home`}>
-          <Image m="0" src={"/assets/back.svg"} mr={2} />
-        </Link>
-      </Flex>
       {comment && (
         <>
+          <Flex alignItems="center" ml="4" mb={4}>
+            <Link href={`/comments/${comment._id}`}>
+              <Image m="0" src={"/assets/back.svg"} mr={2} />
+            </Link>
+          </Flex>
           <Box
             maxW="2xl"
             p={4}
@@ -143,7 +143,12 @@ function SingleComment({
               rightIcon={<FaTelegramPlane />}
               colorScheme="green"
             >
-              Post {replayText!=''&&loading?<Spinner size="sm" color="white" />:''}
+              Post{" "}
+              {replayText != "" && loading ? (
+                <Spinner size="sm" color="white" />
+              ) : (
+                ""
+              )}
             </Button>
           </Box>
           <Box bg="lightgray" p="4" borderRadius="md" maxW="2xl">

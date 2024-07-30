@@ -52,14 +52,6 @@ function SinglePost({
   const [selectedText, setSelectedText] = useState("");
   const [commentText, setCommentText] = useState("");
 
-  const handleTextSelection = () => {
-    const selectedText = window.getSelection().toString();
-    if (selectedText) {
-      setSelectedText(selectedText);
-      onOpen();
-    }
-  };
-
   useEffect(() => {
     getPostById(params.id);
   }, [getPostById, params.id]);
@@ -83,6 +75,29 @@ function SinglePost({
     getPostById(params.id);
   };
 
+  const handleSelection = () => {
+    const text = window.getSelection().toString().trim();
+    if (text) {
+      // setSelectedText(text);
+      console.log(text);
+      setSelectedText(text);
+      onOpen();
+      // const selectionRect = window.getSelection().getRangeAt(0).getBoundingClientRect();
+      // setPosition({ x: selectionRect.left + window.pageXOffset, y: selectionRect.bottom + window.pageYOffset });
+      // setShowCommentInput(true);
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("mouseup", handleSelection);
+    document.addEventListener("touchend", handleSelection);
+
+    return () => {
+      document.removeEventListener("mouseup", handleSelection);
+      document.removeEventListener("touchend", handleSelection);
+    };
+  }, []);
+
   return (
     <Box>
       <Flex alignItems="center" ml="4" mb={4}>
@@ -105,7 +120,7 @@ function SinglePost({
                     size="sm"
                     borderRadius={10}
                     src={
-                      postState.channel.channelIconImageUrl!=''
+                      postState.channel.channelIconImageUrl != ""
                         ? postState.channel.channelIconImageUrl
                         : "../assets/default-post-image.svg"
                     }
@@ -114,7 +129,10 @@ function SinglePost({
                     <Heading size="sm">{postState.channel.channelName}</Heading>
                   </Box>
                 </Flex>
-                <ShareButton url={`${process.env.NEXT_PUBLIC_FRONTEND_URL}/post/${postState.post._id}`} title={postState.post.header}/>
+                <ShareButton
+                  url={`${process.env.NEXT_PUBLIC_FRONTEND_URL}/post/${postState.post._id}`}
+                  title={postState.post.header}
+                />
                 <IconButton
                   variant="ghost"
                   aria-label="See menu"
@@ -181,12 +199,7 @@ function SinglePost({
               <Heading size="md" as="h6" my="4">
                 {postState.post.header}
               </Heading>
-              <Text
-                size="sm"
-                fontSize="14px"
-                textAlign="justify"
-                onMouseUp={handleTextSelection}
-              >
+              <Text size="sm" fontSize="14px" textAlign="justify">
                 {postState.post.bodyRichText}
               </Text>
             </CardBody>
