@@ -189,7 +189,7 @@ function SinglePost({
                 </Flex> */}
               </Flex>
               <Divider />
-              <div onMouseUp={handleSelection} onTouchEnd={handleSelection}>
+              <div ontouchend={handleSelection} onMouseUp={handleSelection} onTouchEnd={handleSelection}>
               <Text mt="4" bg="lightgray" w="fit-content" p="1">
                 By {postState.user.channelName}
               </Text>
