@@ -76,9 +76,16 @@ function SinglePost({
   };
 
   const handleSelection = () => {
-    const text = window.getSelection().toString().trim();
+    // const text = window.getSelection().toString().trim();
+    let text = "";
+    if (window.getSelection) {
+      text = window.getSelection();
+    } else if (window.document.getSelection) {
+      text = window.document.getSelection();
+    } else if (window.document.selection) {
+      text = window.document.selection.createRange().text;
+    }
     if (text) {
-      // setSelectedText(text);
       setSelectedText(text);
       onOpen();
     }
@@ -189,16 +196,20 @@ function SinglePost({
                 </Flex> */}
               </Flex>
               <Divider />
-              <div ontouchend={handleSelection} onMouseUp={handleSelection} onTouchEnd={handleSelection}>
-              <Text mt="4" bg="lightgray" w="fit-content" p="1">
-                By {postState.user.channelName}
-              </Text>
-              <Heading size="md" as="h6" my="4">
-                {postState.post.header}
-              </Heading>
-              <Text size="sm" fontSize="14px" textAlign="justify">
-                {postState.post.bodyRichText}
-              </Text>
+              <div
+                ontouchend={handleSelection}
+                onMouseUp={handleSelection}
+                onTouchEnd={handleSelection}
+              >
+                <Text mt="4" bg="lightgray" w="fit-content" p="1">
+                  By {postState.user.channelName}
+                </Text>
+                <Heading size="md" as="h6" my="4">
+                  {postState.post.header}
+                </Heading>
+                <Text size="sm" fontSize="14px" textAlign="justify">
+                  {postState.post.bodyRichText}
+                </Text>
               </div>
             </CardBody>
           </Card>
