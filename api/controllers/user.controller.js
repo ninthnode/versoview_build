@@ -236,23 +236,27 @@ module.exports.getUser = asyncHandler(async (req, res) => {
         .status(404)
         .json({ status: 404, message: `User wih Id ${_id} Not Found !` });
     }
-	//get user posts titles
-	const posts = await Post.find({ userId: _id });
-	const totalPosts = await Post.find({ userId: _id }).countDocuments();
-	const channelData = await Channel.findOne({ userId: _id });
-  console.log(channelData)
-	//get user channel followings
-	const channelFollowings = await Follow.find({ userId: _id }).countDocuments();
-	//get user channel followers
-	const channelFollowers = await Follow.find({ channelId: channelData._id }).countDocuments();
+    //get user posts titles
+    const posts = await Post.find({ userId: _id });
+    const totalPosts = await Post.find({ userId: _id }).countDocuments();
+    const channelData = await Channel.findOne({ userId: _id });
+    console.log(channelData);
+    //get user channel followings
+    const channelFollowings = await Follow.find({
+      userId: _id,
+    }).countDocuments();
+    //get user channel followers
+    const channelFollowers = await Follow.find({
+      channelId: channelData._id,
+    }).countDocuments();
     const userObj = userData.toObject();
-
+    
     userObj.posts = posts;
     userObj.totalPosts = totalPosts;
     userObj.channelFollowings = channelFollowings;
     userObj.channelFollowers = channelFollowers;
 
-	return res.status(200).json({status : 200, user: userObj})
+    return res.status(200).json({ status: 200, user: userObj });
   } catch (error) {
     console.error(error);
     res.status(500).json({ status: 500, message: "Internal Server Error" });

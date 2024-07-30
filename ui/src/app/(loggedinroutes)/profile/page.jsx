@@ -247,11 +247,11 @@ function Profile() {
               <Text>Post</Text>
             </Box>
             <Box>
-              <Text>7</Text>
+              <Text>0</Text>
               <Text>Editions</Text>
             </Box>
             <Box>
-              <Text>7</Text>
+              <Text>0</Text>
               <Text>Articles</Text>
             </Box>
             <Box>
