@@ -79,12 +79,8 @@ function SinglePost({
     const text = window.getSelection().toString().trim();
     if (text) {
       // setSelectedText(text);
-      console.log(text);
       setSelectedText(text);
       onOpen();
-      // const selectionRect = window.getSelection().getRangeAt(0).getBoundingClientRect();
-      // setPosition({ x: selectionRect.left + window.pageXOffset, y: selectionRect.bottom + window.pageYOffset });
-      // setShowCommentInput(true);
     }
   };
 
@@ -193,6 +189,7 @@ function SinglePost({
                 </Flex> */}
               </Flex>
               <Divider />
+              <div onMouseUp={handleSelection} onTouchEnd={handleSelection}>
               <Text mt="4" bg="lightgray" w="fit-content" p="1">
                 By {postState.user.channelName}
               </Text>
@@ -202,6 +199,7 @@ function SinglePost({
               <Text size="sm" fontSize="14px" textAlign="justify">
                 {postState.post.bodyRichText}
               </Text>
+              </div>
             </CardBody>
           </Card>
 
