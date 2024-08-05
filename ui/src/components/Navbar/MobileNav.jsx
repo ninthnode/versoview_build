@@ -15,35 +15,54 @@ import {
   MenuDivider,
   Image,
   Heading,
-  Divider
+  Button,
 } from "@chakra-ui/react";
 import { FiMenu, FiBell, FiChevronDown, FiSearch } from "react-icons/fi";
-import { useSelector,useDispatch } from 'react-redux';
-import { useRouter } from 'next/navigation';
-import { loginOut } from '@/redux/auth/authActions';
+import { useSelector, useDispatch } from "react-redux";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { loginOut } from "@/redux/auth/authActions";
 
 const MobileNav = ({ onOpen, routeName, ...rest }) => {
-  const user = useSelector(state => state.auth.user);
-  const { push } = useRouter();
+  const user = useSelector((state) => state.auth.user);
+  const router = useRouter();
+
   const dispatch = useDispatch();
-  const LogoutHandler =()=>{
+  const LogoutHandler = () => {
     dispatch(loginOut());
-  }
+  };
   return (
     <Flex
       ml={{ base: 0, md: "16rem" }}
       mr={{ base: 0, md: 5 }}
-      mt={{ base: 0, md: 3 }}
+      mt={{ base: 4 }}
       px={{ base: 4, md: 4 }}
-      height="4rem"
+      height="3rem"
       alignItems="center"
       bg="#fff"
       {...rest}
     >
-    <Flex alignItems="center">
-        <Image src={"/assets/logo.svg"} alt="logo" mr={2} />
-        <Heading as="h6" size="lg" fontWeight="bold" textAlign="left">
-          {routeName}
+      <Flex alignItems="center" p="0">
+        <Heading
+          fontSize="3xl"
+          as="h3"
+          size="lg"
+          fontWeight="bold"
+          textAlign="left"
+          p={0}
+        >
+          {routeName ? (
+            <Flex>
+              <Image src={"/assets/logo.svg"} alt="logo" mr={2} />
+              {routeName}
+            </Flex>
+          ) : (
+            <Flex alignItems="center" mb={2}>
+              <Button variant='ghost' onClick={() => router.back()}>
+                <Image m="0" src={"/assets/back.svg"} mr={2} />
+              </Button>
+            </Flex>
+          )}
         </Heading>
       </Flex>
     </Flex>

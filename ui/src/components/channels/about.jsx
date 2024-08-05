@@ -1,57 +1,61 @@
-import get from "@/app/utils/get";
-import token from "@/app/utils/token";
 import { Spinner } from "@chakra-ui/react";
-import axios from "axios";
-import React from "react";
-import useSWR from "swr";
+import { connect } from "react-redux";
+import React, { useEffect, useState } from "react";
+import { Box, Image, Flex, Text, Link } from "@chakra-ui/react";
 
-const follow = (id) =>
-  axios
-    .post(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/channel/followChannel/${id}`,
-      { status: "active" },
-      {
-        headers: {
-          authorization: token(),
-        },
+import {
+  followChannel,
+  unfollowChannel,
+  getFollowingStatus,
+} from "@/redux/channel/channelActions";
+
+const FollowBtn = ({
+  channelId,
+  followChannel,
+  unfollowChannel,
+  isLoading,
+  getFollowingStatus,
+}) => {
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [isChange, setIsChange] = useState(false);
+  useEffect(() => {
+    if (channelId) {
+      const fetchFollowingStatus = async () => {
+        try {
+          const response = await getFollowingStatus(channelId);
+          setIsFollowing(response?.channelId === channelId);
+        } catch (error) {
+          console.error("Error fetching following status:", error);
+        }
+      };
+      fetchFollowingStatus();
+    }
+  }, [channelId,isChange]);
+
+  const handleFollowClick = async () => {
+    try {
+      if (isFollowing) {
+        await unfollowChannel(channelId);
+      } else {
+        await followChannel(channelId);
       }
-    )
-    .then((r) => r.data);
+      setIsChange(!isChange)
+    } catch (error) {
+      console.error("Error updating follow status:", error);
+    }
+  };
 
-const FollowBtn = ({ channelId, refetchFollowers }) => {
-  const {
-    data: following = {},
-    mutate,
-    isLoading: isFollowingLoading,
-  } = useSWR(`channel/getFollowChannel/${channelId}`, (k) =>
-    get(k, true).then((r) => r.data)
-  );
-
-  const isFollowed = following?.channelId === channelId;
-
-  return isFollowingLoading ? (
+  return isLoading ? (
     <Spinner />
   ) : (
     <button
       type="button"
-      onClick={async () => {
-        isFollowed
-          ? await get(`channel/unfollowChannel/${channelId}`, true, {
-              method: "DELETE",
-            }).then(() => {
-              mutate();
-              refetchFollowers();
-            })
-          : await follow(channelId).then((r) => {
-              console.log("Follow button clicked", r.data);
-              mutate({ ...following });
-            });
-      }}
-      className={`"px-8 ${isFollowed && "text-green-500"} rounded-lg border-2 ${
-        isFollowed && "border-green-500"
-      }`}
+      onClick={() => handleFollowClick()}
+      className={`"px-8 ${
+        isFollowing && "text-green-500"
+      } rounded-lg border-2 ${isFollowing && "border-green-500"}`}
     >
-      {isFollowed ? "Following" : "Follow"}
+      {isFollowing ? "Following" : "Follow"}
     </button>
   );
 };
@@ -64,89 +68,104 @@ const About = ({
   url,
   profileBgColor: backgroundColor,
   _id,
-  postsCount= 0,
+  postsCount = 0,
   followersCount = 0,
   followingCount = 0,
-  refetchFollowers,
+  getFollowingStatus,
+  isLoading,
+  followChannel,
+  unfollowChannel,
 }) => {
   const defaultImageUrl = "/assets/default-post-image.svg";
+
   return (
-    <div
-      className="container flex flex-row p-3 min-w-full bg-gray-100 rounded"
-      style={{ backgroundColor }}
+    <Box
+      display="flex"
+      flexDirection="row"
+      p={3}
+      minWidth="full"
+      bg="gray.100"
+      borderRadius="md"
     >
-      <div className="flex flex-col justify-between">
-        <div>
-        {channelIconImageUrl ? (
-            <img
-              src={channelIconImageUrl.toString()}
-              className="rounded-md size-16"
-              alt="Channel"
+      <Flex flexDirection="column" justifyContent="space-between" mr={4}>
+        <Image
+          src={channelIconImageUrl ? channelIconImageUrl.toString() : defaultImageUrl}
+          alt="Channel"
+          borderRadius="md"
+          boxSize="100px"
+        />
+        <Flex flexDirection="column" alignItems="center">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            width="24"
+            height="24"
+          >
+            <title>Message</title>
+            <path
+              fill="currentColor"
+              d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2m0 14H5.2L4 17.2V4h16z"
             />
-          ) : (
-            <img src={defaultImageUrl} className="rounded-md size-16" alt="Channel" />
-          )}
-        </div>
+          </svg>
+          <Text fontSize="xs" textTransform="capitalize">Message</Text>
+        </Flex>
+      </Flex>
 
-        <div className="flex flex-col justify-between items-center">
-          <div>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="size-6"
-              viewBox="0 0 24 24"
-            >
-              <title>Message</title>
-              <path
-                fill="currentColor"
-                d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2m0 14H5.2L4 17.2V4h16z"
-              />
-            </svg>
-          </div>
-          <div className="text-xs capitalize">Message</div>
-        </div>
-      </div>
+      <Box ml={4} flex="1">
+        <Flex justifyContent="space-between" alignItems="flex-start" mb={2}>
+          <Flex flexDirection="column">
+            <Text fontWeight="bold">{profileTitle}</Text>
+            <Text fontWeight="semibold" mt={-1}>{channelName}</Text>
+          </Flex>
+          <FollowBtn
+            channelId={_id}
+            getFollowingStatus={getFollowingStatus}
+            isLoading={isLoading}
+            followChannel={followChannel}
+            unfollowChannel={unfollowChannel}
+          />
+        </Flex>
 
-      <div className="container ml-4">
-        <div className="flex flex-row justify-between items-start">
-          <div className="flex flex-col">
-            <div className="font-bold">{profileTitle}</div>
-            <div className="-mt-1 font-semibold">{channelName}</div>
-          </div>
-          <FollowBtn channelId={_id} refetchFollowers={refetchFollowers} />
-        </div>
-
-        <div className="py-2 w-4/5 text-sm">
+        <Text mb={2} fontSize="sm">
           {about}
           <br />
-          <a
-            href={url}
-            className="text-xs italic underline hover:text-blue-800"
-          >
+          <Link href={url} fontSize="xs" isExternal color="blue.500" textDecoration="underline">
             {url}
-          </a>
-        </div>
+          </Link>
+        </Text>
 
-        <div className="flex flex-row space-x-8">
-          <div className="flex flex-col items-center">
-            <div className="font-bold">{postsCount ?? 0}</div>
-            <div className="text-xs">Posts</div>
-          </div>
-          <div className="flex flex-col items-center">
-            <div className="font-bold">0</div>
-            <div className="text-xs">Editions</div>
-          </div>
-          <div className="flex flex-col items-center">
-            <div className="font-bold">{followingCount ?? 0}</div>
-            <div className="text-xs">Following</div>
-          </div>
-          <div className="flex flex-col items-center">
-            <div className="font-bold">{followersCount ?? 0}</div>
-            <div className="text-xs">Followers</div>
-          </div>
-        </div>
-      </div>
-    </div>
+        <Flex spacing={8} gap={4}>
+          <Flex flexDirection="column" alignItems="center">
+            <Text fontWeight="bold">{postsCount}</Text>
+            <Text fontSize="xs">Posts</Text>
+          </Flex>
+          <Flex flexDirection="column" alignItems="center">
+            <Text fontWeight="bold">0</Text>
+            <Text fontSize="xs">Editions</Text>
+          </Flex>
+          <Flex flexDirection="column" alignItems="center">
+            <Text fontWeight="bold">{followingCount}</Text>
+            <Text fontSize="xs">Following</Text>
+          </Flex>
+          <Flex flexDirection="column" alignItems="center">
+            <Text fontWeight="bold">{followersCount}</Text>
+            <Text fontSize="xs">Followers</Text>
+          </Flex>
+        </Flex>
+      </Box>
+    </Box>
   );
 };
 
-export default About;
+
+const mapStateToProps = (state) => ({
+  isLoading: state.channel.isLoading,
+});
+
+const mapDispatchToProps = {
+  followChannel,
+  unfollowChannel,
+  getFollowingStatus,
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(About);

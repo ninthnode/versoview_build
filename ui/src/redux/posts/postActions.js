@@ -56,7 +56,6 @@ export const fetchRecentlyViewedPosts = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-          console.log(response)
       const data = await response.data.data
       dispatch({
         type: GET_RECENT_POSTS_SUCCESS,

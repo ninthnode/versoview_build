@@ -33,9 +33,10 @@ const ShareButton = ({ url, title }) => {
     <>
       <IconButton
         variant="ghost"
-        colorScheme="gray"
+        color="gray.400"
         aria-label="See menu"
-        icon={<FiMoreHorizontal />}
+        fontSize='25px'
+        icon={<FiMoreHorizontal/>}
         onClick={openModal}
       />
       <Modal isOpen={isOpen} onClose={closeModal}>

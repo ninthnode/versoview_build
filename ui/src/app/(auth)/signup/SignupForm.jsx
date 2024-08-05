@@ -13,6 +13,8 @@ import {
 } from "@chakra-ui/react";
 import { FaUser } from "react-icons/fa";
 import * as v from "valibot";
+import { CiUser, CiMail, CiLock } from "react-icons/ci";
+import { IoIosLogIn } from "react-icons/io";
 
 const emailSchema = v.pipe(v.string(), v.email("must be a valid email"));
 const passwordSchema = v.pipe(
@@ -51,8 +53,9 @@ function SignupForm({ loading, handleSubmit, handleChange, backendError }) {
         <small className="text-xs font-thin text-red-500">{backendError}</small>
       )}
       <FormControl id="first_name" isRequired>
-        <Flex>
-          <label>Channel Name</label>
+        <Flex alignItems="center" gap={2} mb="2">
+          <CiUser fontSize="20px" />
+          <Text>Channel Name</Text>
         </Flex>
         <Input
           type="text"
@@ -63,7 +66,10 @@ function SignupForm({ loading, handleSubmit, handleChange, backendError }) {
         />
       </FormControl>
       <FormControl id="last_name" mt={4} isRequired>
-        <label>@User name; ie: @KhaidS</label>
+        <Flex alignItems="center" gap={2} mb="2">
+          <CiUser fontSize="20px" />
+          <Text>@User name; ie: @KhaidS</Text>
+        </Flex>
         <Input
           type="text"
           placeholder="UserName"
@@ -72,7 +78,10 @@ function SignupForm({ loading, handleSubmit, handleChange, backendError }) {
         />
       </FormControl>
       <FormControl id="email" mt={4} isRequired>
-        <label>Email</label>
+        <Flex alignItems="center" gap={2} mb="2">
+          <CiMail fontSize="20px" />
+          <Text>Email</Text>
+        </Flex>
         <Input
           type="email"
           placeholder="Email"
@@ -88,7 +97,10 @@ function SignupForm({ loading, handleSubmit, handleChange, backendError }) {
         )}
       </FormControl>
       <FormControl id="password" mt={4} isRequired>
-        <label>Password</label>
+        <Flex alignItems="center" gap={2} mb="2">
+          <CiLock fontSize="20px" />
+          <Text>Password</Text>
+        </Flex>
         <Input
           type="password"
           placeholder="Password"
@@ -103,27 +115,40 @@ function SignupForm({ loading, handleSubmit, handleChange, backendError }) {
           </small>
         )}
       </FormControl>
-      <Box justify="center" mt={4}>
-        <Text fontWeight="normal" color="text">
-          By signing up you agree with our
-          <Link color="primary" mx={1} target="_blank">
-            Terms of Services
+
+      <Box position="fixed" bottom="2%" left="0" right="0" w="100%" bg='#fff'>
+        <Box textAlign="center" justify="center">
+          <Text fontWeight="normal" color="text">
+            By signing up you agree with our
+            <Link mx={1} target="_blank">
+              Terms of Conditions
+            </Link>
+          </Text>
+        </Box>
+        <Text textAlign="center">
+          <Link href="/login">
+            Already have an account? Login
           </Link>
         </Text>
+        <Flex justifyContent="center">
+          <Button
+            w="380px"
+            textAlign="center"
+            variant="primary"
+            m={2}
+            type="submit"
+            disabled={errors.password || errors.email}
+          >
+            <Flex justify={"flex-start"} w="90%" gap={6}>
+            {loading ? <Spinner size="sm" color="white" /> : ""}
+                <IoIosLogIn color="#fff" fontSize="22px" />
+                <Box w="70%" textAlign='center'>
+                <Text fontWeight={"light"}>Sign up</Text>
+                </Box>
+              </Flex>
+          </Button>
+        </Flex>
       </Box>
-      <Button
-        variant="primary"
-        mt={4}
-        w="100%"
-        type="submit"
-        disabled={
-          // errors.username ||
-          errors.password || errors.email
-          // ||          errors.channelName
-        }
-      >
-        {loading ? <Spinner size="sm" color="white" /> : ""} Sign up
-      </Button>
     </form>
   );
 }

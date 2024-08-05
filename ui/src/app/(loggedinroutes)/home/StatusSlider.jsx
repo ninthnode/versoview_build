@@ -1,51 +1,65 @@
 "use client";
-
-// src/components/StatusSlider.js
 import React, { useEffect, useState } from "react";
-import { Box, Avatar, Text, Flex, HStack, Spinner } from "@chakra-ui/react";
+import { Box, Avatar, Flex, HStack, Spinner, Divider } from "@chakra-ui/react";
 import axios from "axios";
 import Link from "next/link";
 import get from "@/app/utils/get";
-import useSWR from "swr";
+import { useSelector } from "react-redux";
 
 const StatusItem = ({ status }) => {
-  const { data: unread = 0, isLoading: unreadLoading } = useSWR(
-    `post/getAllUnreadPost/${status.id}`,
-    (k) => get(k, true).then((r) => r.data?.length)
-  );
+  const authState = useSelector((s) => s.auth?.user?.user);
+
+  const [unread, setUnread] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const getUnread = () => {
+    return get(`post/getAllUnreadPost/${status.id}`)
+      .then((r) => r.data?.length)
+      .catch(() => 0);
+  };
+
+  useEffect(() => {
+    if (authState) {
+      getUnread().then((count) => {
+        setUnread(count);
+        setIsLoading(false);
+      });
+    } else {
+      setIsLoading(false);
+    }
+  }, [status.id]);
 
   return (
-    <Flex direction="column" alignItems="center" mx={2} position="relative">
+    <Flex direction="column" alignItems="center" position="relative">
       <Link href={`/channel/${status.id}`}>
         <Avatar
-          size="md"
+          size="lg"
           borderRadius={10}
           name={status.name}
           src={status.avatar}
         />
-        {!unreadLoading ? (
+        {!isLoading ? (
           unread > 0 && (
-            <div
-              className="z-10 self-end px-2 -mt-4 w-min text-xs text-white bg-black rounded-xl"
-              style={{
-                display: !unread ? "none" : "block",
-                position: "absolute",
-                right: 0,
-              }}
+            <Box
+              className="z-10 self-end -mt-4 text-xs text-white bg-black rounded-xl"
+              px={2}
+              w="min"
+              position="absolute"
+              right={0}
             >
               {unread}
-            </div>
+            </Box>
           )
         ) : (
-          <Spinner size={5} />
+          <Spinner size="sm" />
         )}
       </Link>
     </Flex>
   );
 };
 
-const getChannels = () =>
-  axios
+const getChannels = () => {
+  return axios
     .get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/channel/getAllChannel`)
     .then((r) =>
       r.data.data.map((c) => ({
@@ -55,9 +69,7 @@ const getChannels = () =>
           c.channelData.channelIconImageUrl || "/assets/default-post-image.svg",
       }))
     );
-
-const getUnreadPosts = (channelId) =>
-  get(`post/getAllUnreadPost/${channelId}`, true).then((r) => r.data?.length);
+};
 
 const StatusSlider = () => {
   const [channels, setChannels] = useState([]);
@@ -65,10 +77,12 @@ const StatusSlider = () => {
   useEffect(() => {
     getChannels().then(setChannels);
   }, []);
+
   return (
     <Box
       overflowX="scroll"
-      pb={4}
+      overflowY="hidden"
+      paddingRight={0}
       __css={{
         "&::-webkit-scrollbar": {
           w: "2",
@@ -83,11 +97,12 @@ const StatusSlider = () => {
         },
       }}
     >
-      <HStack spacing={4}>
+      <HStack spacing={4} mb={2}>
         {channels.map((status) => (
           <StatusItem key={status.id} status={status} />
         ))}
       </HStack>
+      <Divider />
     </Box>
   );
 };

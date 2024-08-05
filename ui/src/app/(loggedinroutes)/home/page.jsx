@@ -8,19 +8,19 @@ import {
   Tab,
   TabPanel,
   Spinner,
-  Text
+  Text,
+  Divider
 } from "@chakra-ui/react";
 import { connect } from "react-redux";
 import {
   fetchPosts,
   fetchRecentlyViewedPosts,
 } from "@/redux/posts/postActions";
+import { fetchfollowChannelList } from "@/redux/channel/channelActions";
 import { addRemoveBookmarks } from "@/redux/bookmarks/bookmarkAction";
 import PostCard from "./postCard";
 import StatusSlider from "./StatusSlider";
 import Following from "./following";
-import useSWR from "swr";
-import get from "@/app/utils/get";
 
 const Home = ({
   postsState,
@@ -29,35 +29,22 @@ const Home = ({
   fetchPosts,
   fetchRecentlyViewedPosts,
   addRemoveBookmarks,
+  fetchfollowChannelList,
+  followings,
 }) => {
-  const {
-    data: followedChannels = [],
-    // isLoading: followingLoading,
-    // mutate,
-  } = useSWR("channel/followChannelList", (k) =>
-    get(k, true).then((r) =>
-      r.data
-        .map((i) => ({ channelId: i.channelId._id }))
-        .filter((i) => i.pinned)
-    )
-  );
-
-  const pinnedChannels = useMemo(
-    () => followedChannels.filter((i) => i.pinned),
-    [followedChannels]
-  );
-
   const [tabIndex, setTabIndex] = useState(0);
   const [postList, setPostList] = useState([]);
   const [recentPostList, setRecentPostList] = useState([]);
 
   useEffect(() => {
     if (tabIndex === 0) {
-      fetchPosts(); 
-    } else {
+      fetchPosts();
+    } else if (tabIndex === 1) {
       fetchRecentlyViewedPosts();
+    } else if (tabIndex === 2) {
+      fetchfollowChannelList();
     }
-  }, [tabIndex, fetchPosts, fetchRecentlyViewedPosts]);
+  }, [tabIndex]);
 
   useEffect(() => {
     if (posts.length > 0) setPostList(posts);
@@ -85,46 +72,33 @@ const Home = ({
     );
   };
 
-  const pinnedPosts = useMemo(
-    () =>
-      postList.filter(
-        (p) =>
-          pinnedChannels.length &&
-          pinnedChannels.map((c) => c._id).includes(p.channelId._id)
-      ),
-    [pinnedChannels, postList]
-  );
-
   return (
-    <Box>
+    <Box px={4}>
       <Tabs index={tabIndex} onChange={(index) => setTabIndex(index)}>
-        <TabList>
-          <Tab>Latest</Tab>
-          <Tab>Recently viewed</Tab>
-          <Tab>Following</Tab>
+        <TabList gap={2} h="3rem">
+          <Tab pl="0">Latest</Tab>
+          <Tab pl="1">Recently viewed</Tab>
+          <Tab pl="1">Following</Tab>
         </TabList>
 
-        <TabPanels>
-          <TabPanel>
+        <TabPanels p="0">
+          <TabPanel p="0">
             <Box mt={2}>
               {postsState.loading ? (
                 <Spinner size="sm" color="#333" />
               ) : (
                 <>
                   {posts.length && <StatusSlider />}
-                  {postList
-                    ?.toSorted((a, b) =>
-                      pinnedPosts.includes(a) && !pinnedPosts.includes(b)
-                        ? -1
-                        : 1
-                    )
-                    ?.map?.((post) => (
+                  {postList.map?.((post) => (
+                    <>
                       <PostCard
                         key={post._id || crypto.randomUUID()}
                         post={post}
                         submitBookmark={submitBookmarkPost}
                       />
-                    ))}
+                      <Divider />
+                    </>
+                  ))}
                 </>
               )}
             </Box>
@@ -135,20 +109,24 @@ const Home = ({
             ) : (
               <>
                 {recentPostList && <StatusSlider />}
-                {tabIndex === 1 &&
-                  recentPostList.length == 0 ? <Text>No Post Viewed!</Text>:
+                {tabIndex === 1 && recentPostList.length == 0 ? (
+                  <Text>No Post Viewed!</Text>
+                ) : (
                   recentPostList.map((post) => (
                     <PostCard
                       key={post.id}
                       post={post}
                       submitBookmark={submitBookmarkRecentPost}
                     />
-                  ))}
+                  ))
+                )}
               </>
             )}
           </TabPanel>
           <TabPanel>
-            <Following />
+            {followings.data && followings.data.length > 0 && (
+              <Following followings={followings} />
+            )}
           </TabPanel>
         </TabPanels>
       </Tabs>
@@ -160,11 +138,13 @@ const mapStateToProps = (state) => ({
   postsState: state.post,
   posts: state.post.posts,
   recentPosts: state.post.recentPosts,
+  followings: state.channel.followings,
 });
 
 const mapDispatchToProps = {
   fetchPosts,
   fetchRecentlyViewedPosts,
+  fetchfollowChannelList,
   addRemoveBookmarks,
 };
 

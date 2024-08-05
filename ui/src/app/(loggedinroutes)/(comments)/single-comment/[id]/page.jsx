@@ -32,7 +32,7 @@ function SingleComment({
   comment,
   replies,
   getCommentRepliesByCommentId,
-  params,
+  id,
   updateCommentUpvote,
   updateCommentDownvote,
   updateCommentReplayUpvote,
@@ -42,7 +42,7 @@ function SingleComment({
 }) {
   const [replayText, setReplayText] = React.useState("");
   React.useEffect(() => {
-    getCommentRepliesByCommentId(params.id);
+    getCommentRepliesByCommentId(id);
   }, [getCommentRepliesByCommentId]);
 
   const handleChangeReplayText = (e) => {
@@ -56,12 +56,7 @@ function SingleComment({
     <Box px={{ base: 0, sm: "20px" }}>
       {comment && (
         <>
-          <Flex alignItems="center" ml="4" mb={4}>
-            <Link href={`/comments/${comment._id}`}>
-              <Image m="0" src={"/assets/back.svg"} mr={2} />
-            </Link>
-          </Flex>
-          <Box
+          {/* <Box
             maxW="2xl"
             p={4}
             bg="bglight"
@@ -126,7 +121,7 @@ function SingleComment({
                 </Button>
               </Flex>
             </HStack>
-          </Box>
+          </Box> */}
           <Box my="4" textAlign="right" maxW="2xl">
             <Textarea
               type="replay"

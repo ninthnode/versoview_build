@@ -1,4 +1,3 @@
-// src/components/PostCard.js
 import React from "react";
 import {
   Box,
@@ -19,7 +18,7 @@ import { CiSearch, CiBookmark, CiUser } from "react-icons/ci";
 import { FaBookmark as BookmarkFilled  } from "react-icons/fa6";
 
 import { GoCommentDiscussion } from "react-icons/go";
-import { formatDate, TimeFromNow } from "../../utils/DateUtils";
+import { formatDate } from "../../utils/DateUtils";
 import ShareButton from "@/components/ShareButton";
 
 const PostCard = ({ post, small = false,submitBookmark }) => {
@@ -31,8 +30,8 @@ const PostCard = ({ post, small = false,submitBookmark }) => {
   const defaultImageUrl = "/assets/default-post-image.svg";
 
   return (
-    <Card maxW="2xl" mt={2} mb={4}>
-      <CardHeader p={2}>
+    <Card maxW="2xl" mb={4} boxShadow='none'>
+      <CardHeader p={1} border='0'>
         <Flex spacing="4">
           <Flex flex="1" gap="4" alignItems="center" flexWrap="wrap">
           {post.channelId?.channelIconImageUrl ? (
@@ -68,19 +67,21 @@ const PostCard = ({ post, small = false,submitBookmark }) => {
         </Flex>
       </CardHeader>
       {!small && (
-        <Image objectFit="cover" src={post.mainImageURL || '/assets/default-post-image.svg'} alt={post.header} />
+        <Image border='1px solid lightgray' borderRadius='md' objectFit="cover" src={post.mainImageURL || '/assets/default-post-image.svg'} alt={post.header} />
       )}
-      <CardBody pt="0">
+      <CardBody ml='1' p="0" border='0'>
         <Text
           fontSize="12px"
           mt="1"
           display="flex"
           gap="10px"
           alignItems="center"
+          color='textlight'
+          py={2}
         >
           {post.section} - {post.subSection} • {formatDate(post.createdAt)} •
           6min read
-          <Button
+          {/* <Button
             variant="ghost"
             colorScheme="gray"
             aria-label="See menu"
@@ -90,7 +91,7 @@ const PostCard = ({ post, small = false,submitBookmark }) => {
             height="2rem"
           >
             127
-          </Button>
+          </Button> */}
         </Text>
 
         <Link href={`post/${post._id}`}>
@@ -98,7 +99,7 @@ const PostCard = ({ post, small = false,submitBookmark }) => {
           {post.header}
         </Heading>
         </Link>
-        <Text>{getExcerpt(post.bodyRichText, 100)}</Text>
+        <Text fontSize='16px'>{getExcerpt(post.bodyRichText, 150)}</Text>
       </CardBody>
     </Card>
   );

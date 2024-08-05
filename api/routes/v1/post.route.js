@@ -47,7 +47,7 @@ router.post("/createPost", protectUser, create);
 router.get("/getAllPost", protectUser, getAllPost);
 router.get("/getPostIfUserNotLoggedIn", getPostIfUserNotLoggedIn);
 router.get("/getPost/:_id", protectUser, getPostById);
-router.get("/getPostByChannelId/:_id", getPostByChannelId);
+router.get("/getPostByChannelId/:_id",protectUser, getPostByChannelId);
 router.put("/updatePost/:_id", protectUser, updatePost);
 router.delete("/deletePost/:_id", protectUser, deletePost);
 router.post("/upVote/:_id", protectUser, upvotePost);

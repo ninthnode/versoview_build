@@ -17,7 +17,7 @@ import { connect } from "react-redux";
 import LoginBtns from "./LoginBtns";
 import LoginForm from "./LoginForm";
 
-function Login({ loginUser,error }) {
+function Login({ loginUser, error }) {
   const [show, setShow] = useState(false);
   const [showForm, setShowForm] = useState(false);
 
@@ -47,79 +47,86 @@ function Login({ loginUser,error }) {
   };
 
   return (
-    <Box bg="white" w="100%">
-      <Flex bg="secondary" p={10} justify="center">
-        <Image src={"/assets/desktop-logo.svg"} alt="desktopLogo" />
-      </Flex>
+    <Box bg="white" mt={4} w="100%" position="relative">
       <Flex minH="85vh" align="center" justify="center">
-        <Box
-          minW={{ base: "380px", lg: "500px" }}
-          minH="550px"
-          p={{ base: 4, md: 8 }}
+        <Flex
+          flexDirection="column"
+          minH="85vh"
+          justifyContent="space-between"
+          w={{ base: "380px", lg: "380px" }}
+          px={{ base: 4, md: 8 }}
           bg="white"
         >
-          {showForm && (
-            <>
-            <Button
-              bg="secondary"
-              w="fit-content"
-              p="2"
-              borderRadius="20"
-              onClick={handleShowForm}
-            >
-              <Image m="0" src={"/assets/back.svg"} mr={2} />
-            </Button></>
-          )}
-          <Flex alignItems="center" mb={4} mt={4}>
-            <Image src={"/assets/logo.svg"} alt="logo" mr={2} />
-            <Heading size='lg' as="h6" fontWeight="bold" textAlign="left">
-              Login
-            </Heading>
-          </Flex>
-          <Text mb={8} w="80%">
-            Login to start uploading content, discovering communities and
-            more...
-          </Text>
-          {showForm ? (
-            <LoginForm
-              loading={false}
-              show={show}
-              handleSubmit={handleSubmit}
-              handleChange={handleChange}
-              handleClick={handleClick}
-              backendError={error}
-            />
-          ) : (
-            <LoginBtns />
-          )}
-          {!showForm && (
-            <>
-              <Flex align="center" mt={6}>
-                <Divider flex={2} />
-                <Text mx={2} fontWeight="normal" color="text">
-                  Or continue with
-                </Text>
-                <Divider flex={2} />
+          <Box h="100%" mt={4}>
+            <Box>
+              {showForm && (
+                <>
+                  <Button
+                    bg="secondary"
+                    w="fit-content"
+                    p="2"
+                    borderRadius="20"
+                    onClick={handleShowForm}
+                  >
+                    <Image m="0" src={"/assets/back.svg"} mr={2} />
+                  </Button>
+                </>
+              )}
+              <Flex alignItems="center" mb={4} mt={4}>
+                <Image src={"/assets/logo.svg"} alt="logo" mr={2} />
+                <Heading size="lg" as="h6" fontWeight="bold" textAlign="left">
+                  {showForm?"Login with Email":"Login"}
+                </Heading>
               </Flex>
-              <Flex justify="center" mt="4" w="100%">
-                <Button
-                  mt={8}
-                  w="100%"
-                  leftIcon={<FaEnvelope />}
-                  variant="outline"
-                  onClick={handleShowForm}
-                >
-                  Login With Email
-                </Button>
-              </Flex>
-            </>
-          )}
-          <Text my={8} textAlign="center">
-            <Link color="primary" href="/signup">
-              Dont have account? SignUp
-            </Link>
-          </Text>
-        </Box>
+              <Text mb={8} w="80%" color="textlight">
+                Login to start uploading content, discovering communities and
+                more...
+              </Text>
+            </Box>
+            {showForm ? (
+              <LoginForm
+                loading={false}
+                show={show}
+                handleSubmit={handleSubmit}
+                handleChange={handleChange}
+                handleClick={handleClick}
+                backendError={error}
+              />
+            ) : (
+              <LoginBtns />
+            )}
+          </Box>
+
+          <Box position="fixed" bottom="10%" left="0" right="0" w="100%">
+            <Flex justifyContent="center">
+              {!showForm && (
+                <>
+                  <Flex justify="center" w="380px" px={{ base: 4, md: 8 }}>
+                    <Button mt={4} w="100%" onClick={handleShowForm}>
+                      <Flex
+                        justify={"flex-start"}
+                        alignItems="center"
+                        w="90%"
+                        gap={6}
+                        height="15px"
+                      >
+                        <img
+                          src="assets/envelope.png"
+                          width="18px"
+                          height="2px"
+                        />
+                        <Text fontWeight={"light"}>Login With Email</Text>
+                      </Flex>
+                    </Button>
+                  </Flex>
+                </>
+              )}
+            </Flex>
+            <Text textAlign="center" mt={8}>
+              <Link href="/signup">Dont have account? SignUp</Link>
+            </Text>
+          </Box>
+        </Flex>
       </Flex>
     </Box>
   );
@@ -127,7 +134,7 @@ function Login({ loginUser,error }) {
 
 const mapStateToProps = (state) => ({
   loading: state.auth.loading,
-  error:state.auth.error
+  error: state.auth.error,
 });
 
 const mapDispatchToProps = {

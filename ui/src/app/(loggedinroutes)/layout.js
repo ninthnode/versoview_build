@@ -9,7 +9,11 @@ export default function DashboardLayout({ children }) {
   const pathname = usePathname();
   const getRouteName = (path) => {
     for (const route of RoutesList) {
-      if (route.url === path || path.startsWith(route.url)) {
+      // Check If Includes Path In Routes
+      // if (route.url === path || path.startsWith(route.url)) {
+      //   return route.name;
+      // }
+      if (route.url === path) {
         return route.name;
       }
     }

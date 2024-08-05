@@ -204,8 +204,7 @@ module.exports.getFollowChannel = asyncHandler(async (req, res) => {
 module.exports.followChannelList = asyncHandler(async (req, res) => {
 	try {
 		const userId = req.user._id;
-		const channelId = req.params._id;
-		const channelData = await Follow.find({ channelId }).populate(
+		const channelData = await Follow.find({ userId }).populate(
 			"channelId",
 		);
 
@@ -224,6 +223,21 @@ module.exports.followersList = asyncHandler(async (req, res) => {
 		const userId = req.user._id;
 		const channelId = req.params._id;
 		const channelData = await Follow.find({ channelId: channelId }).populate(
+			"channelId",
+		);
+
+		return res
+			.status(200)
+			.json({ status: 200, message: "Success", data: channelData });
+	} catch (error) {
+		console.error(error);
+		return res.status(500).json({ error: "Internal Server Error" });
+	}
+});
+module.exports.followingList = asyncHandler(async (req, res) => {
+	try {
+		const userId = req.params._id;
+		const channelData = await Follow.find({ userId }).populate(
 			"channelId",
 		);
 

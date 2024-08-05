@@ -214,9 +214,12 @@ module.exports.getPostById = asyncHandler(async (req, res) => {
 			isBookmarked: !!bookmark,
 		};
 
+		const postIfUserAlreadyRead = await Post.findOne({ _id: postId,readBy: mainuserId });
 		// Add the current userId to Post.readBy
-		postData.readBy.push(mainuserId);
-		await postData.save();
+		if(!postIfUserAlreadyRead){
+			postData.readBy.push(mainuserId);
+			await postData.save();
+		}
 
 		res.status(200).json({ message: "Success", data: combinedData });
 	} catch (error) {
@@ -237,14 +240,6 @@ module.exports.getPostByChannelId = asyncHandler(async (req, res) => {
 			return res
 				.status(400)
 				.json({ message: `No Post Found for Channel id ${channelId}` });
-
-		// Add currrent userId to Post.readBy
-
-		// biome-ignore lint/complexity/noForEach: ForEach is a mongoose builtin
-		postData.forEach(async (post) => {
-			post.readBy.push(userId);
-			await post.save();
-		});
 
 		res.status(200).json({ message: "Success", data: postData });
 	} catch (error) {

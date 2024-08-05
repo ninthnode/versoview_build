@@ -38,13 +38,10 @@ function Signup({ signupUser,error }) {
 
   return (
     <Box bg="white" w="100%">
-      <Flex bg="secondary" p={10} justify="center">
-        <Image src={"/assets/desktop-logo.svg"} alt="desktopLogo" />
-      </Flex>
-      <Flex minH="85vh" align="center" justify="center">
+      <Flex align="center" justify="center">
         <Box
-          minW={{ base: "380px", lg: "500px" }}
-          minH="550px"
+          minW={{ base: "380px", lg: "380px" }}
+          minH="700px"
           p={{ base: 4, md: 8 }}
           bg="white"
         >
@@ -52,7 +49,7 @@ function Signup({ signupUser,error }) {
           <Flex alignItems="center" mb={4} mt={4}>
             <Image src={"/assets/logo.svg"} alt="logo" mr={2} />
             <Heading size='lg' as="h6" fontWeight="bold" textAlign="left">
-              Signup
+              Create Account
             </Heading>
           </Flex>
           <Text mb={8} w="80%">
@@ -66,11 +63,7 @@ function Signup({ signupUser,error }) {
               handleChange={handleChange}
               backendError={error}
             />
-          <Text my={8} textAlign="center">
-            <Link color="primary" href="/login">
-            Already have an account? Login
-            </Link>
-          </Text>
+         
         </Box>
       </Flex>
     </Box>

@@ -21,9 +21,9 @@ import {
   addRemoveBookmarks,
 } from "@/redux/bookmarks/bookmarkAction";
 import { FaBookmark as BookmarkFilled } from "react-icons/fa6";
-import PostCard from "./postCard";
 import Link from "next/link";
 import { CiBookmark } from "react-icons/ci";
+import PostCard from "@/app/(loggedinroutes)/home/postCard";
 
 const Comment = ({ id, isBookmarked, singleComment, submitBookmark }) => (
   <Box>
@@ -107,7 +107,7 @@ const Bookmark = ({
 
   return (
     <Box mb='60px'>
-      <Box mt={2} maxW="2xl" bg="lightgray" borderWidth="1px" borderRadius="md">
+      <Box mt={4} maxW="2xl" bg="lightgray" borderWidth="1px" borderRadius="md" px={2}>
         {postBookmarks.length > 0 ? (
           bookmarkState.loading ? (
             <Spinner size="sm" color="#333" />

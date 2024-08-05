@@ -18,14 +18,14 @@ import {
   BottomNavigationLabel,
 } from "chakra-ui-bottom-navigation";
 import SidebarRoutes from "../../routes/SidebarRoutes";
-import { usePathname } from 'next/navigation'
+import { usePathname } from "next/navigation";
 
 const Navbar = ({ routeName, children }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const path = usePathname();
-  const routeIndex = SidebarRoutes.findIndex(route => route.url === path);
+  const routeIndex = SidebarRoutes.findIndex((route) => route.url === path);
   const [index, setIndex] = React.useState(routeIndex);
-  
+
   return (
     <Box minH="100vh" bg="light">
       <SidebarContent
@@ -39,39 +39,51 @@ const Navbar = ({ routeName, children }) => {
       >
         <Box w="100%">
           <MobileNav onOpen={onOpen} routeName={routeName} />
-          <Divider />
           <Box
             ml={{ base: 0, md: "16rem" }}
             mr={{ base: 0, md: 5 }}
-            mt={{ base: 4, md: 4 }}
           >
-            <Box w={{ base: "100%", lg: "100%", md: "70%", sm: "100%" }}>
+            <Box
+              mb={"100px"}
+              w={{ base: "100%", lg: "100%", md: "70%", sm: "100%" }}
+            >
+              <Divider />
               {children}
             </Box>
             <BottomNavigation
-                value={index}
-                onChange={(newIndex) => {
-                  window.location.href=SidebarRoutes[newIndex].url
-                }}
-                colorScheme="white"
-                border="2px solid #e5e5e5"
-                py='2'
-                style={{backgroundColor:"#fff"}}
-                variant="float"
-                showLabel="if-active"
-                display={{ base: "flex", md: "none" }}
-                left='0'
-                right='0'
-                bottom='0'
-                
-              >
-                {SidebarRoutes.map((route) => (
-                  <BottomNavigationItem key={route.name} onClick={()=>window.location.href=route.url}>
-                    <BottomNavigationIcon as={route.icon} fontSize='2xl' fontWeight='bold'/>
-                    <BottomNavigationLabel fontSize='md' fontWeight='bold'>{route.name}</BottomNavigationLabel>
-                  </BottomNavigationItem>
-                ))}
-              </BottomNavigation>
+              value={index}
+              onChange={(newIndex) => {
+                window.location.href = SidebarRoutes[newIndex].url;
+              }}
+              colorScheme="white"
+              boxShadow="0 -4px 6px rgba(0, 0, 0, 0.1)"
+              pt="2"
+              style={{ backgroundColor: "#fff" }}
+              variant="float"
+              // showLabel="if-active"
+              showLabel={true}
+              display={{ base: "flex", md: "none" }}
+              left="0"
+              right="0"
+              bottom="0"
+            >
+              {SidebarRoutes.map((route) => (
+                <BottomNavigationItem
+                  key={route.name}
+                  onClick={() => (window.location.href = route.url)}
+                >
+                  <BottomNavigationIcon
+                    as={route.icon}
+                    fontSize="3xl"
+                    fontWeight="bold"
+                    color={route.name === "Publish" ? "green" : "#333"}
+                  />
+                  <BottomNavigationLabel fontSize="xs" color="#333">
+                    {route.name}
+                  </BottomNavigationLabel>
+                </BottomNavigationItem>
+              ))}
+            </BottomNavigation>
           </Box>
         </Box>
       </Flex>

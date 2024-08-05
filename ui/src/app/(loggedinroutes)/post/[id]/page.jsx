@@ -25,9 +25,10 @@ import {
   Textarea,
 } from "@chakra-ui/react";
 import { FaRegComment } from "react-icons/fa";
-import { BsThreeDotsVertical } from "react-icons/bs";
-import { BiUpvote, BiDownvote } from "react-icons/bi";
 import { CiBookmark, CiShare2 } from "react-icons/ci";
+
+import { PiArrowFatDownLight, PiArrowFatUpLight } from "react-icons/pi";
+
 import { connect } from "react-redux";
 import {
   getPostById,
@@ -35,9 +36,11 @@ import {
   updatePostDownvote,
 } from "@/redux/posts/postActions";
 import { addCommentToPost } from "@/redux/comments/commentAction";
-import { FaBookmark as BookmarkFilled } from "react-icons/fa6";
+import { FaBookmark as BookmarkFilled } from "react-icons/fa";
 import { addRemoveBookmarks } from "@/redux/bookmarks/bookmarkAction";
 import ShareButton from "@/components/ShareButton";
+import Comments from "@/app/(loggedinroutes)/(comments)/comments/[id]/page";
+import { formatDate } from "@/app/utils/DateUtils";
 
 function SinglePost({
   params,
@@ -51,6 +54,9 @@ function SinglePost({
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedText, setSelectedText] = useState("");
   const [commentText, setCommentText] = useState("");
+
+  const { isOpen: isOpenCommentModal, onToggle: onToggleCommentModal } =
+    useDisclosure();
 
   useEffect(() => {
     getPostById(params.id);
@@ -77,7 +83,6 @@ function SinglePost({
 
   const handleSelection = () => {
     const text = window.getSelection().toString().trim();
-   
     if (text) {
       setSelectedText(text);
       onOpen();
@@ -85,28 +90,23 @@ function SinglePost({
   };
 
   return (
-    <Box>
-      <Flex alignItems="center" ml="4" mb={4}>
-        <Link href={"/home"}>
-          <Image m="0" src={"/assets/back.svg"} mr={2} />
-        </Link>
-      </Flex>
+    <Box maxW="2xl" px={4}>
       {postState.post ? (
         <>
           <Card
-            maxW="2xl"
+            w={"100%"}
             mt={2}
             mb={4}
             style={{ "--card-shadow": "transparent" }}
           >
-            <CardHeader p={2}>
+            <CardHeader py={0} px="0">
               <Flex spacing="4">
                 <Flex flex="1" gap="4" alignItems="center" flexWrap="wrap">
                   <Avatar
                     size="sm"
                     borderRadius={10}
                     src={
-                      postState.channel.channelIconImageUrl != ""
+                      postState.channel.channelIconImageUrl !== ""
                         ? postState.channel.channelIconImageUrl
                         : "../assets/default-post-image.svg"
                     }
@@ -135,65 +135,101 @@ function SinglePost({
                 />
               </Flex>
             </CardHeader>
-            <Image objectFit="cover" src={postState.post.mainImageURL} alt="" />
-            <CardBody>
-              <Text mb="2" fontSize="14px">
-                Explore - Maldives • 6min read
+            <Image
+              border="1px solid lightgray"
+              borderRadius="md"
+              objectFit="cover"
+              src={postState.post.mainImageURL}
+              alt={postState.post.header}
+            />
+            <CardBody pt='2' px='0'>
+              <Text
+                fontSize="12px"
+                mt="1"
+                display="flex"
+                alignItems="center"
+                color="textlight"
+                pb={2}
+              >
+                {postState.post.section} - {postState.post.subSection} •{" "}
+                {formatDate(postState.post.createdAt)} • 6min read
               </Text>
+
               <Divider />
-              <Flex py="1">
-                <Flex w="40%" justify="space-between">
-                  <Link href={`/comments/${params.id}`}>
-                    <Button variant="ghost" leftIcon={<FaRegComment />}>
-                      {postState.commentsCount}
-                    </Button>
-                  </Link>
+              <Flex py="1" gap={1}>
+                <Flex w="50%" justify="space-between">
                   <Button
+                    pl="0"
                     variant="ghost"
-                    leftIcon={<BiUpvote />}
+                    fontWeight="regular"
+                    color="textlight"
+                    leftIcon={
+                      <FaRegComment colorScheme="textlight" fontSize="28px" />
+                    }
+                    onClick={() => onToggleCommentModal()}
+                  >
+                    {postState.commentsCount}
+                  </Button>
+                  <Button
+                    pl="0"
+                    variant="ghost"
+                    fontWeight="regular"
+                    color="textlight"
+                    leftIcon={
+                      <PiArrowFatUpLight
+                        colorScheme="textlight"
+                        fontSize="28px"
+                      />
+                    }
                     onClick={() => {
                       updatePostUpvote(params.id);
                       getPostById(params.id);
                     }}
                   >
-                    {postState.votes.trueCount}
+                    <Text color={"green.500"}>{postState.votes.trueCount}</Text>
                   </Button>
                   <Button
+                    pl="0"
                     variant="ghost"
-                    leftIcon={<BiDownvote />}
+                    fontWeight="regular"
+                    color="textlight"
+                    leftIcon={
+                      <PiArrowFatDownLight
+                        colorScheme="textlight"
+                        fontSize="28px"
+                      />
+                    }
                     onClick={() => {
                       updatePostDownvote(params.id);
                       getPostById(params.id);
                     }}
                   >
-                    {postState.votes.falseCount}
+                    <Text color={"red.500"}>{postState.votes.falseCount}</Text>
                   </Button>
                 </Flex>
-                {/* <Flex w="60%" justify="flex-end" mr="10">
-                  <Button
-                    variant="ghost"
-                    leftIcon={<CiShare2 fontSize="20px" />}
-                  >
-                    
-                  </Button>
-                </Flex> */}
               </Flex>
               <Divider />
               <div
                 onMouseUp={handleSelection}
                 onTouchEnd={handleSelection}
-                onClick={()=>handleSelection}
+                onClick={() => handleSelection}
               >
-                <Text mt="4" bg="lightgray" w="fit-content" p="1">
+                <Text mt="2" w="fit-content" p="1">
                   By {postState.user.channelName}
                 </Text>
-                <Heading size="md" as="h6" my="4">
+                <Heading size="md" as="h6" mt="2" mb="4">
                   {postState.post.header}
                 </Heading>
-                <Text size="sm" fontSize="14px" textAlign="justify">
+                <Text size="sm" fontSize="16px" textAlign="justify">
                   {postState.post.bodyRichText}
                 </Text>
               </div>
+
+              <Comments
+                id={params.id}
+                isOpenCommentModal={isOpenCommentModal}
+                onToggleCommentModal={onToggleCommentModal}
+              />
             </CardBody>
           </Card>
 

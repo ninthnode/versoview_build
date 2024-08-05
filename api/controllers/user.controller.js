@@ -240,7 +240,6 @@ module.exports.getUser = asyncHandler(async (req, res) => {
     const posts = await Post.find({ userId: _id });
     const totalPosts = await Post.find({ userId: _id }).countDocuments();
     const channelData = await Channel.findOne({ userId: _id });
-    console.log(channelData);
     //get user channel followings
     const channelFollowings = await Follow.find({
       userId: _id,
