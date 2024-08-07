@@ -96,6 +96,7 @@ const About = ({
     >
       <Flex flexDirection="column" justifyContent="space-between" mr={4}>
         <Avatar
+          ml={2}
           src={
             channelIconImageUrl
               ? channelIconImageUrl.toString()

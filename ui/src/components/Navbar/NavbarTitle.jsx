@@ -39,7 +39,7 @@ const NavbarTitle = ({ navtitle,navicon }) => {
               name={"test"}
               src={navicon}
             />
-            <Heading as='h5' fontSize='23px'>{navtitle}</Heading>
+            <Heading ml={2} as='h5' fontSize='23px'>{navtitle}</Heading>
         </Flex>
       )}
     </nav>
