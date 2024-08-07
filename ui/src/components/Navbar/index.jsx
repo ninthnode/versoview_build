@@ -20,7 +20,7 @@ import {
 import SidebarRoutes from "../../routes/SidebarRoutes";
 import { usePathname } from "next/navigation";
 
-const Navbar = ({ routeName, children }) => {
+const Navbar = ({ children }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const path = usePathname();
   const routeIndex = SidebarRoutes.findIndex((route) => route.url === path);
@@ -38,7 +38,7 @@ const Navbar = ({ routeName, children }) => {
         direction="column"
       >
         <Box w="100%">
-          <MobileNav onOpen={onOpen} routeName={routeName} />
+          <MobileNav onOpen={onOpen} />
           <Box
             ml={{ base: 0, md: "16rem" }}
             mr={{ base: 0, md: 5 }}
@@ -74,9 +74,9 @@ const Navbar = ({ routeName, children }) => {
                 >
                   <BottomNavigationIcon
                     as={route.icon}
-                    fontSize="3xl"
+                    fontSize="2xl"
                     fontWeight="bold"
-                    color={route.name === "Publish" ? "green" : "#333"}
+                    color={route.name === "Publish" ? "green.500" : "#333"}
                   />
                   <BottomNavigationLabel fontSize="xs" color="#333">
                     {route.name}

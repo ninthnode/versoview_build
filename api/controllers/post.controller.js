@@ -234,7 +234,7 @@ module.exports.getPostByChannelId = asyncHandler(async (req, res) => {
 		const channelId = req.params._id;
 		const userId = req.user._id;
 
-		const postData = await Post.find({ channelId: channelId });
+		const postData = await Post.find({ channelId: channelId }).populate("channelId");
 
 		if (!postData)
 			return res

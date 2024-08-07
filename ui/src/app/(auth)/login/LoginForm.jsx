@@ -70,9 +70,9 @@ function LoginForm({
             </InputGroup>
           </FormControl>
           <Flex justify="right" mt={4}>
-            {/* <Link color="primary" href="/forgot-password">
+            <Link color="primary" href="/forgot-password">
               Forgot Password?
-            </Link> */}
+            </Link>
           </Flex>
         </Flex>
         <Box position="fixed" bottom="2%" left="0" right="0" w="100%">

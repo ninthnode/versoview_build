@@ -41,6 +41,8 @@ import { addRemoveBookmarks } from "@/redux/bookmarks/bookmarkAction";
 import ShareButton from "@/components/ShareButton";
 import Comments from "@/app/(loggedinroutes)/(comments)/comments/[id]/page";
 import { formatDate } from "@/app/utils/DateUtils";
+import { setNavTitle } from "@/redux/navbar/action";
+import RelatedArticleList from "./RelatedArticleList";
 
 function SinglePost({
   params,
@@ -50,6 +52,7 @@ function SinglePost({
   updatePostUpvote,
   updatePostDownvote,
   addRemoveBookmarks,
+  setNavTitle,
 }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedText, setSelectedText] = useState("");
@@ -88,6 +91,17 @@ function SinglePost({
       onOpen();
     }
   };
+  useEffect(() => {
+    if (postState && postState.post) {
+      const defaultImageUrl = "/assets/default-post-image.svg";
+      setNavTitle(
+        postState.channel.channelName,
+        postState.channel.channelIconImageUrl
+          ? postState.channel.channelIconImageUrl.toString()
+          : defaultImageUrl
+      )
+    }
+  }, [postState]);
 
   return (
     <Box maxW="2xl" px={4}>
@@ -123,12 +137,11 @@ function SinglePost({
                   variant="ghost"
                   aria-label="See menu"
                   fontSize="20px"
-                  colorScheme={!postState.isBookmarked ? "gray" : "green"}
                   icon={
                     !postState.isBookmarked ? (
                       <CiBookmark />
                     ) : (
-                      <BookmarkFilled />
+                      <BookmarkFilled color="green"/>
                     )
                   }
                   onClick={() => submitBookmarkPost("post", postState.post._id)}
@@ -142,7 +155,7 @@ function SinglePost({
               src={postState.post.mainImageURL}
               alt={postState.post.header}
             />
-            <CardBody pt='2' px='0'>
+            <CardBody pt="2" px="0">
               <Text
                 fontSize="12px"
                 mt="1"
@@ -230,7 +243,9 @@ function SinglePost({
                 isOpenCommentModal={isOpenCommentModal}
                 onToggleCommentModal={onToggleCommentModal}
               />
+            <RelatedArticleList/>
             </CardBody>
+
           </Card>
 
           <Modal size="xl" isOpen={isOpen} onClose={onClose}>
@@ -277,6 +292,7 @@ const mapDispatchToProps = (dispatch) => ({
   updatePostDownvote: (id) => dispatch(updatePostDownvote(id)),
   addRemoveBookmarks: (type, postId) =>
     dispatch(addRemoveBookmarks(type, postId)),
+  setNavTitle: (title, icon) => dispatch(setNavTitle(title, icon)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(SinglePost);

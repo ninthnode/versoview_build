@@ -1,13 +1,14 @@
 import { Spinner } from "@chakra-ui/react";
 import { connect } from "react-redux";
 import React, { useEffect, useState } from "react";
-import { Box, Image, Flex, Text, Link } from "@chakra-ui/react";
+import { Box, Flex, Text, Link, Avatar, Button } from "@chakra-ui/react";
 
 import {
   followChannel,
   unfollowChannel,
   getFollowingStatus,
 } from "@/redux/channel/channelActions";
+import { FiMessageSquare } from "react-icons/fi";
 
 const FollowBtn = ({
   channelId,
@@ -30,7 +31,7 @@ const FollowBtn = ({
       };
       fetchFollowingStatus();
     }
-  }, [channelId,isChange]);
+  }, [channelId, isChange]);
 
   const handleFollowClick = async () => {
     try {
@@ -39,7 +40,7 @@ const FollowBtn = ({
       } else {
         await followChannel(channelId);
       }
-      setIsChange(!isChange)
+      setIsChange(!isChange);
     } catch (error) {
       console.error("Error updating follow status:", error);
     }
@@ -48,15 +49,20 @@ const FollowBtn = ({
   return isLoading ? (
     <Spinner />
   ) : (
-    <button
-      type="button"
-      onClick={() => handleFollowClick()}
-      className={`"px-8 ${
-        isFollowing && "text-green-500"
-      } rounded-lg border-2 ${isFollowing && "border-green-500"}`}
+    <Button
+      onClick={handleFollowClick}
+      fontSize="sm"
+      px={4}
+      mr={2}
+      bg='#f4f4f4'
+      rounded="md"
+      fontWeight={"light"}
+      border="1px solid"
+      borderColor={isFollowing ? "green" : "textlight"}
+      color={isFollowing ? "green" : "inherit"}
     >
       {isFollowing ? "Following" : "Follow"}
-    </button>
+    </Button>
   );
 };
 
@@ -65,6 +71,7 @@ const About = ({
   profileTitle,
   channelName,
   about,
+  username,
   url,
   profileBgColor: backgroundColor,
   _id,
@@ -80,42 +87,40 @@ const About = ({
 
   return (
     <Box
+      py={4}
       display="flex"
       flexDirection="row"
-      p={3}
       minWidth="full"
-      bg="gray.100"
+      bg="lightgray"
       borderRadius="md"
     >
       <Flex flexDirection="column" justifyContent="space-between" mr={4}>
-        <Image
-          src={channelIconImageUrl ? channelIconImageUrl.toString() : defaultImageUrl}
-          alt="Channel"
-          borderRadius="md"
-          boxSize="100px"
+        <Avatar
+          src={
+            channelIconImageUrl
+              ? channelIconImageUrl.toString()
+              : defaultImageUrl
+          }
+          size="lg"
+          alt={channelName}
         />
-        <Flex flexDirection="column" alignItems="center">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            width="24"
-            height="24"
-          >
-            <title>Message</title>
-            <path
-              fill="currentColor"
-              d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2m0 14H5.2L4 17.2V4h16z"
-            />
-          </svg>
-          <Text fontSize="xs" textTransform="capitalize">Message</Text>
+        <Flex flexDirection="column" alignItems="center" mt={4}>
+          <FiMessageSquare size="20px" />
+          <Text fontSize="12px" textTransform="capitalize">
+            Message
+          </Text>
         </Flex>
       </Flex>
 
-      <Box ml={4} flex="1">
+      <Box flex="1">
         <Flex justifyContent="space-between" alignItems="flex-start" mb={2}>
           <Flex flexDirection="column">
-            <Text fontWeight="bold">{profileTitle}</Text>
-            <Text fontWeight="semibold" mt={-1}>{channelName}</Text>
+            <Text fontSize={"lg"} fontWeight="bold">
+              {channelName}
+            </Text>
+            <Text fontWeight="semibold" mt={-1}>
+              @{username}
+            </Text>
           </Flex>
           <FollowBtn
             channelId={_id}
@@ -126,37 +131,49 @@ const About = ({
           />
         </Flex>
 
-        <Text mb={2} fontSize="sm">
+        <Text mb={2} fontSize="sm" w="85%">
           {about}
-          <br />
-          <Link href={url} fontSize="xs" isExternal color="blue.500" textDecoration="underline">
-            {url}
-          </Link>
         </Text>
+        <Link
+          href={url}
+          fontSize="xs"
+          isExternal
+          color="blue.500"
+          textDecoration="underline"
+        >
+          {url}
+        </Link>
 
-        <Flex spacing={8} gap={4}>
-          <Flex flexDirection="column" alignItems="center">
-            <Text fontWeight="bold">{postsCount}</Text>
-            <Text fontSize="xs">Posts</Text>
+        <Flex spacing={8} gap={4} mt={4}>
+          <Flex fontSize="sm" flexDirection="column" alignItems="left">
+            <Text fontWeight="bold" lineHeight={1}>
+              {postsCount}
+            </Text>
+            <Text fontSize="12px">Posts</Text>
           </Flex>
-          <Flex flexDirection="column" alignItems="center">
-            <Text fontWeight="bold">0</Text>
-            <Text fontSize="xs">Editions</Text>
+          <Flex fontSize="sm" flexDirection="column" alignItems="left">
+            <Text fontWeight="bold" lineHeight={1}>
+              0
+            </Text>
+            <Text fontSize="12px">Editions</Text>
           </Flex>
-          <Flex flexDirection="column" alignItems="center">
-            <Text fontWeight="bold">{followingCount}</Text>
-            <Text fontSize="xs">Following</Text>
+          <Flex fontSize="sm" flexDirection="column" alignItems="left">
+            <Text fontWeight="bold" lineHeight={1}>
+              {followingCount}
+            </Text>
+            <Text fontSize="12px">Following</Text>
           </Flex>
-          <Flex flexDirection="column" alignItems="center">
-            <Text fontWeight="bold">{followersCount}</Text>
-            <Text fontSize="xs">Followers</Text>
+          <Flex fontSize="sm" flexDirection="column" alignItems="left">
+            <Text fontWeight="bold" lineHeight={1}>
+              {followersCount}
+            </Text>
+            <Text fontSize="12px">Followers</Text>
           </Flex>
         </Flex>
       </Box>
     </Box>
   );
 };
-
 
 const mapStateToProps = (state) => ({
   isLoading: state.channel.isLoading,

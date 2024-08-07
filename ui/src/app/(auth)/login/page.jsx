@@ -10,9 +10,7 @@ import {
   Link,
   Heading,
 } from "@chakra-ui/react";
-import { FcGoogle } from "react-icons/fc";
-import { FaEnvelope } from "react-icons/fa";
-import { loginUser, googleLogin } from "@/redux/auth/authActions";
+import { loginUser } from "@/redux/auth/authActions";
 import { connect } from "react-redux";
 import LoginBtns from "./LoginBtns";
 import LoginForm from "./LoginForm";

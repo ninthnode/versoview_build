@@ -19,13 +19,11 @@ import {
 } from "@chakra-ui/react";
 import { FiMenu, FiBell, FiChevronDown, FiSearch } from "react-icons/fi";
 import { useSelector, useDispatch } from "react-redux";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { loginOut } from "@/redux/auth/authActions";
+import NavbarTitle from "./NavbarTitle";
 
-const MobileNav = ({ onOpen, routeName, ...rest }) => {
+const MobileNav = ({ onOpen, ...rest }) => {
   const user = useSelector((state) => state.auth.user);
-  const router = useRouter();
 
   const dispatch = useDispatch();
   const LogoutHandler = () => {
@@ -51,18 +49,7 @@ const MobileNav = ({ onOpen, routeName, ...rest }) => {
           textAlign="left"
           p={0}
         >
-          {routeName ? (
-            <Flex>
-              <Image src={"/assets/logo.svg"} alt="logo" mr={2} />
-              {routeName}
-            </Flex>
-          ) : (
-            <Flex alignItems="center" mb={2}>
-              <Button variant='ghost' onClick={() => router.back()}>
-                <Image m="0" src={"/assets/back.svg"} mr={2} />
-              </Button>
-            </Flex>
-          )}
+          <NavbarTitle/>
         </Heading>
       </Flex>
     </Flex>

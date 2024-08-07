@@ -214,7 +214,7 @@ const PublishPost = () => {
                 rows={10}
               />
             </FormControl>
-            <Button disabled={postLoading} size="sm" colorScheme="green" onClick={handleSubmit}>
+            <Button disabled={postLoading} size="sm" colorScheme="green.500" onClick={handleSubmit}>
               {postLoading&&<Spinner size="sm" color="white" />}{postLoading?'Creating Post..':'Save'}
             </Button>
           </Stack>

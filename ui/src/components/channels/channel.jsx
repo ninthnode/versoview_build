@@ -21,16 +21,16 @@ export default function Channel({
     <Box maxW='2xl'>
       <Box>
         <Tabs>
-          <TabList>
-            <Tab>Latest</Tab>
-            <Tab>Style</Tab>
-            <Tab>Explore</Tab>
-            <Tab>Inspire</Tab>
-            <Tab>Dine</Tab>
+          <TabList gap={2} h="3rem">
+            <Tab pl="0">Latest</Tab>
+            <Tab pl="1">Style</Tab>
+            <Tab pl="1">Explore</Tab>
+            <Tab pl="1">Inspire</Tab>
+            <Tab pl="1">Dine</Tab>
           </TabList>
 
           <TabPanels>
-            <TabPanel paddingInline={0}>
+            <TabPanel p={0}>
               <About
                 postsCount={posts?.length}
                 followersCount={followers?.length}

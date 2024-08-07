@@ -1,25 +1,33 @@
 import {
-  GET_PROFILE,
-  SAVE_PROFILE
+  USER_FETCH_REQUEST,
+  USER_FETCH_SUCCESS,
+  USER_FETCH_FAILURE,
+  USER_UPDATE_REQUEST,
+  USER_UPDATE_SUCCESS,
+  USER_UPDATE_FAILURE,
 } from "./types";
 
+const initialState = {
+  loading: false,
+  user: null,
+  error: null,
+};
 
-const profileReducer = (state = {}, action = { type: null }) => {
+const profileReducer = (state = initialState, action) => {
   switch (action.type) {
-    case GET_PROFILE:
-      return {
-        ...state,
-        ...action.payload,
-      };
-    case SAVE_PROFILE:
-      return {
-        ...state,
-        ...action.payload  
-      };
-   
+    case USER_FETCH_REQUEST:
+    case USER_UPDATE_REQUEST:
+      return { ...state, loading: true, error: null };
+    case USER_FETCH_SUCCESS:
+    case USER_UPDATE_SUCCESS:
+      return { ...state, loading: false, user: action.payload };
+    case USER_FETCH_FAILURE:
+    case USER_UPDATE_FAILURE:
+      return { ...state, loading: false, error: action.payload };
     default:
       return state;
   }
 };
+
 
 export default profileReducer;

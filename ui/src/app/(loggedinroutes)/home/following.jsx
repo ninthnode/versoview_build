@@ -15,16 +15,13 @@ import {
   MenuItem,
   MenuDivider,
   Button,
+  Avatar,
+  Divider,
 } from "@chakra-ui/react";
 import React, { useState, useEffect } from "react";
 import { MdKeyboardArrowDown } from "react-icons/md";
-import { connect } from "react-redux";
-import {
-  FaStar as StarIcon,
-  FaCheck as CheckIcon,
-} from "react-icons/fa";
-import { CiStar as StarIconOutlined } from "react-icons/ci";
-
+import {  FaCheck as CheckIcon } from "react-icons/fa";
+import { IoStar as StarIcon, IoStarOutline as StarIconOutlined } from "react-icons/io5";
 
 const pinChannel = (id) =>
   get(`channel/pinChannel/${id}`, true, { method: "PUT" }).then((r) => r.data);
@@ -34,10 +31,10 @@ const unpinChannel = (id) =>
   );
 
 const options = {
-  Pinned: "Pinned",
-  Recent: "Recent",
+  Pinned: "PINNED",
+  ByGenre: "BY GENRE",
   AZ: "A - Z",
-  ByGenre: "By Genre",
+  Recent: "RECENT",
 };
 
 function ViewBy({ view, setView, setSortedFollowings }) {
@@ -46,14 +43,18 @@ function ViewBy({ view, setView, setSortedFollowings }) {
       <Menu>
         <MenuButton
           as={Button}
-          rightIcon={<MdKeyboardArrowDown />}
-          colorScheme="teal"
+          rightIcon={<MdKeyboardArrowDown fontSize='25px'/>}
+          bg="transparent"
         >
           View By
         </MenuButton>
-        <MenuList>
+        <MenuList p='0' minW='150px'>
           {Object.values(options).map((option) => (
+            <>
             <MenuItem
+              w='100%'
+              pl={6}
+              justifyContent='left'
               key={option}
               onClick={() => {
                 setView(option);
@@ -62,13 +63,16 @@ function ViewBy({ view, setView, setSortedFollowings }) {
                 );
               }}
             >
+              <Text 
+              fontWeight='bold' mr={4}>{option}</Text>
               {view === option ? (
-                <CheckIcon mr={2} />
+                <CheckIcon />
               ) : (
-                <Box mr={2} w={4} h={4} />
+                <Box w={4} h={4} />
               )}
-              {option}
             </MenuItem>
+            <Divider />
+            </>
           ))}
         </MenuList>
       </Menu>
@@ -93,7 +97,6 @@ const Following = ({ followings, user }) => {
   const [view, setView] = useState(options.Pinned);
   const [followingsDataSorted, setfollowingsDataSorted] = useState([]);
   const [followingLoading, setFollowingLoading] = useState(true);
-
   useEffect(() => {
     if (followings.data && followings.data.length > 0) {
       const tempList = followings.data
@@ -120,120 +123,114 @@ const Following = ({ followings, user }) => {
 
   return (
     <Box>
-    <Box py={4} px={6} bg={user.profileBgColor} rounded="md" shadow="md">
-      <Flex align="center">
-        <Image
-          src={user.profileImageUrl || "/assets/default-post-image.svg"}
-          alt=""
-          boxSize="64px"
-          borderRadius="md"
-          m={2}
+      <Box px={0} py={3} bg={user.profileBgColor}>
+        <Flex justifyContent="space-between" alignItems="center">
+          <Flex alignItems="center">
+            <Avatar
+              src={user.profileImageUrl || "/assets/default-post-image.svg"}
+              size="lg"
+              alt={user.channelName}
+            />
+            <Box ml={3}>
+              <Text fontWeight="bold" fontSize="16px">
+                {user.channelName}
+              </Text>
+              <Text fontSize="sm" color="textlight">
+                {Array.isArray(user.genre) &&
+                  user.genre.sort().slice(0, -2).join(", ") +
+                    user.genre.sort().slice(-2).join(" & ")}
+              </Text>
+            </Box>
+          </Flex>
+          <IconButton
+            mr={4}
+            aria-label="Menu"
+            colorScheme={user.profileBgColor}
+            icon={
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="text-gray-400 size-6"
+                viewBox="0 0 24 24"
+              >
+                <title>Menu</title>
+                <path
+                  fill="currentColor"
+                  d="M16 12a2 2 0 0 1 2-2a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2m-6 0a2 2 0 0 1 2-2a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2m-6 0a2 2 0 0 1 2-2a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2"
+                />
+              </svg>
+            }
+          />
+        </Flex>
+      </Box>
+      <Divider />
+      <Flex justify="flex-start">
+        <ViewBy
+          view={view}
+          setView={setView}
+          setSortedFollowings={setfollowingsDataSorted}
         />
-        <Box ml={3}>
-          <Text fontWeight="bold">{user.channelName}</Text>
-          <Text fontSize="sm" color="gray.400">
-            {Array.isArray(user.genre) &&
-              user.genre
-                .sort()
-                .slice(0, -2)
-                .join(", ") +
-                user.genre.sort().slice(-2).join(" & ")}
-          </Text>
-        </Box>
-        <IconButton
-          aria-label="Menu"
-          colorScheme={user.profileBgColor}
-          icon={
+      </Flex>
+      <Divider />
+      {followingLoading ? (
+        <Spinner />
+      ) : (
+        followingsDataSorted?.map((following) => (
+          <Flex
+            key={following._id || crypto.randomUUID()}
+            py={2}
+            align="center"
+            justify="space-between"
+            _hover={{ shadow: "md", bg: "gray.50" }}
+            transition="shadow 0.2s, background-color 0.2s"
+          >
+            <Flex alignItems='center'>
+              <IconButton
+                fontSize='25px'
+                aria-label="Pin Channel"
+                colorScheme={user.profileBgColor}
+                onClick={() => handlePinUnpin(following)}
+                icon={
+                  following.pinned ? (
+                    <StarIcon color="green" />
+                  ) : (
+                    <StarIconOutlined color="gray" />
+                  )
+                }
+              />
+              <Avatar
+                src={
+                  following?.channelIconImageUrl ||
+                  "/assets/default-post-image.svg"
+                }
+                size="lg"
+                alt={user.channelName}
+              />
+              <Box ml={3}>
+                <Link href={`/channel/${following._id}`}>
+                  <Text fontSize='md' fontWeight="bold">{following?.channelName}</Text>
+                </Link>
+                <Text fontSize="sm">
+                  {Array.isArray(following.userId?.genre) &&
+                    following.userId?.genre?.join(" - ")}
+                </Text>
+              </Box>
+            </Flex>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="text-gray-400 size-6"
               viewBox="0 0 24 24"
             >
-              <title>Menu</title>
+              <title>Icon</title>
               <path
                 fill="currentColor"
                 d="M16 12a2 2 0 0 1 2-2a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2m-6 0a2 2 0 0 1 2-2a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2m-6 0a2 2 0 0 1 2-2a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2"
               />
             </svg>
-          }
-        />
-      </Flex>
-    </Box>
-    <Flex justify="flex-end" py={2}>
-      <ViewBy
-        view={view}
-        setView={setView}
-        setSortedFollowings={setfollowingsDataSorted}
-      />
-    </Flex>
-    {followingLoading ? (
-      <Spinner />
-    ) : (
-      followingsDataSorted?.map((following) => (
-        <Flex
-          key={following._id || crypto.randomUUID()}
-          py={2}
-          px={6}
-          align="center"
-          justify="space-between"
-          _hover={{ shadow: "md", bg: "gray.50" }}
-          transition="shadow 0.2s, background-color 0.2s"
-        >
-          <Flex align="center">
-            <IconButton
-              aria-label="Pin Channel"
-              colorScheme={user.profileBgColor}
-              onClick={() => handlePinUnpin(following)}
-              icon={
-                following.pinned ? (
-                  <StarIcon color="green" />
-                ) : (
-                  <StarIconOutlined colorScheme="gray.400" />
-                )
-              }
-            />
-            <Image
-              src={
-                following?.channelIconImageUrl ||
-                "/assets/default-post-image.svg"
-              }
-              alt=""
-              boxSize="48px"
-              borderRadius="md"
-              ml={3}
-            />
-            <Box ml={3}>
-              <Link href={`/channel/${following._id}`}>
-                <Text fontWeight="bold">{following?.channelName}</Text>
-              </Link>
-              <Text fontSize="sm">
-                {Array.isArray(following?.genre) &&
-                  following?.genre?.join(" - ")}
-              </Text>
-            </Box>
           </Flex>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="text-gray-400 size-6"
-            viewBox="0 0 24 24"
-          >
-            <title>Icon</title>
-            <path
-              fill="currentColor"
-              d="M16 12a2 2 0 0 1 2-2a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2m-6 0a2 2 0 0 1 2-2a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2m-6 0a2 2 0 0 1 2-2a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2"
-            />
-          </svg>
-        </Flex>
-      ))
-    )}
-  </Box>
+        ))
+      )}
+    </Box>
   );
 };
 
-const mapStateToProps = (state) => ({
-  user: state.auth.user.user,
-});
-
-const mapDispatchToProps = {};
-
-export default connect(mapStateToProps, mapDispatchToProps)(Following);
+export default Following;

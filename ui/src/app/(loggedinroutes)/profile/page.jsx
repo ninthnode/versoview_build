@@ -18,14 +18,11 @@ import {
   Button,
 } from "@chakra-ui/react";
 import { MdLogout } from "react-icons/md";
-import { useSelector } from "react-redux";
-import axios from "../../../redux/axiosConfig";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchUser, updateUser } from "@/redux/profile/actions";
 import dynamic from "next/dynamic";
 import "@shoelace-style/shoelace/dist/themes/light.css";
-// import "react-image-picker-editor/dist/index.css";
-// import ReactImagePickerEditor from "react-image-picker-editor";
 import UploadImage from "@/components/UploadImage";
-import useSWR from "swr";
 import ChannelName from "./channel-name";
 import ShareChannel from "./share-channel";
 import Publications from "./publications";
@@ -59,32 +56,13 @@ const SlIcon = dynamic(
   }
 );
 
-const getUser = (id) =>
-  axios
-    .get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/users/getUser/${id}`, {
-      headers: {
-        authorization: `Bearer ${localStorage
-          .getItem("token")
-          .replaceAll('"', "")}`,
-      },
-    })
-    .then((r) => r.data);
-
-const updateUser = (id, data) =>
-  axios.put(
-    `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/users/updateUser/${id}`,
-    data,
-    {
-      headers: {
-        authorization: `Bearer ${localStorage
-          .getItem("token")
-          .replaceAll('"', "")}`,
-      },
-    }
-  );
-
 function Profile() {
-  const authState = useSelector((s) => s.auth?.user?.user);
+  const dispatch = useDispatch();
+  const authState = useSelector((state) => state.auth?.user?.user);
+  const profileState = useSelector((state) => state.profile);
+  const { loading, user, error } = profileState;
+  
+
   const [isEditing, setIsEditing] = useState(false);
   const [isUpdating, setUpdating] = useState(false);
 
@@ -103,14 +81,27 @@ function Profile() {
   const [telegram, setTelegram] = useState();
   const [channelName, setChannelName] = useState();
 
-  const { data: user = {}, mutate } = useSWR("user", () =>
-    getUser(authState.id)
-      .then((r) => r.user)
-      .then((u) => {
-        !isEditing && setBG(u.profileBgColor);
-        return u;
-      })
-  );
+  useEffect(() => {
+    dispatch(fetchUser(authState.id));
+  }, [authState]);
+  
+  useEffect(() => {
+    if (user) {
+      setBG(user.profileBgColor);
+      setGenre(user.genre);
+      setSubGenre(user.subGenre);
+      setAbout(user.profileAbout);
+      setUsername(user.username);
+      setEmail(user.email);
+      setLocation(user.profileLocation);
+      setTwitter(user.profileTwitter);
+      setInstagram(user.profileInstagram);
+      setFacebook(user.profileFacebook);
+      setTelegram(user.profileTelegram);
+      setChannelName(user.channelName);
+      setUrl(user.profileUrl);
+    }
+  }, [user]);
 
   const onEditSubmit = () => {
     const data = {
@@ -129,28 +120,20 @@ function Profile() {
       channelName: channelName,
       username: username,
       profileBgColor: bg,
-      // ...(img ? { profileImageUrl: img } : {}),
     };
     setUpdating(true);
-    updateUser(authState.id, data)
-      .then(async (r) => {
-        console.log({ "updated user": r.data.user });
-        mutate(r.data.user);
+    dispatch(updateUser(authState.id, data))
+      .then(() => {
         setUpdating(false);
         setIsEditing(false);
       })
-      .catch((e) => setUpdating(false));
+      .catch(() => setUpdating(false));
   };
 
   const handleLogout = () => {
     localStorage.clear();
     window.location.href = "/login";
   };
-
-  useEffect(() => {
-    setGenre(user.genre);
-    setSubGenre(user.subGenre);
-  }, [user]);
 
   const handleImageChange = (event) => {
     if (event.target.files && event.target.files[0]) {
@@ -162,7 +145,11 @@ function Profile() {
       reader.readAsDataURL(file);
     }
   };
-  return (
+
+  if (loading) return <SlSpinner />;
+  if (error) return <Text>Error: {error}</Text>;
+
+  return user && (
     <Box ml="4" mb="60px" maxW="2xl">
       <Flex w="100%" justifyContent="flex-end">
         <Button leftIcon={<MdLogout />} variant="ghost" onClick={handleLogout}>
@@ -243,7 +230,7 @@ function Profile() {
           </Box>
           <Flex spacing={2} gap={4} w="60%" justify="flex-start">
             <Box>
-              <Text>{user.totalPosts?user.totalPosts:0}</Text>
+              <Text>{user.totalPosts ? user.totalPosts : 0}</Text>
               <Text>Post</Text>
             </Box>
             <Box>
@@ -255,11 +242,11 @@ function Profile() {
               <Text>Articles</Text>
             </Box>
             <Box>
-              <Text>{user.channelFollowings?user.channelFollowings:0}</Text>
+              <Text>{user.channelFollowings ? user.channelFollowings : 0}</Text>
               <Text>Followings</Text>
             </Box>
             <Box>
-              <Text>{user.channelFollowers?user.channelFollowers:0}</Text>
+              <Text>{user.channelFollowers ? user.channelFollowers : 0}</Text>
               <Text>Followers</Text>
             </Box>
           </Flex>

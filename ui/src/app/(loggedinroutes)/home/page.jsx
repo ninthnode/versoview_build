@@ -21,6 +21,7 @@ import { addRemoveBookmarks } from "@/redux/bookmarks/bookmarkAction";
 import PostCard from "./postCard";
 import StatusSlider from "./StatusSlider";
 import Following from "./following";
+import { fetchUser } from "@/redux/profile/actions";
 
 const Home = ({
   postsState,
@@ -31,6 +32,9 @@ const Home = ({
   addRemoveBookmarks,
   fetchfollowChannelList,
   followings,
+  fetchUser,
+  user,
+  userDetails
 }) => {
   const [tabIndex, setTabIndex] = useState(0);
   const [postList, setPostList] = useState([]);
@@ -42,7 +46,8 @@ const Home = ({
     } else if (tabIndex === 1) {
       fetchRecentlyViewedPosts();
     } else if (tabIndex === 2) {
-      fetchfollowChannelList();
+      fetchfollowChannelList(); 
+       fetchUser(user.id);
     }
   }, [tabIndex]);
 
@@ -123,9 +128,9 @@ const Home = ({
               </>
             )}
           </TabPanel>
-          <TabPanel>
-            {followings.data && followings.data.length > 0 && (
-              <Following followings={followings} />
+          <TabPanel p='0'>
+            {userDetails&&followings.data && followings.data.length > 0 && (
+              <Following followings={followings} user={userDetails} />
             )}
           </TabPanel>
         </TabPanels>
@@ -139,6 +144,8 @@ const mapStateToProps = (state) => ({
   posts: state.post.posts,
   recentPosts: state.post.recentPosts,
   followings: state.channel.followings,
+  user: state.auth.user?.user,
+  userDetails: state.profile.user
 });
 
 const mapDispatchToProps = {
@@ -146,6 +153,7 @@ const mapDispatchToProps = {
   fetchRecentlyViewedPosts,
   fetchfollowChannelList,
   addRemoveBookmarks,
+  fetchUser
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Home);

@@ -11,6 +11,18 @@ const customTheme = extendTheme({
     p: "SF-Pro-Display-Medium",
     span: "SF-Pro-Display-Medium, sans-serif",
   },
+  fontSizes: {
+    xs: "0.75rem",
+    sm: "0.875rem",
+    md: "1rem",
+    lg: "1.25rem",
+    xl: "1.5rem",
+    "2xl": "2rem",
+    "3xl": "2.5rem",
+    "4xl": "3rem",
+    "5xl": "4rem",
+    "6xl": "5rem",
+  },
   fontWeights: {
     normal: 300,
   },
@@ -41,22 +53,33 @@ const customTheme = extendTheme({
     primary: "#9E8666",
     secondary: "#F7F8FA",
     bglight: "#fbfbf",
-    lightgray: "#f4f4f4",
+    lightgray: "#F2F2F2",
     lightblue: "#E1EBFF",
     textlight: "#8d8d8d",
+    green: { 500: "#26A21A" },
   },
   components: {
     Button,
     Tag,
     Heading: {
       baseStyle: {
-        fontSize: "sm",
+        fontSize: "lg",
       },
     },
     Divider: {
       baseStyle: {
-        borderColor: 'gray.300',
-        borderWidth: '2px',
+        borderColor: "gray.300",
+        borderWidth: "2px",
+      },
+    },
+    Tabs: {
+      baseStyle: {
+        tab: {
+          _selected: {
+            fontWeight: "bold",
+            color: "#333",
+          },
+        },
       },
     },
     BottomNavigation: BottomNavigationStyles,

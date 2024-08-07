@@ -1,49 +1,42 @@
-import { GET_PROFILE, SAVE_PROFILE } from "./types";
-import get from "@/app/utils/get";
+import axios from 'axios';
+import {
+  USER_FETCH_REQUEST,
+  USER_FETCH_SUCCESS,
+  USER_FETCH_FAILURE,
+  USER_UPDATE_REQUEST,
+  USER_UPDATE_SUCCESS,
+  USER_UPDATE_FAILURE,
+} from "./types";
 
-const getProfile = (profile) => ({
-  type: GET_PROFILE,
-  payload: profile,
-});
-
-const saveProfile = (newProfile) => ({
-  type: SAVE_PROFILE,
-  payload: newProfile,
-});
-
-export const fetchProfile =
-  (isEditing, setBG) => async (dispatch, getState) => {
-    const {
-      auth: {
-        user: {
-          user: { id },
-        },
+const fetchUser = (id) => async (dispatch) => {
+  dispatch({ type: USER_FETCH_REQUEST });
+  try {
+    console.log(id)
+    const response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/users/getUser/${id}`, {
+      headers: {
+        authorization: `Bearer ${localStorage
+        .getItem("token")
+        .replaceAll('"', "")}`,
       },
-    } = getState();
-    const user = await get(`users/getUser/${id}`, true).then((r) => r.user);
-    !isEditing && setBG(user.profileBgColor);
-    return dispatch(getProfile(user));
-  };
-
-export const updateProfile =
-  (newProfile, setIsEditing, setUpdating) => async (dispatch, getState) => {
-    const {
-      auth: {
-        user: {
-          user: { id },
-        },
-      },
-    } = getState();
-    setUpdating(true);
-    const newUser = await get(`users/updateUser/${id}`, true, {
-      method: "PUT",
-      body: newProfile,
     })
-      .then((r) => {
-        setIsEditing(false);
-        return r.user;
-      })
+    dispatch({ type: USER_FETCH_SUCCESS, payload: response.data.user });
+  } catch (error) {
+    dispatch({ type: USER_FETCH_FAILURE, payload: error.message });
+  }
+};
 
-      .finally(() => setUpdating(false));
-    return dispatch(saveProfile(newUser));
-  };
+const updateUser = (id, data) => async (dispatch) => {
+  dispatch({ type: USER_UPDATE_REQUEST });
+  try {
+    const response = await axios.put(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/users/updateUser/${id}`, data, {
+      headers: {
+        authorization: `Bearer ${localStorage.getItem("token").replaceAll('"', "")}`,
+      },
+    });
+    dispatch({ type: USER_UPDATE_SUCCESS, payload: response.data.user });
+  } catch (error) {
+    dispatch({ type: USER_UPDATE_FAILURE, payload: error.message });
+  }
+};
+
+export { fetchUser, updateUser };
