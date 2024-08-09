@@ -122,7 +122,7 @@ const Bookmark = ({
             postBookmarks.map((post) => {
               if (post.postId) {
                 return (
-                  <Box p={2} bg='#fff'>
+                  <Box p={2} bg='#fff' key={post.postId._id}>
                   <PostCard
                     key={post._id || crypto.randomUUID()}
                     post={post.postId}
