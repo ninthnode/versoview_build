@@ -1,4 +1,4 @@
-[
+const genres =[
   {
     "genre": "Art, Design & Hobbies",
     "subGenres": [
@@ -130,3 +130,5 @@
     ]
   }
 ]
+
+export default genres;

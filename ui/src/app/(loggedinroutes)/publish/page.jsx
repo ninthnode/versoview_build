@@ -16,12 +16,15 @@ import {
   Select,
   Spinner
 } from "@chakra-ui/react";
-import axios from "axios";
 import {createNewPost} from "@/redux/posts/postActions"
 import { useDispatch,useSelector } from "react-redux";
-import genres from "../../../static-data/Genres.json";
-import RichTextEditor from "@/components/RichTextEditor"
+import genres from "@/static-data/genres";
+import DOMPurify from 'dompurify';
+import dynamic from 'next/dynamic';
+
+const RichTextEditor = dynamic(() => import('@/components/RichTextEditor'), { ssr: false });
 const PublishPost = () => {
+
   const dispatch = useDispatch();
   const postLoading = useSelector((s) => s.post.loading);
 
@@ -57,6 +60,14 @@ const PublishPost = () => {
     }
   };
 
+  const handleTextBodyChange = (text) => {
+    const sanitizedText = DOMPurify.sanitize(text);
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      bodyRichText: sanitizedText,
+    }));
+  };
+  
   return (
     <Box mb={'60px'}>
       <Flex py={5}>
@@ -130,7 +141,7 @@ const PublishPost = () => {
                 </FormControl>
               </Box>
               <Box>
-                <Flex mb="4">
+                <Flex mb="4" direction={{ base: "row", md: "column" }} gap={2}>
                   <FormControl id="section" mr={4}>
                     <FormLabel fontSize="sm">SECTION*</FormLabel>
                     <Select
@@ -213,7 +224,7 @@ const PublishPost = () => {
                 }
                 rows={10}
               /> */}
-              <RichTextEditor formData={formData} setFormData={setFormData}/>
+              <RichTextEditor handleTextBodyChange={handleTextBodyChange} />
             </FormControl>
             <Button disabled={postLoading} size="sm" colorScheme="green" onClick={handleSubmit}>
               {postLoading&&<Spinner size="sm" color="white" />}{postLoading?'Creating Post..':'Save'}

@@ -1,7 +1,6 @@
 import React, { useRef, useState } from 'react';
 import JoditEditor from 'jodit-react';
-import DOMPurify from 'dompurify';
-const RichTextEditor = ({setFormData,formData}) => {
+const RichTextEditor = ({handleTextBodyChange}) => {
     const editor = useRef(null);
     const [content, setContent] = useState('');
 
@@ -17,14 +16,14 @@ const RichTextEditor = ({setFormData,formData}) => {
                 ref={editor}
                 value={content}
                 config={config}
-                onBlur={newContent => {setContent(newContent);setFormData(DOMPurify.sanitize({ ...formData, bodyRichText: newContent }))}}
+                onBlur={newContent => {setContent(newContent);handleTextBodyChange(newContent)}}
                 onChange={newContent => {}}
                 minH="2xl"
             />
-            <div style={{ marginTop: '20px' }}>
+            {/* <div style={{ marginTop: '20px' }}>
                 <h3>Content:</h3>
                 <div>{content}</div>
-            </div>
+            </div> */}
         </div>
     );
 };
