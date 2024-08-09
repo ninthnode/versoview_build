@@ -16,17 +16,12 @@ import {
 import Link from "next/link";
 import { CiSearch, CiBookmark, CiUser } from "react-icons/ci";
 import { FaBookmark as BookmarkFilled  } from "react-icons/fa6";
-
-import { GoCommentDiscussion } from "react-icons/go";
 import { formatDate } from "../../utils/DateUtils";
 import ShareButton from "@/components/ShareButton";
+import getExcerpt from "@/app/utils/GetExcerpt";
+import DOMPurify from 'dompurify';
+const PostCard = ({ post, small = false,showBookmarkButton=true,submitBookmark }) => {
 
-const PostCard = ({ post, small = false,submitBookmark }) => {
-  const getExcerpt = (text, length) => {
-    if (!text | !length) return;
-    if (text.length <= length) return text;
-    return `${text.substring(0, length)}...`;
-  };
   const defaultImageUrl = "/assets/default-post-image.svg";
 
   return (
@@ -56,6 +51,7 @@ const PostCard = ({ post, small = false,submitBookmark }) => {
           {!small && (
             <ShareButton url={`${process.env.NEXT_PUBLIC_FRONTEND_URL}/post/${post._id}`} title={post.header}/>
           )}
+          {showBookmarkButton&&
           <IconButton
             variant="ghost"
             colorScheme={!post.isBookmarked?"gray":'green'}
@@ -63,7 +59,7 @@ const PostCard = ({ post, small = false,submitBookmark }) => {
             fontSize="20px"
             icon={!post.isBookmarked?<CiBookmark />:<BookmarkFilled />}
             onClick={()=>submitBookmark('post',post._id)}
-          />
+          />}
         </Flex>
       </CardHeader>
       {!small && (
@@ -99,7 +95,8 @@ const PostCard = ({ post, small = false,submitBookmark }) => {
           {post.header}
         </Heading>
         </Link>
-        <Text fontSize='16px'>{getExcerpt(post.bodyRichText, 150)}</Text>
+        <Text fontSize="16px" textAlign="justify" 
+        dangerouslySetInnerHTML={{ __html: getExcerpt(DOMPurify.sanitize(post.bodyRichText),150) }}/>
       </CardBody>
     </Card>
   );

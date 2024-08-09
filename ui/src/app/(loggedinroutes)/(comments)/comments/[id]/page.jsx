@@ -28,6 +28,7 @@ const Comments = ({
   updateCommentUpvote,
   updateCommentDownvote,
   addRemoveBookmarks,
+  postTitle
 }) => {
 
   const commentId = id;
@@ -74,6 +75,7 @@ const Comments = ({
     await addCommentToPost(commentId, commentObj);
     getCommentByPostId(commentId);
     setCommentText("");
+    onToggleCommentModal()
   };
 
   const handleChangeComment = (e) => {
@@ -101,6 +103,7 @@ const Comments = ({
       </Box>
       {commentList && (
         <CommentsModal
+        postTitle={postTitle}
           commentList={commentList}
           upvoteComment={upvoteComment}
           downvoteComment={downvoteComment}

@@ -31,8 +31,10 @@ const TopicSelection = () => {
       const newSelectedTopics = new Set(prevSelectedTopics);
       if (newSelectedTopics.has(topic)) {
         newSelectedTopics.delete(topic);
+        document.getElementById(`button-topic-${topic}`).style.borderColor = "#fff";
       } else {
         newSelectedTopics.add(topic);
+        document.getElementById(`button-topic-${topic}`).style.borderColor = "#9E8666";
       }
       return newSelectedTopics;
     });
@@ -87,7 +89,7 @@ const TopicSelection = () => {
                 <Button
                   id={`button-topic-${topic}`}
                   key={index}
-                  onClick={(e)=>{document.getElementById(`button-topic-${topic}`).style.borderColor = "#9E8666";handleTopicClick(topic)}}
+                  onClick={(e)=>{handleTopicClick(topic)}}
                   border='3px solid'
                   borderColor={selectedTopics.has(topic) ? "primary" : "gray.200"}
                   p="2"
@@ -98,6 +100,7 @@ const TopicSelection = () => {
             <Button
               w="380px"
               mt={8}
+              _hover={{ bg: "primary" }}
               color={Array.from(selectedTopics).length < 3 ? "#333" : "#fff"}
               bg={Array.from(selectedTopics).length < 3 ? "gray.200" : "primary"}
               onClick={() => {

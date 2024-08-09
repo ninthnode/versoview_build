@@ -118,7 +118,10 @@ module.exports.login = asyncHandler(async (req, res) => {
   } else {
     const isValidLogin = await bcrypt.compare(password, user.password);
 
-    if (isValidLogin) {
+    if (!isValidLogin) {
+      res.status(403);
+      res.json({ message: "Incorrect email or password" });
+    } else if (isValidLogin) {
       if (user.userType === "publisher") {
         const data = {
           user,
@@ -249,7 +252,7 @@ module.exports.getUser = asyncHandler(async (req, res) => {
       channelId: channelData._id,
     }).countDocuments();
     const userObj = userData.toObject();
-    
+
     userObj.posts = posts;
     userObj.totalPosts = totalPosts;
     userObj.channelFollowings = channelFollowings;

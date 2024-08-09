@@ -43,6 +43,7 @@ import Comments from "@/app/(loggedinroutes)/(comments)/comments/[id]/page";
 import { formatDate } from "@/app/utils/DateUtils";
 import { setNavTitle } from "@/redux/navbar/action";
 import RelatedArticleList from "./RelatedArticleList";
+import DOMPurify from 'dompurify';
 
 function SinglePost({
   params,
@@ -170,7 +171,7 @@ function SinglePost({
 
               <Divider />
               <Flex py="1" gap={1}>
-                <Flex w="50%" justify="space-between">
+                <Flex w='240px' justify="space-between">
                   <Button
                     pl="0"
                     variant="ghost"
@@ -233,12 +234,12 @@ function SinglePost({
                 <Heading size="md" as="h6" mt="2" mb="4">
                   {postState.post.header}
                 </Heading>
-                <Text size="sm" fontSize="16px" textAlign="justify">
-                  {postState.post.bodyRichText}
-                </Text>
+                <Text fontSize="16px" textAlign="justify" 
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(postState.post.bodyRichText) }}/>
               </div>
 
               <Comments
+                postTitle={postState.post.header}
                 id={params.id}
                 isOpenCommentModal={isOpenCommentModal}
                 onToggleCommentModal={onToggleCommentModal}

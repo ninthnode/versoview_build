@@ -1,18 +1,8 @@
 import React from "react";
 import {
   Flex,
-  Text,
-  IconButton,
-  Menu,
-  MenuButton,
-  Avatar,
-  VStack,
   Box,
-  HStack,
-  useColorModeValue,
-  MenuList,
-  MenuItem,
-  MenuDivider,
+  Divider,
   Image,
   Heading,
   Button,
@@ -29,9 +19,8 @@ const MobileNav = ({ onOpen, ...rest }) => {
   const LogoutHandler = () => {
     dispatch(loginOut());
   };
-  return (
+  return (<>
     <Flex
-      ml={{ base: 0, md: "16rem" }}
       mr={{ base: 0, md: 5 }}
       mt={{ base: 4 }}
       px={{ base: 4, md: 4 }}
@@ -40,7 +29,7 @@ const MobileNav = ({ onOpen, ...rest }) => {
       bg="#fff"
       {...rest}
     >
-      <Flex alignItems="center" p="0">
+      <Flex justifyContent='space-between' alignItems="center" p="0" w='100%'>
         <Heading
           fontSize="3xl"
           as="h3"
@@ -51,8 +40,13 @@ const MobileNav = ({ onOpen, ...rest }) => {
         >
           <NavbarTitle/>
         </Heading>
+        <Box>
+        <Image src={"/assets/group-icon.png"} h='40px' w='40px'/>
+        </Box>
       </Flex>
+      
     </Flex>
+    </>
   );
 };
 

@@ -14,7 +14,7 @@ export default function Channel({
   channelDetail,
   posts,
   isFollowed,
-  followers,followings
+  followers,followings,submitBookmarkPost
 }) {
 
   return (
@@ -28,7 +28,6 @@ export default function Channel({
             <Tab pl="1">Inspire</Tab>
             <Tab pl="1">Dine</Tab>
           </TabList>
-
           <TabPanels>
             <TabPanel p={0}>
               <About
@@ -38,8 +37,8 @@ export default function Channel({
                 {...channelDetail}
                 isFollowed={isFollowed}
               />
-              {posts.data && posts.data.length ? (
-                posts.data.map((post) => <PostCard key={post._id} post={post} submitBookmark={null} />)
+              {posts && posts.length ? (
+                posts.map((post) => <PostCard key={post._id} post={post} submitBookmark={submitBookmarkPost} />)
               ) : (
                 <p className="mt-4 text-sm italic font-light text-center text-gray-600">
                   This channel has no posts!

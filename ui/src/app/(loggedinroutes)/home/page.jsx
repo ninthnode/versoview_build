@@ -78,7 +78,7 @@ const Home = ({
   };
 
   return (
-    <Box px={4}>
+    <Box>
       <Tabs index={tabIndex} onChange={(index) => setTabIndex(index)}>
         <TabList gap={2} h="3rem">
           <Tab pl="0">Latest</Tab>

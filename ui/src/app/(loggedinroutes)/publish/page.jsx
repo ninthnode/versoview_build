@@ -20,6 +20,7 @@ import axios from "axios";
 import {createNewPost} from "@/redux/posts/postActions"
 import { useDispatch,useSelector } from "react-redux";
 import genres from "../../../static-data/Genres.json";
+import RichTextEditor from "@/components/RichTextEditor"
 const PublishPost = () => {
   const dispatch = useDispatch();
   const postLoading = useSelector((s) => s.post.loading);
@@ -58,12 +59,11 @@ const PublishPost = () => {
 
   return (
     <Box mb={'60px'}>
-      <Flex p={5}>
+      <Flex py={5}>
         {/* PDF Preview Section */}
         <Box
           w="40%"
           border="1px solid black"
-          p={2}
           mr={5}
           display={{ base: "none", md: "block" }}
         >
@@ -204,7 +204,7 @@ const PublishPost = () => {
             </Flex>
             <FormControl id="bodyRichText">
               <FormLabel fontSize="sm">BODY COPY*</FormLabel>
-              <Textarea
+              {/* <Textarea
                 size="sm"
                 placeholder="Enter body text..."
                 value={formData.bodyRichText}
@@ -212,7 +212,8 @@ const PublishPost = () => {
                   setFormData({ ...formData, bodyRichText: e.target.value })
                 }
                 rows={10}
-              />
+              /> */}
+              <RichTextEditor formData={formData} setFormData={setFormData}/>
             </FormControl>
             <Button disabled={postLoading} size="sm" colorScheme="green" onClick={handleSubmit}>
               {postLoading&&<Spinner size="sm" color="white" />}{postLoading?'Creating Post..':'Save'}

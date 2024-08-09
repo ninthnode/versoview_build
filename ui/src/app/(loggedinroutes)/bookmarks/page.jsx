@@ -14,6 +14,7 @@ import {
   IconButton,
   Button,
   Text,
+  Divider,
 } from "@chakra-ui/react";
 import { connect } from "react-redux";
 import {
@@ -25,24 +26,24 @@ import Link from "next/link";
 import { CiBookmark } from "react-icons/ci";
 import PostCard from "@/app/(loggedinroutes)/home/postCard";
 
-const Comment = ({ id, isBookmarked, singleComment, submitBookmark }) => (
-  <Box>
-      <PostCard
-        key={singleComment.postId._id || crypto.randomUUID()}
-        post={singleComment.postId}
-        showBookmark={false}
-        // submitBookmark={submitPostBookmark}
-      />
+const Comment = ({ id, isBookmarked, singleComment,postId, submitBookmark,commentText }) => (
+  <Box my='4'>
+  <Box p={2} bg='#fff'>
+    <PostCard
+      key={postId._id || crypto.randomUUID()}
+      post={postId}
+      showBookmarkButton={false}
+    />
+  </Box>
+  <Divider/>
     <Box
       maxW="2xl"
       p={4}
       position="relative"
       bg="#fff"
-      m="2"
       mt="0"
-      borderRadius="md"
     >
-      <Link href={`comments/${singleComment.postId._id}`}>
+      <Link href={`comments/${postId._id}`}>
         <HStack spacing={4}>
           <Avatar name={singleComment.userId.username} />
           <VStack align="start" spacing={1}>
@@ -74,7 +75,7 @@ const Comment = ({ id, isBookmarked, singleComment, submitBookmark }) => (
       </Box>
       <HStack spacing={2}>
         <Text mt="3"></Text>
-        <Text mt="3">{singleComment.commentText}</Text>
+        <Text mt="3">{commentText}</Text>
       </HStack>
     </Box>
   </Box>
@@ -106,32 +107,61 @@ const Bookmark = ({
   };
 
   return (
-    <Box mb='60px'>
-      <Box mt={4} maxW="2xl" bg="lightgray" borderWidth="1px" borderRadius="md" px={2}>
+    <Box mb="60px">
+      <Box
+        mt={4}
+        maxW="2xl"
+        bg="lightgray"
+        borderWidth="1px"
+        borderRadius="md"
+      >
         {postBookmarks.length > 0 ? (
           bookmarkState.loading ? (
             <Spinner size="sm" color="#333" />
           ) : (
-            postBookmarks.map((post) =>
-              post.postId ? (
-                <PostCard
-                  key={post._id || crypto.randomUUID()}
-                  post={post.postId}
-                  showBookmark={true}
-                  submitBookmark={submitPostBookmark}
-                />
-              ) : (
-                post.postCommentId && (
+            postBookmarks.map((post) => {
+              if (post.postId) {
+                return (
+                  <Box p={2} bg='#fff'>
+                  <PostCard
+                    key={post._id || crypto.randomUUID()}
+                    post={post.postId}
+                    showBookmark={true}
+                    submitBookmark={submitPostBookmark}
+                  />
+                  </Box>
+                );
+              } else if (
+                post.postCommentId &&
+                post.postCommentId.postCommentId
+              ) {
+                return (
                   <Comment
                     key={post._id}
                     id={post.postCommentId._id}
+                    postId={post.postCommentId.postCommentId.postId}
                     isBookmarked={post.isBookmarked}
                     singleComment={post.postCommentId}
                     submitBookmark={submitCommentBookmark}
+                    commentText={post.postCommentId.commentReply}
                   />
-                )
-              )
-            )
+                );
+              } else if (post.postCommentId) {
+                return (
+                  <Comment
+                    key={post._id}
+                    id={post.postCommentId._id}
+                    postId={post.postCommentId.postId}
+                    isBookmarked={post.isBookmarked}
+                    singleComment={post.postCommentId}
+                    submitBookmark={submitCommentBookmark}
+                    commentText={post.postCommentId.commentText}
+                  />
+                );
+              } else {
+                return null;
+              }
+            })
           )
         ) : (
           <Text color="gray.500">No Bookmarks Available</Text>

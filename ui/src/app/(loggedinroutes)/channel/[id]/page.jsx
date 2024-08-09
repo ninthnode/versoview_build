@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useState,useEffect } from "react";
 import { connect } from "react-redux";
 import Channel from "@/components/channels/channel";
 import { Box, Spinner } from "@chakra-ui/react";
@@ -10,6 +10,8 @@ import {
   fetchFollowings,
 } from "@/redux/channel/channelActions";
 import { setNavTitle } from "@/redux/navbar/action";
+import { addRemoveBookmarks } from "@/redux/bookmarks/bookmarkAction";
+
 
 const Page = ({
   params,
@@ -21,10 +23,13 @@ const Page = ({
   fetchPosts,
   fetchFollowers,
   fetchFollowings,
+  addRemoveBookmarks,
   setNavTitle,
 }) => {
   const { id } = params;
   const defaultImageUrl = "/assets/default-post-image.svg";
+
+  const [postList, setPostList] = useState([]);
 
   useEffect(() => {
     fetchChannel(id);
@@ -41,15 +46,29 @@ const Page = ({
     }
   }, [channelData]);
 
+  const submitBookmarkPost = async (type, postId) => {
+    const res = await addRemoveBookmarks(type, postId);
+    const updatedData = { isBookmarked: res.data.isBookmarked };
+    setPostList((prevItems) =>
+      prevItems.map((item) =>
+        item._id === res.data.postId ? { ...item, ...updatedData } : item
+      )
+    );
+  };
+
+  useEffect(() => {
+    if (posts && posts.data) setPostList(posts.data);
+  }, [posts]);
   return (
-    <Box mx="4">
-      {channelData && (
+    <Box>
+      {channelData && postList && (
         <Channel
           channelDetail={channelData}
           followers={followers}
           followings={followings}
           userId={channelData.userId}
-          posts={posts}
+          posts={postList}
+          submitBookmarkPost={submitBookmarkPost}
           isFollowed={false}
           channelId={id}
         />
@@ -70,6 +89,7 @@ const mapDispatchToProps = {
   fetchPosts,
   fetchFollowers,
   fetchFollowings,
+  addRemoveBookmarks,
   setNavTitle,
 };
 

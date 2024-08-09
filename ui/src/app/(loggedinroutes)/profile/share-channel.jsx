@@ -27,29 +27,29 @@ const ShareChannel = ({
     <HStack spacing={4} mt="4" justify='flex-start'>
       { (
         <Link href={user.profileInstagram}>
-          <IconButton fontSize='20px' color="#fff" bg="#333" icon={<FaInstagram />} />
+          <IconButton borderRadius='full' fontSize='20px' color="#fff" bg="#333" icon={<FaInstagram />} />
         </Link>
       )}
       { (
         <Link href={user.profileTelegram}>
-          <IconButton fontSize='20px' color="#fff" bg="#333" icon={<FaTelegram />} />
+          <IconButton borderRadius='full' fontSize='20px' color="#fff" bg="#333" icon={<FaTelegram />} />
         </Link>
       )}
       { (
         <Link href={user.profileTwitter}>
-          <IconButton fontSize='20px' color="#fff" bg="#333" icon={<FaTwitter />} />
+          <IconButton borderRadius='full' fontSize='20px' color="#fff" bg="#333" icon={<FaTwitter />} />
         </Link>
       )}
       { (
         <Link href={user.profileFacebook}>
-          <IconButton fontSize='20px' color="#fff" bg="#333" icon={<FaFacebook />} />
+          <IconButton borderRadius='full' fontSize='20px' color="#fff" bg="#333" icon={<FaFacebook />} />
         </Link>
       )}
     </HStack>
   ) : (
     <VStack alignItems='flex-start'>
       <HStack>
-        <IconButton color="#fff" bg="#333" icon={<FaInstagram />} />
+        <IconButton borderRadius='full' fontSize='20px' color="#fff" bg="#333" icon={<FaInstagram />} />
         <Input
           bg='#fff'
           defaultValue={user.profileInstagram}
@@ -58,7 +58,7 @@ const ShareChannel = ({
         />
       </HStack>
       <HStack>
-        <IconButton color="#fff" bg="#333" icon={<FaTelegram />} />
+        <IconButton borderRadius='full' fontSize='20px' color="#fff" bg="#333" icon={<FaTelegram />} />
         <Input
           bg='#fff'
           defaultValue={user.profileTelegram}
@@ -67,7 +67,7 @@ const ShareChannel = ({
         />
       </HStack>
       <HStack>
-        <IconButton color="#fff" bg="#333" icon={<FaTwitter />} />
+        <IconButton borderRadius='full' fontSize='20px' color="#fff" bg="#333" icon={<FaTwitter />} />
         <Input
           bg='#fff'
           defaultValue={user.profileTwitter}
@@ -76,7 +76,7 @@ const ShareChannel = ({
         />
       </HStack>
       <HStack>
-        <IconButton color="#fff" bg="#333" icon={<FaFacebook />} />
+        <IconButton borderRadius='full' fontSize='20px' color="#fff" bg="#333" icon={<FaFacebook />} />
         <Input
           bg='#fff'
           defaultValue={user.profileFacebook}

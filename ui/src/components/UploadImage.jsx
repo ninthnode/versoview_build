@@ -1,10 +1,22 @@
-import { useState } from 'react';
-import { Box, Input } from '@chakra-ui/react';
+import { useState, useEffect } from "react";
+import { Box, Input } from "@chakra-ui/react";
 
-const ImageUploadButton = ({handleImageChange,isEditing,selectedImage}) => {
-    const naImage =
+const ImageUploadButton = ({
+  handleImageChange,
+  isEditing,
+  uploadImage,
+  selectedImage,
+}) => {
+  const naImage =
     "https://via.assets.so/img.svg?w=100&h=100&tc=darkgray&bg=gray&t=N/A";
-  
+
+  const [change, setChange] = useState(0);
+  useEffect(() => {
+    if (uploadImage) {
+      setChange((prevCount) => prevCount + 1);
+    }
+  }, [uploadImage]);
+
   return (
     <Box textAlign="center">
       <Input
@@ -28,11 +40,15 @@ const ImageUploadButton = ({handleImageChange,isEditing,selectedImage}) => {
         bg="gray.100"
         _hover={{ opacity: 0.8 }}
       >
-        {!isEditing ? (
+        {!isEditing || uploadImage ? (
           <Box
             as="img"
-            src={selectedImage!=null?selectedImage:naImage}
-            alt="Selected"
+            src={
+              uploadImage
+                ? window.URL.createObjectURL(uploadImage)
+                : selectedImage
+            }
+            alt="Upload"
             objectFit="cover"
             boxSize="100%"
           />
@@ -40,7 +56,7 @@ const ImageUploadButton = ({handleImageChange,isEditing,selectedImage}) => {
           <Box
             as="img"
             src={"assets/upload.png"}
-            alt="Upload"
+            alt="Selected"
             objectFit="cover"
             boxSize="100%"
           />

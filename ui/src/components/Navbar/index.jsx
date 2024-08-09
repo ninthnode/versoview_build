@@ -18,11 +18,12 @@ import {
   BottomNavigationLabel,
 } from "chakra-ui-bottom-navigation";
 import SidebarRoutes from "../../routes/SidebarRoutes";
-import { usePathname } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 const Navbar = ({ children }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const path = usePathname();
+  const router = useRouter();
   const routeIndex = SidebarRoutes.findIndex((route) => route.url === path);
   const [index, setIndex] = React.useState(routeIndex);
 
@@ -38,15 +39,9 @@ const Navbar = ({ children }) => {
         direction="column"
       >
         <Box w="100%">
-          <MobileNav onOpen={onOpen} />
-          <Box
-            ml={{ base: 0, md: "16rem" }}
-            mr={{ base: 0, md: 5 }}
-          >
-            <Box
-              mb={"100px"}
-              w={{ base: "100%", lg: "100%", md: "70%", sm: "100%" }}
-            >
+          <Box ml={{ base: 0, md: "16rem" }} mr={{ base: 0, md: 5 }}>
+            <Box mb={"100px"} w={{ base: "100%", md: "60%" }} px={4} borderRightWidth='2px' borderColor='#f5f5f5'>
+              <MobileNav onOpen={onOpen} />
               <Divider />
               {children}
             </Box>
@@ -70,7 +65,9 @@ const Navbar = ({ children }) => {
               {SidebarRoutes.map((route) => (
                 <BottomNavigationItem
                   key={route.name}
-                  onClick={() => (window.location.href = route.url)}
+                  onClick={() => {
+                    router.push(route.url);
+                  }}
                 >
                   <BottomNavigationIcon
                     as={route.icon}
