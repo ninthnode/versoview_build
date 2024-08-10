@@ -8,6 +8,7 @@ const {
 	followChannel,
 	unfollowChannel,
 	getChannelById,
+	getChannelByUserId,
 	followChannelList,
 	pinChannel,
 	unpinChannel,
@@ -28,6 +29,7 @@ router.get("/getChannelByName", protectUser, getChannelByName);
 router.get("/doesChannelExist/:channelName", doesChannelExist);
 
 router.get("/getChannel/:_id",protectUser, getChannelById);
+router.get("/getChannelByUserId",protectUser, getChannelByUserId);
 router.put("/updateChannel/:_id", protectUser, updateChannel);
 router.delete("/deleteChannel/:_id", protectUser, deleteChannel);
 router.post("/followChannel/:_id", protectUser, followChannel);

@@ -6,7 +6,6 @@ const { User } = require("../models/user.model");
 module.exports.searchArticles = asyncHandler(async (req, res) => {
   try {
     const query = req.params.article;
-    console.log('Article search: ', query);
 
     const searchedChannels = await Post.find({
       $or: [
@@ -15,7 +14,7 @@ module.exports.searchArticles = asyncHandler(async (req, res) => {
         { subSection: { $regex: new RegExp(query, "i") } },
         { bodyRichText: { $regex: new RegExp(query, "i") } },
       ],
-    });
+    }).populate("channelId");
 
     if (!searchedChannels?.length)
       return res

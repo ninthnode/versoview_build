@@ -217,7 +217,13 @@ module.exports.updateUser = asyncHandler(async (req, res) => {
   const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
     new: true,
   });
-
+  const updatedChannelImage = await Channel.findOneAndUpdate({userId:userId}, {channelIconImageUrl: updateData.profileImageUrl}, {
+    new: true,
+  });
+  
+  if (!updatedChannelImage) {
+    return res.status(404).json({ status: 404, message: "channel not found" });
+  }
   if (!updatedUser) {
     return res.status(404).json({ status: 404, message: "User not found" });
   }

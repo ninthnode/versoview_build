@@ -98,6 +98,21 @@ module.exports.getChannelById = asyncHandler(async (req, res) => {
 	}
 });
 
+
+module.exports.getChannelByUserId = asyncHandler(async (req, res) => {
+	try {
+		const userId = req.user._id;
+		console.log(userId)
+		const channelData = await Channel.findOne({ userId:userId });
+
+		res.status(200);
+		res.json({ message: "Success", data: channelData });
+	} catch (error) {
+		console.error(error);
+		res.status(500).json({ error: "Internal Server Error" });
+	}
+});
+
 // Get channel detail
 module.exports.getChannelByName = asyncHandler(async (req, res) => {
 	try {
