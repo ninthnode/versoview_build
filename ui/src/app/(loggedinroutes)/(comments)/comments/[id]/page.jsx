@@ -6,7 +6,6 @@ import {
   Textarea,
   Spinner,
 } from "@chakra-ui/react";
-import { FaTelegramPlane } from "react-icons/fa";
 import {
   getCommentByPostId,
   addCommentToPost,
@@ -95,7 +94,6 @@ const Comments = ({
         <Button
           onClick={submitComment}
           size="md"
-          rightIcon={<FaTelegramPlane />}
           colorScheme="green"
         >
           Post {commentText !== '' && loading ? <Spinner size="sm" color="white" /> : ''}

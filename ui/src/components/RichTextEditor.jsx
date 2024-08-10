@@ -1,22 +1,23 @@
 import React, { useRef, useState } from 'react';
 import JoditEditor from 'jodit-react';
-const RichTextEditor = ({handleTextBodyChange}) => {
+const RichTextEditor = ({handleTextBodyChange,bodyRichText}) => {
     const editor = useRef(null);
-    const [content, setContent] = useState('');
 
     const config = {
         readonly: false,
         placeholder: 'Start typing...',
         minHeight: '300px',
+        askBeforePasteFromWord: false,
+              askBeforePasteHTML: false
     };
 
     return (
         <div>
             <JoditEditor
                 ref={editor}
-                value={content}
+                value={bodyRichText}
                 config={config}
-                onBlur={newContent => {setContent(newContent);handleTextBodyChange(newContent)}}
+                onBlur={newContent => {handleTextBodyChange(newContent)}}
                 onChange={newContent => {}}
                 minH="2xl"
             />

@@ -42,20 +42,6 @@ const SlSpinner = dynamic(
   }
 );
 
-const SlButton = dynamic(
-  () => import("@shoelace-style/shoelace/dist/react/button/index.js"),
-  {
-    ssr: false,
-  }
-);
-
-const SlIcon = dynamic(
-  () => import("@shoelace-style/shoelace/dist/react/icon/index.js"),
-  {
-    ssr: false,
-  }
-);
-
 function Profile() {
   const dispatch = useDispatch();
   const authState = useSelector((state) => state.auth?.user?.user);
@@ -246,7 +232,7 @@ function Profile() {
                 <Text fontSize="sm">{user.profileAbout}</Text>
               )}
             </Box>
-            <Flex spacing={2} gap={4} w="60%" justify="flex-start">
+            <Flex flexWrap='wrap' spacing={2} gap={4} w="100%" justify="flex-start">
               <Box>
                 <Text>{user.totalPosts ? user.totalPosts : 0}</Text>
                 <Text>Posts</Text>

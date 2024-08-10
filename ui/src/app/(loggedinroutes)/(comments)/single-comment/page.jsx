@@ -20,7 +20,6 @@ import { FaBookmark as BookmarkFilled } from "react-icons/fa6";
 import { FiMoreHorizontal } from 'react-icons/fi';
 import { CiBookmark } from "react-icons/ci";
 import { PiArrowFatDownLight, PiArrowFatUpLight } from "react-icons/pi";
-import { FaRegComment, FaTelegramPlane } from "react-icons/fa";
 import { connect } from "react-redux";
 import {
   getCommentRepliesByCommentId,
@@ -85,7 +84,6 @@ function SingleComment({
                 submitReplayText(comment._id, replayText);
               }}
               size="md"
-              rightIcon={<FaTelegramPlane />}
               colorScheme="green"
             >
               Post{" "}

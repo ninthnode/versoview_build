@@ -1,2 +1,0 @@
-export const GET_PROFILE = 'GET_POSTS_REQUEST';
-export const SAVE_PROFILE = 'GET_POSTS_SUCCESS';

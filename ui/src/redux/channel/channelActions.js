@@ -17,6 +17,8 @@ import {
   UNFOLLOW_CHANNEL_REQUEST,
   UNFOLLOW_CHANNEL_SUCCESS,
   UNFOLLOW_CHANNEL_FAILURE,
+
+  FETCH_USER_CHANNEL
 } from "./channelTypes";
 
 export const fetchChannel = (id) => async (dispatch) => {
@@ -165,4 +167,24 @@ export const fetchfollowChannelList = () => async (dispatch) => {
     );
     dispatch({ type: FETCH_FOLLOWINGS_SUCCESS, payload: response.data });
   } catch (error) {}
+};
+
+
+
+export const fetchLoggedInUserChannel = () => async (dispatch, getState) => {
+  try {
+    const response = await axios.get(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/channel/getChannelByUserId`,
+      {
+        headers: {
+          authorization: `Bearer ${localStorage
+            .getItem("token")
+            .replace(/"/g, "")}`,
+        },
+      }
+    );
+    dispatch({ type: FETCH_USER_CHANNEL, payload: response.data.data });
+  } catch (error) {
+    dispatch({ type: FETCH_CHANNEL_FAILURE, error });
+  }
 };

@@ -157,7 +157,7 @@ const uploadFileToSignedUrl = (
 ) => {
   axios
     .put(signedUrl, file, {
-      onUploadProgress: onProgress,
+      onUploadProgress: onUploadProgress,
       headers: {
         "Content-Type": contentType,
       },
@@ -167,6 +167,36 @@ const uploadFileToSignedUrl = (
       console.error(err.response);
     });
 };
+let uploadToastId = null;
+const onUploadProgress = (progressEvent) => {
+  const { loaded, total } = progressEvent;
+  const uploadProgress = Math.round((loaded / total) * 100);
+  if (uploadProgress !== null) {
+    if (uploadToastId === null) {
+      uploadToastId = toast.info(`Creating Post: ${uploadProgress}%`, {
+        position: "bottom-right",
+        progress: uploadProgress / 100,
+        autoClose: false,
+      });
+    } else {
+      toast.update(uploadToastId, {
+        render: `Creating Post: ${uploadProgress}%`,
+        progress: uploadProgress / 100,
+        autoClose: false,
+      });
+    }
+
+    if (uploadProgress === 100) {
+      toast.update(uploadToastId, {
+        position: "bottom-right",
+        render: "Post Created Sucessfully!",
+        progress: 100,
+        type: 'success',
+        autoClose: 5000,
+      });
+    }
+  }
+}
 const extractImageUrl = (url) => {
   const urlObj = new URL(url);
   const pathname = urlObj.pathname;
@@ -186,7 +216,6 @@ export const createNewPost = (key,content_type,uploadedImage,formData) => {
           content_type,
           null,
           async (response2) => {
-            console.log(response2);
             let newImageUrl = extractImageUrl(response2.config.url);
             formData.mainImageURL = newImageUrl;
 

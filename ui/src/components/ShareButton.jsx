@@ -23,12 +23,24 @@ import {
 } from "@chakra-ui/react";
 import { FiMoreHorizontal } from 'react-icons/fi';
 
-const ShareButton = ({ url, title }) => {
+const ShareButton = ({ disabled = false, url, title }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const openModal = () => setIsOpen(true);
   const closeModal = () => setIsOpen(false);
 
+  const sharePost = ()=>{
+    if(navigator.share){
+      navigator.share({
+        title: title,
+        text: title,
+        url: url
+      })
+    }else{
+
+      openModal()
+    }
+  }
   return (
     <>
       <IconButton
@@ -37,7 +49,8 @@ const ShareButton = ({ url, title }) => {
         aria-label="See menu"
         fontSize='25px'
         icon={<FiMoreHorizontal/>}
-        onClick={openModal}
+        onClick={disabled?null:sharePost}
+        disabled={disabled}
       />
       <Modal isOpen={isOpen} onClose={closeModal}>
         <ModalOverlay />

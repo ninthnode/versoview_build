@@ -129,7 +129,7 @@ const Home = ({
             )}
           </TabPanel>
           <TabPanel p='0'>
-            {userDetails&&followings.data && followings.data.length > 0 && (
+            {userDetails&&followings.data && (
               <Following followings={followings} user={userDetails} />
             )}
           </TabPanel>

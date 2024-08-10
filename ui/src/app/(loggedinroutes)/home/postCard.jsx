@@ -73,7 +73,7 @@ const PostCard = ({ post, small = false,showBookmarkButton=true,submitBookmark }
           gap="10px"
           alignItems="center"
           color='textlight'
-          py={2}
+          pb={2}
         >
           {post.section} - {post.subSection} • {formatDate(post.createdAt)} •
           6min read

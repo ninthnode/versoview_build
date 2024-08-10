@@ -127,7 +127,7 @@ function SinglePost({
                     }
                   />
                   <Box>
-                    <Heading size="sm">{postState.channel.channelName}</Heading>
+                    <Heading fontSize="lg">{postState.channel.channelName}</Heading>
                   </Box>
                 </Flex>
                 <ShareButton
@@ -234,7 +234,7 @@ function SinglePost({
                 <Heading size="md" as="h6" mt="2" mb="4">
                   {postState.post.header}
                 </Heading>
-                <Text fontSize="16px" textAlign="justify" 
+                <Text fontSize='md' textAlign="justify" 
                 dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(postState.post.bodyRichText) }}/>
               </div>
 

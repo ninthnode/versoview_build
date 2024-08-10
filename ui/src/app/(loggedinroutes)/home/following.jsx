@@ -98,11 +98,11 @@ const Following = ({ followings, user }) => {
   const [followingsDataSorted, setfollowingsDataSorted] = useState([]);
   const [followingLoading, setFollowingLoading] = useState(true);
   useEffect(() => {
-    if (followings.data && followings.data.length > 0) {
+    if (followings.data) {
       const tempList = followings.data
-        .filter((i) => i.channelId)
-        .map((i) => ({ ...i.channelId, pinned: i.pinned }))
-        .toSorted(sortFn(options.Pinned));
+      .filter((i) => i.channelId)
+      .map((i) => ({ ...i.channelId, pinned: i.pinned }))
+      .toSorted(sortFn(options.Pinned));
       setfollowingsDataSorted(tempList);
       setFollowingLoading(false);
     }
@@ -174,6 +174,7 @@ const Following = ({ followings, user }) => {
       {followingLoading ? (
         <Spinner />
       ) : (
+        followingsDataSorted.length>0?
         followingsDataSorted?.map((following) => (
           <Flex
             key={following._id || crypto.randomUUID()}
@@ -227,7 +228,7 @@ const Following = ({ followings, user }) => {
               />
             </svg>
           </Flex>
-        ))
+        )):<Text mt='4' textAlign={'center'}>No Followings</Text>
       )}
     </Box>
   );

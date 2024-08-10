@@ -15,9 +15,12 @@ import {
     UNFOLLOW_CHANNEL_REQUEST,
     UNFOLLOW_CHANNEL_SUCCESS,
     UNFOLLOW_CHANNEL_FAILURE,
+
+    FETCH_USER_CHANNEL
   } from './channelTypes';
   
   const initialState = {
+    userChannel: null,
     channel: null,
     posts: [],
     followers: [],
@@ -82,6 +85,12 @@ import {
         return {
           ...state,
           error: action.error,
+          isLoading: false,
+        };
+        case FETCH_USER_CHANNEL:
+        return {
+          ...state,
+          userChannel: action.payload,
           isLoading: false,
         };
       default:

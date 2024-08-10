@@ -57,6 +57,7 @@ const customTheme = extendTheme({
     lightblue: "#E1EBFF",
     textlight: "#8d8d8d",
     green: { 500: "#26A21A" },
+    red: { 500: "#FB5645" },
   },
   components: {
     Button,
