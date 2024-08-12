@@ -41,9 +41,15 @@ const StatusItem = ({ status }) => {
         {!isLoading ? (
           unread > 0 && (
             <Box
-              className="z-10 self-end -mt-4 text-xs text-white bg-black rounded-xl"
+              zIndex="10"
+              alignSelf="end"
+              mt="-4"
+              fontSize="xs"
+              color="white"
+              bg="#333"
+              borderRadius="xl"
               px={2}
-              w="min"
+              w="min-content"
               position="absolute"
               right={0}
             >

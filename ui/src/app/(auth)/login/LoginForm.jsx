@@ -12,6 +12,7 @@ import {
   Spinner,
   Text,
   Box,
+  FormHelperText
 } from "@chakra-ui/react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { CiMail, CiLock } from "react-icons/ci";
@@ -23,13 +24,10 @@ function LoginForm({
   handleSubmit,
   handleChange,
   handleClick,
-  backendError,
+  errors,
 }) {
   return (
     <form onSubmit={handleSubmit} height="100%">
-      {backendError && (
-        <small className="text-xs font-thin text-red-500">{backendError}</small>
-      )}
       <Flex flexDir="column" justifyContent="space-between" height="100%">
         <Flex flexDir="column">
           <FormControl id="email" isRequired>
@@ -43,9 +41,11 @@ function LoginForm({
               placeholder="Enter your email"
               name="email"
               onChange={handleChange}
-              // isInvalid={errors.email}
-              // onInput={handleEmailInput}
+              isInvalid={errors?.email&&errors.email}
             />
+            {errors?.email &&<FormHelperText color='red.500'>
+              {errors.email}
+            </FormHelperText>}
           </FormControl>
           <FormControl id="password" isRequired mt={4}>
             <Flex alignItems="center" gap={2}>
@@ -59,8 +59,7 @@ function LoginForm({
                 placeholder="Enter password"
                 name="password"
                 onChange={handleChange}
-                // isInvalid={errors.password}
-                // onInput={handlePasswordInput}
+                isInvalid={errors?.password&&errors.password}
               />
               <InputRightElement width="4.5rem">
                 <Button h="1.75rem" size="sm" onClick={handleClick}>
@@ -68,6 +67,10 @@ function LoginForm({
                 </Button>
               </InputRightElement>
             </InputGroup>
+            
+            {errors?.password &&<FormHelperText color='red.500'>
+              {errors.password}
+            </FormHelperText>}
           </FormControl>
           <Flex justify="right" mt={4}>
             <Link color="primary" href="/forgot-password">

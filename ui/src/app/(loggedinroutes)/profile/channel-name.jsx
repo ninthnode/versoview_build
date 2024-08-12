@@ -1,6 +1,5 @@
 import { Text, VStack, Input } from "@chakra-ui/react";
 import get from "@/app/utils/get";
-import useSWR from "swr";
 import { useEffect, useState } from "react";
 
 const ChannelName = ({

@@ -18,8 +18,8 @@ const signUpSchema = v.object({
   email: v.pipe(v.string(), v.email()),
   password: v.pipe(
     v.string(),
-    v.regex(/[A-Z]+/, "must contain upper case characters"),
-    v.regex(/[a-z]+/, "must contain lowercase letter"),
+    v.regex(/[A-Z]+/, "Must contain upper case characters"),
+    v.regex(/[a-z]+/, "Must contain lowercase letter"),
     v.regex(/[\$|\.|#|%|&|@|-]+/, "Must contain a symbol")
   ),
 
@@ -36,11 +36,11 @@ const MailMessage = require("nodemailer/lib/mailer/mail-message");
 module.exports.signUp = asyncHandler(async (req, res) => {
   // parse using valibot
   const parsed = v.safeParse(signUpSchema, req.body);
-  console.log("success;", parsed.success);
+  console.log("success;", parsed);
   if (!parsed.success) {
     return res.status(400).json({
       status: 400,
-      message: parsed.issues.map((i) => i.message).join(", "),
+      message: parsed.issues.map((i) => ({text:i.message,type:i.path[0].key})),
     });
   }
   const { channelName, username, email, password, genre } = parsed.output;
@@ -51,13 +51,13 @@ module.exports.signUp = asyncHandler(async (req, res) => {
   if (isUserExist) {
     return res
       .status(403)
-      .json({ status: 403, message: "User Email already exists" });
+      .json({ status: 403, message: {text:"User Email already exists",type:'email'} });
   }
 
   if (isChannelExist) {
     return res
       .status(403)
-      .json({ status: 403, message: "Channel @username already exists" });
+      .json({ status: 403, message: {text:"Channel @username already exists",type:'username'}});
   }
 
   // Hash password
@@ -114,13 +114,13 @@ module.exports.login = asyncHandler(async (req, res) => {
 
   if (!user) {
     res.status(403);
-    res.json({ message: "Incorrect email or password" });
+    res.json({ message: {text:"Incorrect email",type:'email'} });
   } else {
     const isValidLogin = await bcrypt.compare(password, user.password);
 
     if (!isValidLogin) {
       res.status(403);
-      res.json({ message: "Incorrect email or password" });
+      res.json({ message: {text:"Incorrect password",type:'password'} });
     } else if (isValidLogin) {
       if (user.userType === "publisher") {
         const data = {

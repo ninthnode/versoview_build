@@ -43,9 +43,13 @@ export const loginUser = (formData) => async (dispatch) => {
     }
   } catch (error) {
     console.log("Error during login:", error);
+    let newErrObj = {} 
+    if(error.response.data.message){   
+      newErrObj = { [error.response.data.message.type]: error.response.data.message.text } 
+    }
     dispatch({
       type: LOGIN_FAILURE,
-      payload: error.response.data.message,
+      payload: newErrObj,
     });
   }
 };
@@ -69,7 +73,6 @@ export const signupUser = (formData) => async (dispatch) => {
       window.location.href = "/choose-topics";
     }
   } catch (error) {
-    console.log(error);
     dispatch({
       type: SIGNUP_FAILURE,
       payload: error.response.data.message,

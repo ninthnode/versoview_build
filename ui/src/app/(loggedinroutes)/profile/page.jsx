@@ -16,31 +16,17 @@ import {
   Input,
   Textarea,
   Button,
+  Spinner
 } from "@chakra-ui/react";
 import { MdLogout } from "react-icons/md";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchUser, updateUser } from "@/redux/profile/actions";
 import dynamic from "next/dynamic";
-import "@shoelace-style/shoelace/dist/themes/light.css";
 import UploadImage from "@/components/UploadImage";
 import ChannelName from "./channel-name";
 import ShareChannel from "./share-channel";
 import Publications from "./publications";
 import RewardsList from "./rewardsList";
-
-const SlColorPicker = dynamic(
-  () => import("@shoelace-style/shoelace/dist/react/color-picker/index.js"),
-  {
-    ssr: false,
-  }
-);
-
-const SlSpinner = dynamic(
-  () => import("@shoelace-style/shoelace/dist/react/spinner/index.js"),
-  {
-    ssr: false,
-  }
-);
 
 function Profile() {
   const dispatch = useDispatch();
@@ -86,7 +72,7 @@ function Profile() {
       setTelegram(user.profileTelegram);
       setChannelName(user.channelName);
       setUrl(user.profileUrl);
-      setSelectedImage(user.profileImageUrl)
+      setSelectedImage(user.profileImageUrl);
     }
   }, [user]);
 
@@ -109,9 +95,9 @@ function Profile() {
       profileBgColor: bg,
     };
     setUpdating(true);
-    let content_type = null
-    let key = null
-    if(uploadImage){
+    let content_type = null;
+    let key = null;
+    if (uploadImage) {
       content_type = uploadImage.type;
       key = `test/image/${uploadImage.name}`;
     }
@@ -133,7 +119,7 @@ function Profile() {
     if (event.target.files && event.target.files[0]) {
       const file = event.target.files[0];
       setUploadImage(file);
-        setSelectedImage(file);
+      setSelectedImage(file);
     }
   };
   return (
@@ -162,18 +148,25 @@ function Profile() {
               uploadImage={uploadImage}
               isEditing={isEditing}
             />
-            <SlColorPicker
-              disabled={!isEditing}
-              label="Select a color"
+            <input
+              type="color"
+              style={{
+                appearance: "none",
+                width: "40px",
+                height: "40px",
+                borderRadius: "50%",
+                border: "3px solid #4C9C8A",
+                padding: "4px",
+                backgroundColor: "#fff",
+                cursor: !isEditing?"not-allowed":"pointer",
+              }}
               value={bg}
-              onSlInput={(e) => {
+              onChange={(e) => {
                 setBG(e.target.value);
               }}
-              size="small"
-              swatches="
-                #d0021b; #f5a623; #f8e71c; #8b572a; #7ed321; #417505; #bd10e0; #9013fe;
-                #4a90e2; #50e3c2; #b8e986; #000; #444; #888; #ccc; #fff;
-              "
+              disabled={!isEditing}
+              variant="flushed"
+              placeholder="Pick a color"
             />
           </HStack>
 
@@ -188,7 +181,7 @@ function Profile() {
             <Box alignSelf="end">
               {isEditing ? (
                 isUpdating ? (
-                  <SlSpinner />
+                    <Spinner /> 
                 ) : (
                   <Button
                     variant="default"
@@ -232,7 +225,13 @@ function Profile() {
                 <Text fontSize="sm">{user.profileAbout}</Text>
               )}
             </Box>
-            <Flex flexWrap='wrap' spacing={2} gap={4} w="100%" justify="flex-start">
+            <Flex
+              flexWrap="wrap"
+              spacing={2}
+              gap={4}
+              w="100%"
+              justify="flex-start"
+            >
               <Box>
                 <Text>{user.totalPosts ? user.totalPosts : 0}</Text>
                 <Text>Posts</Text>

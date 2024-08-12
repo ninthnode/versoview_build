@@ -6,12 +6,6 @@ import customTheme from "@/styles/theme";
 import { Provider } from "react-redux";
 import PrivateRoute from "./utils/PrivateRoute";
 
-import { setBasePath } from "@shoelace-style/shoelace/dist/utilities/base-path";
-
-setBasePath(
-  "https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.1/cdn/"
-);
-
 import store from "@/redux/store";
 
 import { ToastContainer } from "react-toastify";

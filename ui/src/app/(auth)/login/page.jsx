@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import {
   Box,
   Button,
@@ -16,19 +16,22 @@ import LoginBtns from "./LoginBtns";
 import LoginForm from "./LoginForm";
 
 function Login({ loginUser, error }) {
+  
+  const [backendError, setBackendError] = useState(null);
   const [show, setShow] = useState(false);
   const [showForm, setShowForm] = useState(false);
-
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+  
 
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
+    setBackendError(null)
   };
 
   const handleSubmit = async (e) => {
@@ -44,6 +47,9 @@ function Login({ loginUser, error }) {
     setShowForm(!showForm);
   };
 
+  useEffect(() => {
+    setBackendError(error)
+  }, [error])
   return (
     <Box bg="white" mt={4} w="100%" position="relative">
       <Flex minH="85vh" align="center" justify="center">
@@ -88,7 +94,7 @@ function Login({ loginUser, error }) {
                 handleSubmit={handleSubmit}
                 handleChange={handleChange}
                 handleClick={handleClick}
-                backendError={error}
+                errors={backendError}
               />
             ) : (
               <LoginBtns />

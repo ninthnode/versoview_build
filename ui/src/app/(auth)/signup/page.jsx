@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import {
   Box,
   Button,
@@ -16,6 +16,7 @@ import SignupForm from "./SignupForm";
 
 function Signup({ signupUser,error }) {
   const [show, setShow] = useState(false);
+  const [backendError, setBackendError] = useState(false);
 
   const [formData, setFormData] = useState({
     channelName:"",
@@ -29,12 +30,16 @@ function Signup({ signupUser,error }) {
       ...formData,
       [e.target.name]: e.target.value,
     });
+    setBackendError(null)
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     await signupUser(formData);
   };
+    useEffect(() => {
+      setBackendError(error)
+    }, [error])
 
   return (
     <Box bg="white" w="100%">
@@ -45,7 +50,6 @@ function Signup({ signupUser,error }) {
           p={{ base: 4, md: 8 }}
           bg="white"
         >
-        
           <Flex alignItems="center" mb={4} mt={4}>
             <Image src={"/assets/logo.svg"} alt="logo" mr={2} />
             <Heading size='lg' as="h6" fontWeight="bold" textAlign="left">
@@ -61,9 +65,8 @@ function Signup({ signupUser,error }) {
               show={show}
               handleSubmit={handleSubmit}
               handleChange={handleChange}
-              backendError={error}
+              backendError={backendError}
             />
-         
         </Box>
       </Flex>
     </Box>

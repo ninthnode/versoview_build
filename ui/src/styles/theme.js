@@ -12,7 +12,7 @@ const customTheme = extendTheme({
     span: "SF-Pro-Display-Medium, sans-serif",
   },
   fontSizes: {
-    xs: "0.75rem",
+    xs: "0.6rem",
     sm: "0.875rem",
     md: "1rem",
     lg: "1.25rem",
