@@ -34,6 +34,8 @@ export const fetchPosts = () => {
             Authorization: `Bearer ${token}`,
           },
         });
+        
+      console.log(response)
       }
       else{
         response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/getPostIfUserNotLoggedIn`);
@@ -67,16 +69,22 @@ export const fetchRecentlyViewedPosts = () => {
   };
 };
 export const getPostById = (postId) => {
-  return async (dispatch) => {
+  return async (dispatch,getState) => {
     dispatch(getPostsRequest());
-    try {
-      const token = localStorage.getItem("token").replaceAll('"', "");
+    const { auth } = getState();
 
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/getPost/${postId}`, { 
+    try {
+      let response
+      if (auth.isAuthenticated){
+        const token = localStorage.getItem("token").replaceAll('"', "");
+       response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/getPost/${postId}`, { 
         headers: {
         Authorization: `Bearer ${token}`,
         }
       });
+    }else{
+      response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/getPostByIdLoggedOut/${postId}`);
+    }
       const data = await response.data.data
       dispatch({
         type: GET_SINGLE_POST_SUCCESS,

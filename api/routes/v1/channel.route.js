@@ -1,6 +1,7 @@
 const express = require("express");
 const {
 	create,
+	getAllChannelLoggedoutUser,
 	getAllChannel,
 	getChannelByName,
 	updateChannel,
@@ -22,7 +23,8 @@ const { upload } = require("../../config/multerUpload");
 const router = express.Router();
 
 router.post("/createChannel", protectUser, create);
-router.get("/getAllChannel", getAllChannel);
+router.get("/getAllChannelLoggedoutUser", getAllChannelLoggedoutUser);
+router.get("/getAllChannel",protectUser, getAllChannel);
 router.get("/getChannelByName", protectUser, getChannelByName);
 
 // ryan

@@ -4,9 +4,18 @@ import {
   GET_COMMENTS_SUCCESS,
   GET_COMMENTS_FAILURE,
   GET_COMMENT_REPLIES_SUCCESS,
+  OPEN_COMMENTS_MODAL,
+  CLOSE_COMMENTS_MODAL,
 } from "./commentType";
-import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+export const openCommentModal = () =>({
+  type: OPEN_COMMENTS_MODAL,
+});
+export const closeCommentModal = () => ({
+  type: CLOSE_COMMENTS_MODAL,
+});
 
 const getCommentsRequest = () => ({
   type: GET_COMMENTS_REQUEST,
@@ -56,15 +65,15 @@ export const addCommentToPost = (postId, commentObj) => {
           },
         }
       );
-      toast(response.data.statusText,{
+      toast(response.data.statusText, {
         autoClose: 3000,
-        type:'success'
-      })
+        type: "success",
+      });
     } catch (error) {
-      toast("Error Adding Comment",{
+      toast("Error Adding Comment", {
         autoClose: 3000,
-        type:'error'
-      })
+        type: "error",
+      });
       dispatch(getCommentsFailure(error));
     }
   };
@@ -88,9 +97,7 @@ export const getCommentRepliesByCommentId = (commentId) => {
         type: GET_COMMENT_REPLIES_SUCCESS,
         payload: data,
       });
-  
-    } catch (error) {
-    }
+    } catch (error) {}
   };
 };
 
@@ -107,10 +114,10 @@ export const updateCommentUpvote = (commentId) => {
           },
         }
       );
-      toast('Comment '+response.data.message,{
+      toast("Comment " + response.data.message, {
         autoClose: 3000,
-        type:'success'
-      })
+        type: "success",
+      });
     } catch (error) {}
   };
 };
@@ -127,10 +134,10 @@ export const updateCommentDownvote = (commentId) => {
           },
         }
       );
-      toast('Comment '+response.data.message,{
+      toast("Comment " + response.data.message, {
         autoClose: 3000,
-        type:'success'
-      })
+        type: "success",
+      });
     } catch (error) {}
   };
 };
@@ -149,10 +156,10 @@ export const updateCommentReplayUpvote = (commentId, replayId) => {
         }
       );
       dispatch(getCommentRepliesByCommentId(commentId));
-      toast('Comment Replay '+response.data.message,{
+      toast("Comment Replay " + response.data.message, {
         autoClose: 3000,
-        type:'success'
-      })
+        type: "success",
+      });
     } catch (error) {}
   };
 };
@@ -171,10 +178,10 @@ export const updateCommentReplayDownvote = (commentId, replayId) => {
         }
       );
       dispatch(getCommentRepliesByCommentId(commentId));
-      toast('Comment Replay '+response.data.message,{
+      toast("Comment Replay " + response.data.message, {
         autoClose: 3000,
-        type:'success'
-      })
+        type: "success",
+      });
     } catch (error) {}
   };
 };
@@ -193,15 +200,15 @@ export const replayToPostComment = (commentId, commentReply) => {
         }
       );
       dispatch(getCommentRepliesByCommentId(commentId));
-      toast(response.data.statusText,{
+      toast(response.data.statusText, {
         autoClose: 3000,
-        type:'success'
-      })
-    } catch (error) {      
-      toast("Error Adding Comment Replay",{
+        type: "success",
+      });
+    } catch (error) {
+      toast("Error Adding Comment Replay", {
         autoClose: 3000,
-        type:'error'
-      })
+        type: "error",
+      });
     }
   };
 };

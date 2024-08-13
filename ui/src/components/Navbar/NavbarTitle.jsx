@@ -30,7 +30,7 @@ const NavbarTitle = ({ navtitle,navicon }) => {
         </Flex>
       ) : (
         <Flex alignItems="center" mb={2}>
-          <Button variant="ghost" onClick={() => router.back()}>
+          <Button pl="0" variant="ghost" onClick={() => router.back()}>
             <Image m="0" src={"/assets/back.svg"}/>
           </Button>
             <Avatar

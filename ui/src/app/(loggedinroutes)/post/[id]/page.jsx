@@ -25,7 +25,7 @@ import {
   Textarea,
 } from "@chakra-ui/react";
 import { FaRegComment } from "react-icons/fa";
-import { CiBookmark, CiShare2 } from "react-icons/ci";
+import { CiBookmark } from "react-icons/ci";
 
 import { PiArrowFatDownLight, PiArrowFatUpLight } from "react-icons/pi";
 
@@ -43,7 +43,7 @@ import Comments from "@/app/(loggedinroutes)/(comments)/comments/[id]/page";
 import { formatDate } from "@/app/utils/DateUtils";
 import { setNavTitle } from "@/redux/navbar/action";
 import RelatedArticleList from "./RelatedArticleList";
-import DOMPurify from 'dompurify';
+import DOMPurify from "dompurify";
 
 function SinglePost({
   params,
@@ -54,14 +54,18 @@ function SinglePost({
   updatePostDownvote,
   addRemoveBookmarks,
   setNavTitle,
+  isModalCommentsOpen,
+  isAuthenticated,
 }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedText, setSelectedText] = useState("");
   const [commentText, setCommentText] = useState("");
-
   const { isOpen: isOpenCommentModal, onToggle: onToggleCommentModal } =
     useDisclosure();
 
+  useEffect(() => {
+    if (isModalCommentsOpen) onToggleCommentModal();
+  }, [isModalCommentsOpen]);
   useEffect(() => {
     getPostById(params.id);
   }, [getPostById, params.id]);
@@ -77,6 +81,8 @@ function SinglePost({
     };
     addCommentToPost(params.id, commentObj);
     getPostById(params.id);
+    setCommentText("");
+    setSelectedText("");
     onClose();
   };
 
@@ -100,12 +106,12 @@ function SinglePost({
         postState.channel.channelIconImageUrl
           ? postState.channel.channelIconImageUrl.toString()
           : defaultImageUrl
-      )
+      );
     }
   }, [postState]);
 
   return (
-    <Box maxW="2xl" px={4}>
+    <Box maxW="2xl">
       {postState.post ? (
         <>
           <Card
@@ -114,20 +120,26 @@ function SinglePost({
             mb={4}
             style={{ "--card-shadow": "transparent" }}
           >
-            <CardHeader py={0} px="0">
+            <CardHeader py={2} px="0" pl="1">
               <Flex spacing="4">
                 <Flex flex="1" gap="4" alignItems="center" flexWrap="wrap">
-                  <Avatar
-                    size="sm"
-                    borderRadius={10}
-                    src={
-                      postState.channel.channelIconImageUrl !== ""
-                        ? postState.channel.channelIconImageUrl
-                        : "../assets/default-post-image.svg"
-                    }
-                  />
+                  <Link href={`/channel/${postState.post.channelId._id}`}>
+                    <Avatar
+                      size="sm"
+                      borderRadius={10}
+                      src={
+                        postState.channel.channelIconImageUrl !== ""
+                          ? postState.channel.channelIconImageUrl
+                          : "../assets/default-post-image.svg"
+                      }
+                    />
+                  </Link>
                   <Box>
-                    <Heading fontSize="lg">{postState.channel.channelName}</Heading>
+                    <Link href={`/channel/${postState.post.channelId._id}`}>
+                      <Heading fontSize="lg">
+                        {postState.channel.channelName}
+                      </Heading>
+                    </Link>
                   </Box>
                 </Flex>
                 <ShareButton
@@ -138,11 +150,12 @@ function SinglePost({
                   variant="ghost"
                   aria-label="See menu"
                   fontSize="20px"
+                  isDisabled={!isAuthenticated}
                   icon={
                     !postState.isBookmarked ? (
                       <CiBookmark />
                     ) : (
-                      <BookmarkFilled color="green"/>
+                      <BookmarkFilled color="green" />
                     )
                   }
                   onClick={() => submitBookmarkPost("post", postState.post._id)}
@@ -157,21 +170,14 @@ function SinglePost({
               alt={postState.post.header}
             />
             <CardBody pt="2" px="0">
-              <Text
-                fontSize="12px"
-                mt="1"
-                display="flex"
-                alignItems="center"
-                color="textlight"
-                pb={2}
-              >
+              <Text mt="1" display="flex" alignItems="center" pb={2}>
                 {postState.post.section} - {postState.post.subSection} •{" "}
                 {formatDate(postState.post.createdAt)} • 6min read
               </Text>
 
               <Divider />
               <Flex py="1" gap={1}>
-                <Flex w='240px' justify="space-between">
+                <Flex w="300px" justify="space-between">
                   <Button
                     pl="0"
                     variant="ghost"
@@ -180,6 +186,7 @@ function SinglePost({
                     leftIcon={
                       <FaRegComment colorScheme="textlight" fontSize="28px" />
                     }
+                    isDisabled={!isAuthenticated}
                     onClick={() => onToggleCommentModal()}
                   >
                     {postState.commentsCount}
@@ -195,6 +202,7 @@ function SinglePost({
                         fontSize="28px"
                       />
                     }
+                    isDisabled={!isAuthenticated}
                     onClick={() => {
                       updatePostUpvote(params.id);
                       getPostById(params.id);
@@ -213,6 +221,7 @@ function SinglePost({
                         fontSize="28px"
                       />
                     }
+                    isDisabled={!isAuthenticated}
                     onClick={() => {
                       updatePostDownvote(params.id);
                       getPostById(params.id);
@@ -220,6 +229,13 @@ function SinglePost({
                   >
                     <Text color={"red.500"}>{postState.votes.falseCount}</Text>
                   </Button>
+                </Flex>
+                <Flex w="100%" justify="flex-end">
+                  <ShareButton
+                    url={`${process.env.NEXT_PUBLIC_FRONTEND_URL}/post/${postState.post._id}`}
+                    title={postState.post.header}
+                    shareButton={true}
+                  />
                 </Flex>
               </Flex>
               <Divider />
@@ -231,22 +247,34 @@ function SinglePost({
                 <Text mt="2" w="fit-content" p="1">
                   By {postState.user.channelName}
                 </Text>
-                <Heading size="md" as="h6" mt="2" mb="4">
+                <Heading fontSize="2xl" as="h5" mb="2">
                   {postState.post.header}
                 </Heading>
-                <Text fontSize='md' textAlign="justify" 
-                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(postState.post.bodyRichText) }}/>
+                <Heading fontSize="xl" as="h6" mb="4">
+                  {postState.post.standFirst}
+                </Heading>
+                <Text
+                  fontSize="md"
+                  textAlign="justify"
+                  dangerouslySetInnerHTML={{
+                    __html: DOMPurify.sanitize(postState.post.bodyRichText),
+                  }}
+                />
               </div>
 
+              <Divider mt={4}/>
               <Comments
                 postTitle={postState.post.header}
                 id={params.id}
                 isOpenCommentModal={isOpenCommentModal}
                 onToggleCommentModal={onToggleCommentModal}
+                commentText={commentText}
+                handleChangeComment={handleChangeComment}
+                submitComment={submitComment}
+                isAuthenticated={isAuthenticated}
               />
-            <RelatedArticleList/>
+              <RelatedArticleList />
             </CardBody>
-
           </Card>
 
           <Modal size="xl" isOpen={isOpen} onClose={onClose}>
@@ -282,8 +310,10 @@ function SinglePost({
 }
 
 const mapStateToProps = (state) => ({
+  isAuthenticated: state.auth.isAuthenticated,
   postState: state.post.singlePost,
   votes: state.post.postVotes,
+  isModalCommentsOpen: state.comment.isModalCommentsOpen,
 });
 
 const mapDispatchToProps = (dispatch) => ({

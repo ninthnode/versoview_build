@@ -2,6 +2,7 @@ const asyncHandler = require("express-async-handler");
 const { Channel } = require("../models/channel.model");
 const { Post } = require("../models/post.model");
 const { Follow } = require("../models/follow.model");
+const { User } = require("../models/user.model");
 
 // Create Channel
 module.exports.create = asyncHandler(async (req, res) => {
@@ -78,6 +79,19 @@ module.exports.getAllChannel = asyncHandler(async (req, res) => {
 		);
 
 		res.status(200).json({ message: "Success", data: channelsWithPostCount });
+	} catch (error) {
+		console.error(error);
+		res.status(500).json({ error: "Internal Server Error" });
+	}
+});
+module.exports.getAllChannelLoggedoutUser = asyncHandler(async (req, res) => {
+	try {
+		const adminId = process.env.ADMIN_USER_ID;
+		const userData = await User.findById(adminId);
+		const channelData = await Channel.find({userId: userData._id});
+		console.log(channelData)
+
+		res.status(200).json({ message: "Success", data: channelData });
 	} catch (error) {
 		console.error(error);
 		res.status(500).json({ error: "Internal Server Error" });

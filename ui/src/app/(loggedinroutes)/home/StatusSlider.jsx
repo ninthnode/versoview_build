@@ -64,9 +64,29 @@ const StatusItem = ({ status }) => {
   );
 };
 
-const getChannels = () => {
+const getChannelsForLoggedoutUser = () => {
   return axios
-    .get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/channel/getAllChannel`)
+  .get(
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/channel/getAllChannelLoggedoutUser`
+  )
+  .then((r) =>
+    r.data.data.map((c) => ({
+      id: c._id,
+      name: c.channelName,
+      avatar: c.channelIconImageUrl || "/assets/default-post-image.svg",
+    }))
+  );
+};
+const getChannels = () => {
+  const token = localStorage.getItem("token").replaceAll('"', "");
+  return axios
+    .get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/channel/getAllChannel`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    )
     .then((r) =>
       r.data.data.map((c) => ({
         id: c.channelData._id,
@@ -79,31 +99,32 @@ const getChannels = () => {
 
 const StatusSlider = () => {
   const [channels, setChannels] = useState([]);
+  const authState = useSelector((s) => s.auth?.user?.user);
 
   useEffect(() => {
-    getChannels().then(setChannels);
+    if (authState) getChannels().then(setChannels);
+    else getChannelsForLoggedoutUser().then(setChannels);
   }, []);
 
   return (
-    <Box
-      overflowX="scroll"
-      overflowY="hidden"
-      paddingRight={0}
-      __css={{
-        "&::-webkit-scrollbar": {
-          w: "2",
-          h: "1",
-        },
-        "&::-webkit-scrollbar-track": {
-          w: "6",
-        },
-        "&::-webkit-scrollbar-thumb": {
-          borderRadius: "10",
-          bg: "gray.100",
-        },
-      }}
-    >
-      <HStack spacing={4} mb={2}>
+    <Box overflowX="scroll" overflowY="hidden" paddingRight={0}>
+      <HStack
+        spacing={4}
+        mb={2}
+        __css={{
+          "&::-webkit-scrollbar": {
+            w: "2",
+            h: "1",
+          },
+          "&::-webkit-scrollbar-track": {
+            w: "6",
+          },
+          "&::-webkit-scrollbar-thumb": {
+            borderRadius: "10",
+            bg: "gray.100",
+          },
+        }}
+      >
         {channels.map((status) => (
           <StatusItem key={status.id} status={status} />
         ))}

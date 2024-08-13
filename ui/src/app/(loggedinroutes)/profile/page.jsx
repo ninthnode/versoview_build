@@ -54,6 +54,7 @@ function Profile() {
   const [channelName, setChannelName] = useState();
 
   useEffect(() => {
+    if(authState)
     dispatch(fetchUser(authState.id));
   }, [authState]);
 

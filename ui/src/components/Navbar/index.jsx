@@ -75,7 +75,7 @@ const Navbar = ({ children }) => {
                     fontWeight="bold"
                     color={route.name === "Publish" ? "green.500" : "#333"}
                   />
-                  <BottomNavigationLabel fontSize="xs" color="#333">
+                  <BottomNavigationLabel fontSize="sm" color="#333">
                     {route.name}
                   </BottomNavigationLabel>
                 </BottomNavigationItem>

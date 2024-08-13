@@ -97,10 +97,10 @@ function SingleComment({
           {replies.map((replay) => (
             <Box key={replay._id} maxW="2xl" px={4} pb={4}>
               <HStack spacing={4} position="relative" mt={2}>
-                <Avatar name={replay.userId.channelName} />
+                <Avatar name={replay.userId.channelName} src={replay.userId.profileImageUrl}/>
                 <VStack align="start" spacing={1}>
                   <Text fontSize="md" fontWeight="bold">
-                    {replay.userId.username}
+                    {replay.userId.channelName}
                   </Text>
                   <Text fontSize="sm" color="gray.500">
                     {formatDateTime(replay.createdAt)}

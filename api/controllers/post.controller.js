@@ -16,6 +16,7 @@ const { UnreadPost } = require("../models/unreadPost.model");
 const fs = require("node:fs");
 const path = require("node:path");
 const fse = require("fs-extra");
+const { Follow } = require("../models/follow.model");
 
 // get all pdf images
 function getAllImageFiles(folder) {
@@ -94,14 +95,31 @@ module.exports.getAllPost = asyncHandler(async (req, res) => {
     const page = Number.parseInt(req.query.page) || 1;
     const limit = Number.parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
-    const postData = await Post.find()
-      .populate("channelId")
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
+    const userData = await User.findOne({ _id: userId });
+    const genres = userData.genre;
+
+    const userFollows = await Follow.find({ userId }).exec();
+
+    const followedChannelIds = userFollows.map((follow) => follow.channelId);
+    const postDataGenre = await Post.find({
+      section: { $in: genres },
+    }).populate("channelId");
+    const postDatachannel = await Post.find({
+      channelId: { $in: followedChannelIds },
+    }).populate("channelId");
+
+    let combinedPosts = [...postDataGenre, ...postDatachannel];
+
+    const uniquePosts = Array.from(
+      new Map(combinedPosts.map((post) => [post._id.toString(), post])).values()
+    );
+
+    const finalPosts = uniquePosts
+      .sort((a, b) => b.createdAt - a.createdAt)
+      .slice(skip, skip + limit);
 
     const postsWithBookmarkStatus = await Promise.all(
-      postData.map(async (post) => {
+      finalPosts.map(async (post) => {
         const bookmark = await Bookmark.findOne({ userId, postId: post._id });
         return {
           ...post.toObject(),
@@ -126,7 +144,7 @@ module.exports.getAllPost = asyncHandler(async (req, res) => {
 
 module.exports.getPostIfUserNotLoggedIn = asyncHandler(async (req, res) => {
   try {
-    const postId = "6682674a2b1b5b869713c12a";
+    const postId = process.env.ADMIN_USER_ID;
 
     const postData = await Post.find({ userId: postId })
       .populate("channelId")
@@ -231,6 +249,76 @@ module.exports.getPostById = asyncHandler(async (req, res) => {
   }
 });
 
+module.exports.getPostByIdLoggedOut = asyncHandler(async (req, res) => {
+  try {
+    const postId = req.params._id;
+    // Fetch post data
+    const postData = await Post.findOne({ _id: postId });
+    if (!postData) {
+      console.log(`Post not found for ID: ${postId}`);
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    // Fetch channel data
+    const channelId = postData.channelId;
+    if (!channelId) {
+      console.log(`Channel ID not found in post data: ${postData}`);
+      return res
+        .status(404)
+        .json({ message: "Channel ID not found in post data" });
+    }
+
+    const channelData = await Channel.findOne({ _id: channelId });
+    if (!channelData) {
+      console.log(`Channel not found for ID: ${channelId}`);
+      return res.status(404).json({ message: "Channel not found" });
+    }
+
+    // Fetch user data
+    const userId = channelData.userId;
+    if (!userId) {
+      console.log(`User ID not found in channel data: ${channelData}`);
+      return res
+        .status(404)
+        .json({ message: "User ID not found in channel data" });
+    }
+
+    const userData = await User.findOne({ _id: userId });
+    if (!userData) {
+      console.log(`User not found for ID: ${userId}`);
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const votes = await Vote.find({ postId: postId });
+    const voteCounts = votes.reduce(
+      (counts, vote) => {
+        if (vote.voteType === true) {
+          counts.trueCount++;
+        } else if (vote.voteType === false) {
+          counts.falseCount++;
+        }
+        return counts;
+      },
+      { trueCount: 0, falseCount: 0 }
+    );
+    const comments = await PostComment.find({ postId: postId });
+
+    // Combine all the data
+    const combinedData = {
+      post: postData,
+      channel: channelData,
+      user: userData,
+      votes: voteCounts,
+      commentsCount: comments.length,
+    };
+
+    res.status(200).json({ message: "Success", data: combinedData });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 // Get posts by channel id
 module.exports.getPostByChannelId = asyncHandler(async (req, res) => {
   try {
@@ -241,15 +329,15 @@ module.exports.getPostByChannelId = asyncHandler(async (req, res) => {
       "channelId"
     );
 
-	const postsWithBookmarkStatus = await Promise.all(
-		postData.map(async (post) => {
-		  const bookmark = await Bookmark.findOne({ userId, postId: post._id });
-		  return {
-			...post.toObject(),
-			isBookmarked: !!bookmark,
-		  };
-		})
-	  );
+    const postsWithBookmarkStatus = await Promise.all(
+      postData.map(async (post) => {
+        const bookmark = await Bookmark.findOne({ userId, postId: post._id });
+        return {
+          ...post.toObject(),
+          isBookmarked: !!bookmark,
+        };
+      })
+    );
 
     if (!postData)
       return res
@@ -545,7 +633,7 @@ module.exports.getAllBookmark = asyncHandler(async (req, res) => {
       .sort({ createdAt: -1 })
       .populate({
         path: "postId",
-		model: "Post",
+        model: "Post",
         populate: {
           path: "channelId",
           model: "Channel",
@@ -575,14 +663,14 @@ module.exports.getAllBookmark = asyncHandler(async (req, res) => {
       bookmarks.map(async (bookmark) => {
         if (!bookmark.postCommentId) {
           const populatedBookmark = await Bookmark.findById(bookmark._id)
-		  .populate({
-			path: "postId",
-			model: "Post",
-			populate: {
-			  path: "channelId",
-			  model: "Channel",
-			},
-		  })
+            .populate({
+              path: "postId",
+              model: "Post",
+              populate: {
+                path: "channelId",
+                model: "Channel",
+              },
+            })
             .populate({
               path: "postCommentId",
               model: "PostCommentReplies",
@@ -839,10 +927,12 @@ module.exports.getAllComment = asyncHandler(async (req, res) => {
   try {
     const userId = req.user._id;
     const postId = req.params;
-    const comments = await PostComment.find({ postId: postId }).sort({ createdAt: -1 }).populate({
-      path: "userId",
-      model: "User",
-    });
+    const comments = await PostComment.find({ postId: postId })
+      .sort({ createdAt: -1 })
+      .populate({
+        path: "userId",
+        model: "User",
+      });
     // Fetch votes for these comments
     const commentIds = comments.map((comment) => comment._id);
     const votes = await CommentVote.find({
@@ -907,7 +997,8 @@ module.exports.getAllCommentReplies = asyncHandler(async (req, res) => {
   const userId = req.user._id;
   try {
     // Fetch the comment details with upvote and downvote counts
-    const commentDetails = await PostComment.findById(commentId).sort({ createdAt: -1 })
+    const commentDetails = await PostComment.findById(commentId)
+      .sort({ createdAt: -1 })
       .populate({
         path: "userId",
         model: "User",
@@ -922,7 +1013,8 @@ module.exports.getAllCommentReplies = asyncHandler(async (req, res) => {
     const downvoteCount = votes.filter((vote) => !vote.voteType).length;
 
     // Fetch replies and their upvote/downvote counts
-    const replies = await PostCommentReply.find({ postCommentId: commentId }).sort({ createdAt: -1 })
+    const replies = await PostCommentReply.find({ postCommentId: commentId })
+      .sort({ createdAt: -1 })
       .populate({
         path: "userId",
         model: "User",

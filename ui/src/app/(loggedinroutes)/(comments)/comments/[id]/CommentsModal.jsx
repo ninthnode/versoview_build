@@ -40,9 +40,9 @@ const Comment = ({
 }) => (
   <Box w="100%" mb={4} bg="#fff">
     <HStack spacing={4} position="relative" px={4} pt={6}>
-      <Avatar size='md' name={userId.username} />
+      <Avatar size='md' name={userId.channelName} src={userId.profileImageUrl} />
       <VStack align="start" spacing={1}>
-        <Text fontSize='md' fontWeight="bold">{userId.username}</Text>
+        <Text fontSize='md' fontWeight="bold">{userId.channelName}</Text>
         <Text fontSize="sm" color="gray.500">
           {formatDateTime(createdAt)}
         </Text>
@@ -128,7 +128,7 @@ const Comment = ({
         </Button>
       </Flex>
     </HStack>
-    {showReply == _id && <SingleComment id={_id} commentHead={commentText} commentUsername={userId.username} />}
+    {showReply == _id && <SingleComment id={_id} commentHead={commentText} commentUsername={userId.channelName} />}
   </Box>
 );
 

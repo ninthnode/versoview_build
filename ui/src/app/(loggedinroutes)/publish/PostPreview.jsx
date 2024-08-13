@@ -38,7 +38,7 @@ function PostPreview({
   postLoading
 }) {
   return (
-    <Box maxW="2xl" px={4}>
+    <Box maxW="2xl">
       {post ? (
         <>
           <Card
@@ -145,8 +145,11 @@ function PostPreview({
                 <Text mt="2" w="fit-content" p="1">
                   By {userChannel.channelName}
                 </Text>
-                <Heading size="md" as="h6" mt="2" mb="4">
+                <Heading fontSize="2xl" as="h6" mt="2">
                   {post.header}
+                </Heading>
+                <Heading fontSize="xl" as="h6" mb="4">
+                  {post.standFirst}
                 </Heading>
                 <Text
                   fontSize='md'

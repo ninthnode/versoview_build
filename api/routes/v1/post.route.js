@@ -7,6 +7,7 @@ const {
 	getAllPdfSlides,
 	getAllPost,
 	getPostById,
+	getPostByIdLoggedOut,
 	updatePost,
 	deletePost,
 	upvotePost,
@@ -47,6 +48,7 @@ router.post("/createPost", protectUser, create);
 router.get("/getAllPost", protectUser, getAllPost);
 router.get("/getPostIfUserNotLoggedIn", getPostIfUserNotLoggedIn);
 router.get("/getPost/:_id", protectUser, getPostById);
+router.get("/getPostByIdLoggedOut/:_id", getPostByIdLoggedOut);
 router.get("/getPostByChannelId/:_id",protectUser, getPostByChannelId);
 router.put("/updatePost/:_id", protectUser, updatePost);
 router.delete("/deletePost/:_id", protectUser, deletePost);

@@ -5,6 +5,7 @@ import {
   Button,
   Textarea,
   Spinner,
+  Flex
 } from "@chakra-ui/react";
 import {
   getCommentByPostId,
@@ -27,13 +28,14 @@ const Comments = ({
   updateCommentUpvote,
   updateCommentDownvote,
   addRemoveBookmarks,
-  postTitle
+  postTitle,
+  commentText,
+  handleChangeComment,
+  submitComment,isAuthenticated
 }) => {
 
   const commentId = id;
   const [commentList, setCommentList] = useState([]);
-  const [commentText, setCommentText] = useState('');
-
   useEffect(() => {
     getCommentByPostId(commentId);
   }, [getCommentByPostId, commentId]);
@@ -66,39 +68,33 @@ const Comments = ({
     getCommentByPostId(commentId);
   };
 
-  const submitComment = async () => {
-    let commentObj = {
-      excerpt: "",
-      commentText: commentText,
-    };
-    await addCommentToPost(commentId, commentObj);
-    getCommentByPostId(commentId);
-    setCommentText("");
+  const submitCommentByText = async () => {
+    await submitComment();
     onToggleCommentModal()
-  };
-
-  const handleChangeComment = (e) => {
-    setCommentText(e.target.value);
+    getCommentByPostId(commentId);
   };
 
   return (
-    <Box p={4}>
-      <Box maxW="2xl" my="4" textAlign='right'>
+    <Box py={4}>
+      <Flex maxW="2xl" my="4" textAlign='right' gap='4'>
         <Textarea
           type="comment"
           placeholder="Enter Comment..."
           name="commenttext"
           value={commentText}
-          onChange={handleChangeComment}
+          onChange={(e) => handleChangeComment(e.target.value)}
+          border='1px solid #000'
+          rows='5'
         />
         <Button
-          onClick={submitComment}
+          onClick={submitCommentByText}
           size="md"
           colorScheme="green"
+          isDisabled={!isAuthenticated}
         >
           Post {commentText !== '' && loading ? <Spinner size="sm" color="white" /> : ''}
         </Button>
-      </Box>
+      </Flex>
       {commentList && (
         <CommentsModal
         postTitle={postTitle}

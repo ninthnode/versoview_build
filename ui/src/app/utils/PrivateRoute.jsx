@@ -1,6 +1,6 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch,useSelector } from 'react-redux';
 import { verifyUser } from '@/redux/auth/authActions';
 import { useRouter, usePathname } from 'next/navigation';
 import { DashboardRoutes, AuthRoutes, RoutesList } from '@/routes/index';
@@ -12,17 +12,22 @@ const PrivateRoute = ({ children }) => {
   const dispatch = useDispatch();
   const router = useRouter();
   const path = usePathname();
-
+  
+  const [isVerified, setIsVerified] = useState(false);
   useEffect(() => {
     const fetchData = async () => {
+      let user 
       try {
-        const user = await dispatch(verifyUser());
+        if(!user&&!isVerified){
+          user = await dispatch(verifyUser());
+          setIsVerified(true);
+        }
         if (user) {
           setIsAuthenticated(true);
-          if(AuthRoutes.find((route) => path.startsWith(route.url)) &&user)
+          if(AuthRoutes.find((route) => path == route.url) &&user&& !path.startsWith('/choose-topics'))
             router.push('/home');
         }else{
-          if(!AuthRoutes.find((route) => path.startsWith(route.url))&& !path.startsWith('/home')&&!user)
+          if(!AuthRoutes.find((route) => path.startsWith(route.url))&& !path.startsWith('/home')&& !path.startsWith('/post')&&!user)
             router.push('/login');
         }
       } catch (error) {

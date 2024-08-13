@@ -76,39 +76,39 @@ const Home = ({
       )
     );
   };
-
   return (
     <Box>
       <Tabs index={tabIndex} onChange={(index) => setTabIndex(index)}>
         <TabList gap={2} h="3rem">
           <Tab pl="0">Latest</Tab>
-          <Tab pl="1">Recently viewed</Tab>
-          <Tab pl="1">Following</Tab>
+          <Tab pl="1" isDisabled={!user}>Recently viewed</Tab>
+          <Tab pl="1" isDisabled={!user}>Following</Tab>
         </TabList>
 
         <TabPanels p="0">
           <TabPanel p="0">
-            <Box mt={2}>
+            <Box mt='2'>
               {postsState.loading ? (
                 <Spinner size="sm" color="#333" />
               ) : (
                 <>
                   {posts.length && <StatusSlider />}
                   {postList.map?.((post) => (
-                    <>
+                    <Box key={post._id}>
                       <PostCard
                         key={post._id || crypto.randomUUID()}
                         post={post}
                         submitBookmark={submitBookmarkPost}
                       />
                       <Divider />
-                    </>
+                    </Box>
                   ))}
                 </>
               )}
             </Box>
           </TabPanel>
-          <TabPanel>
+          <TabPanel p="0">
+          <Box mt='2'>
             {postsState.loading ? (
               <Spinner size="sm" color="#333" />
             ) : (
@@ -127,11 +127,14 @@ const Home = ({
                 )}
               </>
             )}
+            </Box>
           </TabPanel>
           <TabPanel p='0'>
+          <Box mt='2'>
             {userDetails&&followings.data && (
               <Following followings={followings} user={userDetails} />
             )}
+            </Box>
           </TabPanel>
         </TabPanels>
       </Tabs>
