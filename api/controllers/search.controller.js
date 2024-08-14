@@ -2,6 +2,7 @@ const asyncHandler = require("express-async-handler");
 const Message = require("../models/message.model");
 const { Post } = require("../models/post.model");
 const { User } = require("../models/user.model");
+const { Channel } = require("../models/channel.model");
 
 module.exports.searchArticles = asyncHandler(async (req, res) => {
   try {
@@ -33,21 +34,37 @@ module.exports.searchUsers = asyncHandler(async (req, res) => {
   try {
     const query = req.params.user;
     console.log('User search: ',  query );
-
-    const searchedChannels = await User.find({
+    const searchedUsers = await User.find({
       $or: [
         { channelName: { $regex: new RegExp(query, "i") } },
         { username: { $regex: new RegExp(query, "i") } },
         { email: { $regex: new RegExp(query, "i") } },
       ],
     });
-
-    if (!searchedChannels)
+    if (!searchedUsers)
       return res
         .status(400)
         .json({ status: 404, message: "No channels matched this search" });
+    const userIds = searchedUsers.map((user) => user._id);
+    
+    const channels = await Channel.find({ userId: { $in: userIds } });
+    
+    const userChannelsMap = channels.reduce((acc, channel) => {
+      acc[channel.userId] = channel._id;
+      return acc;
+    }, {});
+    
+    // Step 5: Add the channelId to each searchedUser
+    const searchedUsersWithChannels = searchedUsers.map((user) => {
+      return {
+        ...user.toObject(), // Convert mongoose document to plain object
+        channelId: userChannelsMap[user._id], // Add the channelId
+      };
+    });
 
-    return res.status(200).json({ status: 200, data: searchedChannels });
+  
+
+    return res.status(200).json({ status: 200, data: searchedUsersWithChannels });
     // db.channels.aggregate([{ $search: {text: {path: {wildcard: '*'}, query: '@ryan'}, index: 'idx_channelName'}}])
   } catch (error) {
     console.error(error);

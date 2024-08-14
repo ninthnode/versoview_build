@@ -22,7 +22,7 @@ import React, { useState, useEffect } from "react";
 import { MdKeyboardArrowDown } from "react-icons/md";
 import {  FaCheck as CheckIcon } from "react-icons/fa";
 import { IoStar as StarIcon, IoStarOutline as StarIconOutlined } from "react-icons/io5";
-
+import { FiMoreHorizontal } from 'react-icons/fi';
 const pinChannel = (id) =>
   get(`channel/pinChannel/${id}`, true, { method: "PUT" }).then((r) => r.data);
 const unpinChannel = (id) =>
@@ -146,19 +146,7 @@ const Following = ({ followings, user }) => {
             mr={4}
             aria-label="Menu"
             colorScheme={user.profileBgColor}
-            icon={
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="text-gray-400 size-6"
-                viewBox="0 0 24 24"
-              >
-                <title>Menu</title>
-                <path
-                  fill="currentColor"
-                  d="M16 12a2 2 0 0 1 2-2a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2m-6 0a2 2 0 0 1 2-2a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2m-6 0a2 2 0 0 1 2-2a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2"
-                />
-              </svg>
-            }
+            icon={<FiMoreHorizontal/>}
           />
         </Flex>
       </Box>
@@ -216,17 +204,12 @@ const Following = ({ followings, user }) => {
                 </Text>
               </Box>
             </Flex>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="text-gray-400 size-6"
-              viewBox="0 0 24 24"
-            >
-              <title>Icon</title>
-              <path
-                fill="currentColor"
-                d="M16 12a2 2 0 0 1 2-2a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2m-6 0a2 2 0 0 1 2-2a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2m-6 0a2 2 0 0 1 2-2a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2"
-              />
-            </svg>
+            <IconButton
+            mr={4}
+            aria-label="Menu"
+            colorScheme={user.profileBgColor}
+            icon={<FiMoreHorizontal/>}
+          />
           </Flex>
         )):<Text mt='4' textAlign={'center'}>No Followings</Text>
       )}

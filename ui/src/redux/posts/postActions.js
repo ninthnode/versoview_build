@@ -34,8 +34,7 @@ export const fetchPosts = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-        
-      console.log(response)
+
       }
       else{
         response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/getPostIfUserNotLoggedIn`);

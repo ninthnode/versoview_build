@@ -1,5 +1,5 @@
 import { Accordion, AccordionItem, AccordionButton, AccordionPanel, AccordionIcon, Box, Badge, Button, Stack } from '@chakra-ui/react';
-
+import Link from 'next/link';
 function Publications({userPosts}) {
   return (
     <Accordion allowMultiple>
@@ -67,9 +67,11 @@ function Publications({userPosts}) {
                 <Stack spacing={0}>
                   {userPosts&&userPosts.map((item, index) => (
                     <Box key={index} display="flex" justifyContent="space-between" alignItems="center" p={2} borderWidth="1px" borderRadius="md">
+                    <Link href={`/post/${item._id}`}>
                       <Box>
                         {item.header}
                       </Box>
+                    </Link>
                     </Box>
                   ))}
                 </Stack>

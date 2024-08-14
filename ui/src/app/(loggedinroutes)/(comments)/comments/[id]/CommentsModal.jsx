@@ -39,7 +39,7 @@ const Comment = ({
   showReply,
 }) => (
   <Box w="100%" mb={4} bg="#fff">
-    <HStack spacing={4} position="relative" px={4} pt={6}>
+    <HStack align="start" spacing={4} position="relative" px={4} pt={6}>
       <Avatar size='md' name={userId.channelName} src={userId.profileImageUrl} />
       <VStack align="start" spacing={1}>
         <Text fontSize='md' fontWeight="bold">{userId.channelName}</Text>

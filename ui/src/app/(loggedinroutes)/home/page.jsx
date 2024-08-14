@@ -79,7 +79,7 @@ const Home = ({
   return (
     <Box>
       <Tabs index={tabIndex} onChange={(index) => setTabIndex(index)}>
-        <TabList gap={2} h="3rem">
+        <TabList gap={2} h="3rem" borderColor='lightgray'>
           <Tab pl="0">Latest</Tab>
           <Tab pl="1" isDisabled={!user}>Recently viewed</Tab>
           <Tab pl="1" isDisabled={!user}>Following</Tab>
@@ -92,7 +92,7 @@ const Home = ({
                 <Spinner size="sm" color="#333" />
               ) : (
                 <>
-                  {posts.length && <StatusSlider />}
+                  {<StatusSlider />}
                   {postList.map?.((post) => (
                     <Box key={post._id}>
                       <PostCard

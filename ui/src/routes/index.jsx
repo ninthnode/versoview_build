@@ -51,8 +51,20 @@ const OtherRoutes = [
     isprivate: true,
     url: "/bookmarks",
   },
+  {
+    name: "Channel",
+    icon: "",
+    isprivate: true,
+    url: "/channel",
+  },
+  {
+    name: "Choose Genre",
+    icon: "",
+    isprivate: true,
+    url: "/choose-topics",
+  }
 ]
 
-const DashboardRoutes = [...SidebarRoutes];
-const RoutesList = [...DashboardRoutes, ...AuthRoutes,...OtherRoutes];
-export { DashboardRoutes, AuthRoutes, RoutesList };
+const ProtectedRoutes = [...SidebarRoutes,...OtherRoutes];
+const RoutesList = [...ProtectedRoutes, ...AuthRoutes,...OtherRoutes];
+export { ProtectedRoutes, AuthRoutes, RoutesList };

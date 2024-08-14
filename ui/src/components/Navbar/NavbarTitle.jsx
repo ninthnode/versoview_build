@@ -33,12 +33,12 @@ const NavbarTitle = ({ navtitle,navicon }) => {
           <Button pl="0" variant="ghost" onClick={() => router.back()}>
             <Image m="0" src={"/assets/back.svg"}/>
           </Button>
-            <Avatar
+          {navicon&&<Avatar
               size="md"
               borderRadius={10}
               name={"test"}
               src={navicon}
-            />
+            />}
             <Heading ml={2} as='h5' fontSize='23px'>{navtitle}</Heading>
         </Flex>
       )}

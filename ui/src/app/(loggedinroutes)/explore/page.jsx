@@ -6,6 +6,7 @@ import { Input, Select, Box, Spinner, Flex, Image, Text,Divider } from "@chakra-
 import PostCard from "../home/postCard";
 import { addRemoveBookmarks } from "@/redux/bookmarks/bookmarkAction";
 import { useDispatch } from "react-redux";
+import Link from "next/link";
 
 const Search = () => {
   const dispatch = useDispatch();
@@ -97,6 +98,7 @@ const Search = () => {
               <Divider/>
               </>
             ) : (
+              <Link href={`/channel/${result.channelId}`} key={result.id}>
               <Flex key={result.id} py={4} my={1} rounded="md" shadow="md" bg={result.profileBgColor}>
                 <Image
                   src={result.profileImageUrl || "/assets/default-post-image.svg"}
@@ -113,6 +115,7 @@ const Search = () => {
                   </Text>
                 </Flex>
               </Flex>
+              </Link>
             )
           )
         ) : (

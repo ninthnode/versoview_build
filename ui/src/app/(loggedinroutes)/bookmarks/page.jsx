@@ -118,9 +118,8 @@ const Bookmark = ({
 
   return (
     <Box mb="60px">
-      <Box mt={4} maxW="2xl" bg="lightgray" borderWidth="1px" borderRadius="md">
-        {postBookmarks.length > 0 ? (
-          bookmarkState.loading ? (
+      <Box mt={4} maxW="2xl" >
+        {bookmarkState.loading ? (
             <Spinner size="sm" color="#333" />
           ) : (
             postBookmarks.map((post) => {
@@ -169,9 +168,10 @@ const Bookmark = ({
               }
             })
           )
-        ) : (
-          <Text color="gray.500">No Bookmarks Available</Text>
-        )}
+        }
+        {
+          !bookmarkState.loading &&postBookmarks.length === 0 && <Text color="gray.500">No Bookmarks Available</Text>
+        }
       </Box>
     </Box>
   );

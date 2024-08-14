@@ -8,7 +8,6 @@ import {
   Flex
 } from "@chakra-ui/react";
 import {
-  getCommentByPostId,
   addCommentToPost,
   updateCommentUpvote,
   updateCommentDownvote,
@@ -34,11 +33,11 @@ const Comments = ({
   submitComment,isAuthenticated
 }) => {
 
-  const commentId = id;
+  const postId = id;
   const [commentList, setCommentList] = useState([]);
   useEffect(() => {
-    getCommentByPostId(commentId);
-  }, [getCommentByPostId, commentId]);
+    getCommentByPostId(postId);
+  }, [getCommentByPostId, postId]);
 
   useEffect(() => {
     if (commentState&&commentState.length > 0) {
@@ -60,18 +59,17 @@ const Comments = ({
 
   const upvoteComment = async (changeCommentId) => {
     await updateCommentUpvote(changeCommentId);
-    getCommentByPostId(commentId);
+    getCommentByPostId(postId);
   };
 
   const downvoteComment = async (changeCommentId) => {
     await updateCommentDownvote(changeCommentId);
-    getCommentByPostId(commentId);
+    getCommentByPostId(postId);
   };
 
   const submitCommentByText = async () => {
     await submitComment();
     onToggleCommentModal()
-    getCommentByPostId(commentId);
   };
 
   return (
@@ -116,7 +114,6 @@ const mapStateToProps = (state) => ({
 });
 
 const mapDispatchToProps = {
-  getCommentByPostId,
   addCommentToPost,
   updateCommentUpvote,
   updateCommentDownvote,

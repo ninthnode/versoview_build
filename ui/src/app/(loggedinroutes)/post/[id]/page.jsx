@@ -35,13 +35,12 @@ import {
   updatePostUpvote,
   updatePostDownvote,
 } from "@/redux/posts/postActions";
-import { addCommentToPost } from "@/redux/comments/commentAction";
+import { addCommentToPost,getCommentByPostId } from "@/redux/comments/commentAction";
 import { FaBookmark as BookmarkFilled } from "react-icons/fa";
 import { addRemoveBookmarks } from "@/redux/bookmarks/bookmarkAction";
 import ShareButton from "@/components/ShareButton";
 import Comments from "@/app/(loggedinroutes)/(comments)/comments/[id]/page";
 import { formatDate } from "@/app/utils/DateUtils";
-import { setNavTitle } from "@/redux/navbar/action";
 import RelatedArticleList from "./RelatedArticleList";
 import DOMPurify from "dompurify";
 
@@ -56,6 +55,7 @@ function SinglePost({
   setNavTitle,
   isModalCommentsOpen,
   isAuthenticated,
+  getCommentByPostId
 }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedText, setSelectedText] = useState("");
@@ -81,6 +81,7 @@ function SinglePost({
     };
     addCommentToPost(params.id, commentObj);
     getPostById(params.id);
+    getCommentByPostId(params.id);
     setCommentText("");
     setSelectedText("");
     onClose();
@@ -98,17 +99,6 @@ function SinglePost({
       onOpen();
     }
   };
-  useEffect(() => {
-    if (postState && postState.post) {
-      const defaultImageUrl = "/assets/default-post-image.svg";
-      setNavTitle(
-        postState.channel.channelName,
-        postState.channel.channelIconImageUrl
-          ? postState.channel.channelIconImageUrl.toString()
-          : defaultImageUrl
-      );
-    }
-  }, [postState]);
 
   return (
     <Box maxW="2xl">
@@ -272,6 +262,7 @@ function SinglePost({
                 handleChangeComment={handleChangeComment}
                 submitComment={submitComment}
                 isAuthenticated={isAuthenticated}
+                getCommentByPostId={getCommentByPostId}
               />
               <RelatedArticleList />
             </CardBody>
@@ -318,12 +309,12 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({
   getPostById: (id) => dispatch(getPostById(id)),
+  getCommentByPostId: (id) => dispatch(getCommentByPostId(id)),
   addCommentToPost: (id, comment) => dispatch(addCommentToPost(id, comment)),
   updatePostUpvote: (id) => dispatch(updatePostUpvote(id)),
   updatePostDownvote: (id) => dispatch(updatePostDownvote(id)),
   addRemoveBookmarks: (type, postId) =>
     dispatch(addRemoveBookmarks(type, postId)),
-  setNavTitle: (title, icon) => dispatch(setNavTitle(title, icon)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(SinglePost);

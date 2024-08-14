@@ -65,20 +65,31 @@ module.exports.create = asyncHandler(async (req, res) => {
 
 module.exports.getAllChannel = asyncHandler(async (req, res) => {
 	try {
-		const channelData = await Channel.find();
-
+		const userId = req.user._id;
+		const userFollows = await Follow.find({ userId }).sort({ pinned: -1 }).exec();
+    	const followedChannelIds = userFollows.map((follow) => follow.channelId);
+		let channelData = await Channel.find({
+			_id: { $in: followedChannelIds },
+		});
+		channelData = followedChannelIds.map((id) => channelData.find((channel) => channel._id.equals(id)));
+		  const userChannel = await Channel.find({ userId: userId })
+		  let combinedChannel = [...userChannel,...channelData];
+		  const uniqueChannels = Array.from(
+			new Map(combinedChannel.map((channel) => [channel._id.toString(), channel])).values()
+		  );
+		  
 		// Get total post count for each channel
-		const channelsWithPostCount = await Promise.all(
-			channelData.map(async (channel) => {
-				const postCount = await Post.countDocuments({ channelId: channel._id });
-				return {
-					channelData: channel.toObject(),
-					postCount: postCount,
-				};
-			}),
-		);
+		// const channelsWithPostCount = await Promise.all(
+		// 	uniqueChannels.map(async (channel) => {
+		// 		const postCount = await Post.countDocuments({ channelId: channel._id });
+		// 		return {
+		// 			channelData: channel.toObject(),
+		// 			postCount: postCount,
+		// 		};
+		// 	}),
+		// );
 
-		res.status(200).json({ message: "Success", data: channelsWithPostCount });
+		res.status(200).json({ message: "Success", data: uniqueChannels });
 	} catch (error) {
 		console.error(error);
 		res.status(500).json({ error: "Internal Server Error" });
@@ -89,7 +100,6 @@ module.exports.getAllChannelLoggedoutUser = asyncHandler(async (req, res) => {
 		const adminId = process.env.ADMIN_USER_ID;
 		const userData = await User.findById(adminId);
 		const channelData = await Channel.find({userId: userData._id});
-		console.log(channelData)
 
 		res.status(200).json({ message: "Success", data: channelData });
 	} catch (error) {
