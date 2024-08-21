@@ -12,17 +12,17 @@ const rewardsData = [
 
 function RewardsList() {
   return (
-    <Box borderWidth="1px" borderRadius="md" p={4}>
+    <Box>
       <Flex justifyContent="space-between" mb={4}>
-        <Text fontWeight="bold">VersoRewards</Text>
-        <Text fontWeight="bold">Points</Text>
+        <Text fontWeight="bold" fontSize='lg'>VersoRewards</Text>
+        <Text fontWeight="bold" fontSize='lg'>Points</Text>
       </Flex>
       <VStack spacing={4} align="stretch">
         {rewardsData.map((reward, index) => (
           <Flex key={index} align="center" justify="space-between" p={2} borderWidth="1px" borderRadius="md">
             <Flex align="center">
               <Avatar src={reward.avatar} name={reward.name} size="sm" mr={4} />
-              <Text>{reward.name}</Text>
+              <Text fontSize='md'>{reward.name}</Text>
             </Flex>
             <Flex align="center">
               <Text mr={4}>{reward.points}</Text>

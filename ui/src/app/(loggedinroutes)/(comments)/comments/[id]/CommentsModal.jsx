@@ -13,7 +13,7 @@ import {
   Divider,
 } from "@chakra-ui/react";
 import { PiArrowFatDownLight, PiArrowFatUpLight } from "react-icons/pi";
-import { FaRegComment } from "react-icons/fa";
+import { BsChat } from "react-icons/bs";
 import { FaBookmark as BookmarkFilled } from "react-icons/fa6";
 import { CiBookmark } from "react-icons/ci";
 import SingleComment from "../../single-comment/page";
@@ -123,7 +123,7 @@ const Comment = ({
             showReply == _id ? setshowReply("") : setshowReply(_id)
           }
         >
-        <FaRegComment colorScheme="textlight" fontSize="28px" />
+        <BsChat colorScheme="#333" fontSize="28px" />
           <Text ml={2}>{replyCount}</Text>
         </Button>
       </Flex>

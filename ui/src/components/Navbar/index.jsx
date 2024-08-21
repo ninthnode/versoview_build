@@ -39,8 +39,8 @@ const Navbar = ({ children }) => {
         direction="column"
       >
         <Box w="100%">
-          <Box ml={{ base: 0, md: "16rem" }} mr={{ base: 0, md: 5 }}>
-            <Box mb={"100px"} w={{ base: "100%", md: "60%" }} px={4} borderRightWidth='2px' borderColor='#f5f5f5'>
+          <Box ml={{ base: 0, md: "16rem" }}>
+            <Box mb={"100px"} w={{ base: "100%", md: "2xl" }} px={4} borderRightWidth='2px' borderColor='#f5f5f5'>
               <MobileNav onOpen={onOpen} />
               <Divider />
               {children}

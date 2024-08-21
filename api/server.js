@@ -15,7 +15,7 @@ const messageRouter = require("./routes/v1/message.route");
 const searchRouter = require("./routes/v1/search.route");
 const rateLimit = require("express-rate-limit");
 const fs = require("node:fs");
-const path = require("node:path");
+const path = require("path");
 const { exec } = require("node:child_process");
 const Message = require("./models/message.model");
 const morgan = require("morgan");
@@ -25,7 +25,8 @@ const limiter = rateLimit({
 	standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
 	legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
-const folderPath = path.join(__dirname, "uploads");
+
+
 // fs.chmod(folderPath, 0o700, (err) => {
 //   if (err) {
 //     console.error(err);
@@ -40,10 +41,8 @@ const {
 const { extendErrors } = require("ajv/dist/compile/errors");
 const app = express();
 
-// Serve static files from the public directory
-app.use("/public", express.static(path.join(__dirname, "../public")));
+
 app.use(morgan("dev"));
-// const des = path.join(__dirname, "../public");
 
 dotenv.config();
 connectDB();
@@ -123,6 +122,9 @@ app.get("/", (req, res) => {
 	res.send("Server is running....");
 });
 
+// Serve static files from the static directory
+app.use(express.static(path.join(__dirname, 'public')));
+
 app.use("/api/v1/admin/", adminRoutesV1);
 app.use("/api/v1/users/", userRoutesV1);
 app.use("/api/v1/channel/", channelRoutesV1);
@@ -132,6 +134,7 @@ app.use("/api/v1/messages", messageRouter);
 app.use("/api/v1/search", searchRouter);
 app.use(notFoundError);
 app.use(errorHandler);
+
 
 const PORT = process.env.PORT || 5000;
 

@@ -27,28 +27,17 @@ const PostCard = ({ post, small = false, submitBookmark, showBookmark }) => {
     if (text.length <= length) return text;
     return `${text.substring(0, length)}...`;
   };
-  const defaultImageUrl = "/assets/default-post-image.svg";
   return (
     <Box m="2" mb='0'>
     <Card maxW="2xl" mt={4} mb={0}>
       <CardHeader p={2}>
         <Flex spacing="4">
           <Flex flex="1" gap="4" alignItems="center" flexWrap="wrap">
-            {post.channelId?.channelIconImageUrl ? (
               <Avatar
                 size="sm"
                 borderRadius={10}
-                name={"test"}
                 src={post.channelId?.channelIconImageUrl}
               />
-            ) : (
-              <Avatar
-                size="sm"
-                borderRadius={10}
-                name={"test"}
-                src={defaultImageUrl}
-              />
-            )}
             <Box>
               <Heading size="sm">{post.channelId?.channelName}</Heading>
             </Box>

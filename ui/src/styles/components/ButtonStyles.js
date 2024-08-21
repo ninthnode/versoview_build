@@ -41,6 +41,11 @@ export const ButtonStyles = {
         color: "#fff",
       },
     }),
+    nostyle: (props) => ({
+      bg: "#fff",
+      color: "#333",
+      fontWeight: "normal"
+    }),
   },
   // default values for size and variant
   defaultProps: {},

@@ -6,6 +6,7 @@ import {
   SIGNUP_FAILURE,
   LOGOUT_SUCCESS,
   LOADING_START,
+  USER_VERIFIED
 } from "./types";
 
 import { toast } from 'react-toastify';
@@ -37,6 +38,7 @@ export const loginUser = (formData) => async (dispatch) => {
       })
       dispatch(loginSuccess(response));
       localStorage.setItem("token", JSON.stringify(response.data.data.token));
+      localStorage.setItem('refreshToken', JSON.stringify(response.data.data.refreshtoken));
       window.location.href = "/home";
     } else {
       console.log("Login failed:", response.statusText);
@@ -70,6 +72,7 @@ export const signupUser = (formData) => async (dispatch) => {
       })
       dispatch(signupsuccess(response));
       localStorage.setItem("token", JSON.stringify(response.data.data.token));
+      localStorage.setItem('refreshToken', JSON.stringify(response.data.data.refreshtoken));
       window.location.href = "/choose-topics";
     }
   } catch (error) {
@@ -94,16 +97,50 @@ export const verifyUser = () => async (dispatch) => {
       `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/users/verify-user`,
       config
     );
-    if (+response.status === 200 || +response.status === 201) {
+    dispatch({
+      type: USER_VERIFIED,
+    });
+    if (response.status == 200 || response.status == 201) {
       localStorage.setItem("userId", response.data.user.id);
       localStorage.setItem("userEmail", response.data.user.email);
-
       dispatch(loginSuccess(response));
       return response.data;
     }
-    throw new Error("User verification failed");
   } catch (error) {
+    dispatch({
+      type: USER_VERIFIED,
+    });
     console.error("Error verifying user:", error);
+    
+    let refreshToken = localStorage.getItem('refreshToken');
+    refreshToken = refreshToken ? refreshToken.replace(/^"(.*)"$/, "$1") : null;
+    if (refreshToken) {
+      const newToken = await dispatch(RefreshUserToken(refreshToken));
+      if(newToken)
+      return await dispatch(verifyUser());
+    }
+  }
+};
+
+export const RefreshUserToken = (refreshToken) => async (dispatch) => {
+  try {
+    const userData = {
+      refreshToken:refreshToken
+    }
+    const response = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/users/refresh-token`, userData
+    );
+
+    if (response.status === 200 || response.status === 201) {
+      const newAccessToken = response.data.accessToken;
+      localStorage.setItem('token', JSON.stringify(newAccessToken));
+      return newAccessToken
+    } else {
+      console.error('Token refresh failed:', response.statusText);
+      return null;
+    }
+  } catch (error) {
+    console.error('Error during token refresh:', error);
+    return null;
   }
 };
 

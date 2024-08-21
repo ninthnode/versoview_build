@@ -132,7 +132,7 @@ const Home = ({
           <TabPanel p='0'>
           <Box mt='2'>
             {userDetails&&followings.data && (
-              <Following followings={followings} user={userDetails} />
+              <Following followings={followings} user={userDetails} fetchfollowChannelList={fetchfollowChannelList}/>
             )}
             </Box>
           </TabPanel>

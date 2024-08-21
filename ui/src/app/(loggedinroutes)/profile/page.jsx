@@ -16,13 +16,14 @@ import {
   Input,
   Textarea,
   Button,
-  Spinner
+  Spinner,
+  Grid,
 } from "@chakra-ui/react";
 import { MdLogout } from "react-icons/md";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchUser, updateUser } from "@/redux/profile/actions";
 import dynamic from "next/dynamic";
-import UploadImage from "@/components/UploadImage";
+import UploadImage from "@/app/(loggedinroutes)/profile/UploadImage";
 import ChannelName from "./channel-name";
 import ShareChannel from "./share-channel";
 import Publications from "./publications";
@@ -52,10 +53,8 @@ function Profile() {
   const [facebook, setFacebook] = useState();
   const [telegram, setTelegram] = useState();
   const [channelName, setChannelName] = useState();
-
   useEffect(() => {
-    if(authState)
-    dispatch(fetchUser(authState.id));
+    if (authState) dispatch(fetchUser(authState.id));
   }, [authState]);
 
   useEffect(() => {
@@ -103,12 +102,16 @@ function Profile() {
       key = `test/image/${uploadImage.name}`;
     }
     dispatch(updateUser(key, content_type, uploadImage, authState.id, dataObj))
-      .then(() => {
+      .then((r) => {
         setUpdating(false);
         setIsEditing(false);
         setUploadImage(null);
+        dispatch(fetchUser(authState.id));
       })
-      .catch(() => setUpdating(false));
+      .catch((e) => {
+        console.log(e);
+        setUpdating(false);
+      });
   };
 
   const handleLogout = () => {
@@ -123,19 +126,18 @@ function Profile() {
       setSelectedImage(file);
     }
   };
+  const useraaa = {
+    channelName: "HomeBeautiful",
+    username: "Versoview",
+    profileUrl: "https://www.versoview.com",
+    email: "versoview@gmail.com",
+    profileLocation: "New York, USA",
+  };
   return (
     user && (
-      <Box ml={{ base: "0", sm: "4" }} mb="60px" maxW="xl">
-        <Flex w="100%" justifyContent="flex-end">
-          <Button
-            leftIcon={<MdLogout />}
-            variant="ghost"
-            onClick={handleLogout}
-          >
-            Logout
-          </Button>
-        </Flex>
+      <Box bg="#F5F5F5" ml={{ base: "0", sm: "4" }} mb="60px" maxW="xl">
         <Box
+          mt={2}
           borderWidth="1px"
           borderRadius="lg"
           overflow="hidden"
@@ -159,7 +161,7 @@ function Profile() {
                 border: "3px solid #4C9C8A",
                 padding: "4px",
                 backgroundColor: "#fff",
-                cursor: !isEditing?"not-allowed":"pointer",
+                cursor: !isEditing ? "not-allowed" : "pointer",
               }}
               value={bg}
               onChange={(e) => {
@@ -173,92 +175,100 @@ function Profile() {
 
           <VStack
             spacing={3}
-            bg="#F5F5F5"
+            bg="#fff"
             p="4"
             borderRadius="md"
             textAlign="left"
             alignItems="normal"
           >
-            <Box alignSelf="end">
-              {isEditing ? (
-                isUpdating ? (
-                    <Spinner /> 
-                ) : (
-                  <Button
-                    variant="default"
-                    size="small"
-                    bg="#FB5645"
-                    py={2}
-                    px={3}
-                    fontWeight="light"
-                    color="#fff"
-                    onClick={onEditSubmit}
-                  >
-                    Save
-                  </Button>
-                )
-              ) : (
-                <Button
-                  variant="default"
-                  size="small"
-                  bg="#FB5645"
-                  py={2}
-                  px={3}
-                  fontWeight="light"
-                  color="#fff"
-                  onClick={() => setIsEditing(true)}
-                >
-                  Edit
-                </Button>
-              )}
-            </Box>
             <Box w="100%" textAlign="left">
-              <Text pb={2} fontSize="xl" fontWeight="bold" textAlign="left">
-                About
-              </Text>
+              <Flex justifyContent="space-between" alignItems="start" mb="2">
+                <Text fontSize="lg" fontWeight="bold" textAlign="left">
+                  About
+                </Text>
+                <Box alignSelf="end">
+                  {isEditing ? (
+                    isUpdating ? (
+                      <Spinner />
+                    ) : (
+                      <Button
+                        variant="default"
+                        size="small"
+                        bg="#FB5645"
+                        py={2}
+                        px={3}
+                        fontWeight="light"
+                        color="#fff"
+                        onClick={onEditSubmit}
+                      >
+                        Save
+                      </Button>
+                    )
+                  ) : (
+                    <Button
+                      variant="default"
+                      size="small"
+                      bg="#FB5645"
+                      py={1}
+                      px={3}
+                      fontWeight="light"
+                      color="#fff"
+                      onClick={() => setIsEditing(true)}
+                    >
+                      Edit
+                    </Button>
+                  )}
+                </Box>
+              </Flex>
 
               {isEditing ? (
                 <Textarea
                   defaultValue={user.profileAbout}
                   onChange={(e) => setAbout(e.target.value)}
+                  maxLength="250"
+                  fontSize="md"
                 />
               ) : (
-                <Text fontSize="sm">{user.profileAbout}</Text>
+                <Text fontSize="md">{user.profileAbout}</Text>
               )}
             </Box>
             <Flex
               flexWrap="wrap"
               spacing={2}
-              gap={4}
+              gap={2}
               w="100%"
               justify="flex-start"
             >
               <Box>
-                <Text>{user.totalPosts ? user.totalPosts : 0}</Text>
-                <Text>Posts</Text>
+                <Text fontSize="sm">
+                  {user.totalPosts ? user.totalPosts : 0}
+                </Text>
+                <Text fontSize="xs">Posts</Text>
               </Box>
               <Box>
-                <Text>0</Text>
-                <Text>Editions</Text>
+                <Text fontSize="sm">0</Text>
+                <Text fontSize="xs">Editions</Text>
               </Box>
               <Box>
-                <Text>0</Text>
-                <Text>Articles</Text>
+                <Text fontSize="sm">0</Text>
+                <Text fontSize="xs">Articles</Text>
               </Box>
               <Box>
-                <Text>
+                <Text fontSize="sm">
                   {user.channelFollowings ? user.channelFollowings : 0}
                 </Text>
-                <Text>Following</Text>
+                <Text fontSize="xs">Following</Text>
               </Box>
               <Box>
-                <Text>{user.channelFollowers ? user.channelFollowers : 0}</Text>
-                <Text>Followers</Text>
+                <Text fontSize="sm">
+                  {user.channelFollowers ? user.channelFollowers : 0}
+                </Text>
+                <Text fontSize="xs">Followers</Text>
               </Box>
             </Flex>
             <Divider h="1px" bg="#333" />
             <Box textAlign="left" w="100%">
-              <Text fontSize="lg" fontWeight="bold">
+              <Text fontSize="lg" fontWeight="bold" mb="2">
                 Share Channel
               </Text>
               <ShareChannel
@@ -284,7 +294,7 @@ function Profile() {
                     }
                   />
                 ) : (
-                  <Text>{user.genre?.join(" & ")}</Text>
+                  <Text fontSize="sm">{user.genre?.join(" & ")}</Text>
                 )}
               </Flex>
               <Flex gap={4}>
@@ -302,14 +312,14 @@ function Profile() {
                     }
                   />
                 ) : (
-                  <Text>{user.subGenre?.join(" & ")}</Text>
+                  <Text fontSize="sm">{user.subGenre?.join(" & ")}</Text>
                 )}
               </Flex>
             </Box>
             <Divider h="1px" bg="#333" />
             <Box>
-              <Flex w="100%" gap={4} alignItems="center">
-                <Text fontSize="xl" fontWeight="bold">
+              <Grid templateColumns="auto 1fr" columnGap={10} rowGap={4}>
+                <Text fontSize="lg" fontWeight="bold">
                   Profile:
                 </Text>
                 <ChannelName
@@ -318,13 +328,8 @@ function Profile() {
                   channelName={channelName}
                   setChannelName={setChannelName}
                 />
-              </Flex>
-              <Flex
-                w="100%"
-                gap="14%"
-                flexDirection={isEditing ? "column" : "row"}
-              >
-                <Text fontSize="md">Name</Text>
+
+                <Text fontSize="md">Name:</Text>
                 {isEditing ? (
                   <Input
                     bg="#fff"
@@ -332,14 +337,9 @@ function Profile() {
                     defaultValue={user.username}
                   />
                 ) : (
-                  <Text>{user.username}</Text>
+                  <Text fontSize="md">{user.username}</Text>
                 )}
-              </Flex>
-              <Flex
-                w="100%"
-                gap="14%"
-                flexDirection={isEditing ? "column" : "row"}
-              >
+
                 <Text fontSize="md">URL:</Text>
                 {isEditing ? (
                   <Input
@@ -348,16 +348,13 @@ function Profile() {
                     defaultValue={user.profileUrl}
                   />
                 ) : (
-                  <Link href={user.profileUrl} isExternal>
-                    {user.profileUrl}
-                  </Link>
+                  <Text fontSize="md">
+                    <Link href={user.profileUrl} isExternal>
+                      {user.profileUrl}
+                    </Link>
+                  </Text>
                 )}
-              </Flex>
-              <Flex
-                w="100%"
-                gap="14%"
-                flexDirection={isEditing ? "column" : "row"}
-              >
+
                 <Text fontSize="md">Email:</Text>
                 {isEditing ? (
                   <Input
@@ -366,16 +363,13 @@ function Profile() {
                     defaultValue={user.email}
                   />
                 ) : (
-                  <Link href={`mailto:${user.email}`} isExternal>
-                    {user.email}
-                  </Link>
+                  <Text fontSize="md">
+                    <Link href={`mailto:${user.email}`} isExternal>
+                      {user.email}
+                    </Link>
+                  </Text>
                 )}
-              </Flex>
-              <Flex
-                w="100%"
-                gap="14%"
-                flexDirection={isEditing ? "column" : "row"}
-              >
+
                 <Text fontSize="md">Location:</Text>
                 {isEditing ? (
                   <Input
@@ -386,7 +380,7 @@ function Profile() {
                 ) : (
                   <span>{user.profileLocation}</span>
                 )}
-              </Flex>
+              </Grid>
             </Box>
             <Divider h="1px" bg="#333" />
             <Text fontSize="lg" fontWeight="bold">
@@ -401,6 +395,17 @@ function Profile() {
             </Box>
           </VStack>
         </Box>
+        <Flex w="100%" justifyContent="flex-end">
+          <Button
+            mr='2'
+            my='2'
+            leftIcon={<MdLogout />}
+            bg='#fff'
+            onClick={handleLogout}
+          >
+            Logout
+          </Button>
+        </Flex>
       </Box>
     )
   );

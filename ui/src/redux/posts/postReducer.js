@@ -1,7 +1,8 @@
 import { GET_POSTS_REQUEST, GET_POSTS_SUCCESS, GET_POSTS_FAILURE,
   GET_SINGLE_POST_SUCCESS,
   GET_SINGLE_POST_VOTES_SUCCESS,
-  GET_RECENT_POSTS_SUCCESS } from './postType';
+  GET_RECENT_POSTS_SUCCESS,
+  SET_POST_EDIT } from './postType';
 
 const initialState = {
   loading: false,
@@ -9,7 +10,9 @@ const initialState = {
   error: '',
   singlePost:{},
   postVotes:[],
-  recentPosts:[]
+  recentPosts:[],
+  isEditPost:false,
+  editPostId:'',
 };
 
 const postsReducer = (state = initialState, action) => {
@@ -51,6 +54,12 @@ const postsReducer = (state = initialState, action) => {
         return {
           ...state,
           postVotes:action.payload
+        };
+      case SET_POST_EDIT:
+        return {
+          ...state,
+          isEditPost:action.payload.isEditPost,
+          editPostId:action.payload.postId,
         };
     default:
       return state;

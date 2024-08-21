@@ -35,6 +35,8 @@ function PostPreview({
   userChannel,
   handlePreviewPage,
   handleSubmit,
+  isEditPost,
+  handleEditSubmit,
   postLoading
 }) {
   return (
@@ -77,7 +79,7 @@ function PostPreview({
               border="1px solid lightgray"
               borderRadius="md"
               objectFit="cover"
-              src={window.URL.createObjectURL(uploadedImage)}
+              src={uploadedImage}
               alt={post.header}
             />
             <CardBody pt="2" px="0">
@@ -188,7 +190,7 @@ function PostPreview({
                 colorScheme="green"
                 fontSize='lg'
                 py={3}
-                onClick={handleSubmit}
+                onClick={isEditPost?handleEditSubmit:handleSubmit}
               >
                 {postLoading && <Spinner size="sm" color="white" />}
                 {postLoading ? "Creating Post.." : "Save"}

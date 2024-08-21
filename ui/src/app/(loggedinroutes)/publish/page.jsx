@@ -13,10 +13,11 @@ import {
   Radio,
   RadioGroup,
   Image,
+  Text,
   Select,
   Spinner,
 } from "@chakra-ui/react";
-import { createNewPost } from "@/redux/posts/postActions";
+import { createNewPost,editPost,getPostById } from "@/redux/posts/postActions";
 import { fetchLoggedInUserChannel } from "@/redux/channel/channelActions";
 import { useDispatch, useSelector } from "react-redux";
 import genres from "@/static-data/genres";
@@ -24,7 +25,7 @@ import DOMPurify from "dompurify";
 import dynamic from "next/dynamic";
 import PostPreview from "./PostPreview"; 
 import { useToast } from "@chakra-ui/react";
-
+import ImageCropper from "@/components/Image-cropper/ImageCropper";
 const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), {
   ssr: false,
 });
@@ -33,13 +34,21 @@ const PublishPost = () => {
   const toast = useToast();
 
   const postLoading = useSelector((s) => s.post.loading);
+  const isEditPost = useSelector((s) => s.post.isEditPost);
+  const editPostId = useSelector((s) => s.post.editPostId);
+  const singlePost = useSelector((s) => s.post.singlePost);
   const userChannel = useSelector((s) => s.channel.userChannel);
   const [isEditing, setIsEditing] = useState(true);
-
-  const [uploadType, setUploadType] = useState("upload");
   const [uploadedImage, setUploadedImage] = useState(null);
   const [selectedSection, setSelectedSection] = useState("");
   const [selectedSubSection, setSelectedSubSection] = useState("");
+
+  const [croppedImage, setCroppedImage] = useState(null);
+
+  const handleCropComplete = (croppedImageUrl) => {
+    setCroppedImage(croppedImageUrl);
+  };
+
   const [formData, setFormData] = useState({
     header: "",
     standFirst: "",
@@ -49,22 +58,98 @@ const PublishPost = () => {
   });
 
   useEffect(() => {
+    const fetchAndSetData = async () => {
+      if (isEditPost && singlePost?.post === undefined) {
+        await dispatch(getPostById(editPostId));
+      }
+  
+      if (singlePost?.post) {
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          header: singlePost.post.header,
+          standFirst: singlePost.post.standFirst,
+          credits: singlePost.post.credits,
+          bodyRichText: singlePost.post.bodyRichText,
+        }));
+  
+        let sectionIndex = genres.findIndex((g) => g.genre === singlePost.post.section);
+        setSelectedSection(sectionIndex);
+        setSelectedSubSection(singlePost.post.subSection);
+        
+        let imageName = singlePost.post.mainImageURL.lastIndexOf('/') + 1;
+        let postImage = await blobToFile(singlePost.post.mainImageURL, imageName);
+        const imageDataUrl = await readFile(postImage);
+        setUploadedImage(imageDataUrl);
+        setCroppedImage(imageDataUrl);
+      }
+    };
+  
+    fetchAndSetData();
+  }, [isEditPost, singlePost]);
+  
+  
+
+
+  useEffect(() => {
     dispatch(fetchLoggedInUserChannel())
   }, [])
   
-  const handleFileSelect = (e) => {
-    const file = e.target.files[0];
-    setUploadedImage(file);
+
+  const handleFileSelect = async (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      const imageDataUrl = await readFile(file);
+      setUploadedImage(imageDataUrl);
+    }
   };
 
+  const readFile = (file) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.addEventListener('load', () => resolve(reader.result), false);
+      reader.readAsDataURL(file);
+    });
+  };
+
+  async function blobToFile(blobUrl,fileName) {
+    const response = await fetch(blobUrl);
+    const blob = await response.blob();
+    
+    const file = new File([blob], fileName, {
+      type: blob.type,
+      lastModified: Date.now(),
+    });
+  
+    return file;
+  }
+  
+  
   const handleSubmit = async () => {
     try {
-      const content_type = uploadedImage.type;
-      const key = `test/image/${uploadedImage.name}`;
+    const defaultFileName = `image-${Date.now()}.png`;
+    const fileName = defaultFileName;
+  
+      let image = croppedImage?await blobToFile(croppedImage,fileName): await blobToFile(uploadedImage,fileName);
+      const content_type = image.type;
+      const key = `test/image/${image.name}`;
       formData.section = genres[selectedSection].genre;
       formData.subSection = selectedSubSection;
-
-      dispatch(createNewPost(key, content_type, uploadedImage, formData));
+      dispatch(createNewPost(key, content_type, image, formData));
+    } catch (error) {
+      console.error("Error submitting form:", error);
+    }
+  };
+  const handleEditSubmit = async () => {
+    try {
+    const defaultFileName = `image-${Date.now()}.png`;
+    const fileName = defaultFileName;
+  
+      let image = await blobToFile(croppedImage,fileName);
+      const content_type = image.type;
+      const key = `test/image/${image.name}`;
+      formData.section = genres[selectedSection].genre;
+      formData.subSection = selectedSubSection;
+      dispatch(editPost(key, content_type, image, formData,editPostId));
     } catch (error) {
       console.error("Error submitting form:", error);
     }
@@ -87,7 +172,7 @@ const PublishPost = () => {
       !bodyRichText ||
       !selectedSection ||
       !selectedSubSection ||
-      !uploadedImage
+      !croppedImage
     ) {
       toast({
         title: "Incomplete Form",
@@ -126,55 +211,38 @@ const PublishPost = () => {
           <Box w={{ base: "100%", lg: "60%" }}>
             {/* Form Section */}
             <Stack spacing={4}>
-              <Flex flexDirection={{ base: "column", md: "row" }}>
-                <Box px="4">
-                  <FormControl id="mainImage">
-                    <FormLabel fontSize="sm">MAIN IMAGE</FormLabel>
-                    <Box
-                      border="3px dashed #e2e8f0"
-                      w="100%"
-                      h="200px"
-                      mb={4}
-                      display="flex"
-                      alignItems="center"
-                      justifyContent="center"
-                    >
-                      {uploadedImage ? (
-                        <Image
-                          src={URL.createObjectURL(uploadedImage)}
-                          alt="Uploaded Image"
-                          maxH="100%"
-                        />
-                      ) : (
-                        <Box color="gray.500">No image uploaded</Box>
-                      )}
-                    </Box>
-                    <RadioGroup
-                      onChange={setUploadType}
-                      value={uploadType}
-                      defaultValue="upload"
-                    >
-                      <Stack direction="row">
-                        <Radio size="sm" value="upload">
-                          Upload image
-                        </Radio>
-                        <Radio size="sm" value="library">
-                          Use image from library
-                        </Radio>
-                      </Stack>
-                    </RadioGroup>
-                    {uploadType === "upload" && (
-                      <Input
+                <Box>
+                <Flex justifyContent='space-between' alignItems='center'>
+                    <Text fontSize="sm">MAIN IMAGE</Text>
+                    <div>
+                    <Input
+                      visibility='hidden'
+                      id="files"
                         type="file"
                         accept="image/*"
                         size="sm"
                         mt={2}
+                        w={'6.8rem'}
                         onChange={handleFileSelect}
                       />
-                    )}
+                      <label for="files" class="btn">UPLOAD IMAGE</label>
+                    </div>
+                  </Flex>
+                  <FormControl id="mainImage">
+                    <Box
+                      border="3px dashed #e2e8f0"
+                      w="100%"
+                      h="205px"
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      position='relative'
+                    >
+                      <ImageCropper croppedImage={croppedImage} uploadedImage={uploadedImage} onCropComplete={handleCropComplete} />
+                    </Box>
                   </FormControl>
                 </Box>
-                <Box mt='4'>
+                <Box>
                   <Flex
                     mb="4"
                     direction={{ base: "row", md: "column" }}
@@ -250,7 +318,6 @@ const PublishPost = () => {
                     />
                   </FormControl>
                 </Box>
-              </Flex>
               <FormControl id="bodyRichText">
                 <FormLabel fontSize="sm">BODY COPY*</FormLabel>
                 <RichTextEditor handleTextBodyChange={handleTextBodyChange} bodyRichText={formData.bodyRichText}/>
@@ -276,12 +343,14 @@ const PublishPost = () => {
             justifyContent="center"
             alignItems="center"
           >
-            <PostPreview post={formData} uploadedImage={uploadedImage}
+            <PostPreview post={formData} uploadedImage={croppedImage}
               selectedSection={genres[selectedSection].genre}
               selectedSubSection={selectedSubSection}
               userChannel={userChannel}
               postLoading={postLoading}
               handleSubmit={handleSubmit}
+              isEditPost={isEditPost}
+              handleEditSubmit={handleEditSubmit}
               handlePreviewPage={handlePreviewPage}
             />
           </Box>

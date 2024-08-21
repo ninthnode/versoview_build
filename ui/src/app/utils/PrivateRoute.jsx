@@ -51,9 +51,9 @@ const PrivateRoute = ({ children }) => {
   if (loading) {
     return (
       <>
-        {children}
-        <Loader messages={null} showtext={false} />
-      </>
+      {children}
+      <Loader messages={null} showtext={false} />
+    </>
     );
   }
 
@@ -64,9 +64,9 @@ const PrivateRoute = ({ children }) => {
   ) {
     return (
       <>
-        {children}
-        <Loader messages={null} showtext={false} />
-      </>
+      {children}
+      <Loader messages={null} showtext={false} />
+    </>
     );
   }
   if (
@@ -77,12 +77,12 @@ const PrivateRoute = ({ children }) => {
   )
     return (
       <>
-        {children}
-        <Loader messages={null} showtext={false} />
-      </>
+      {children}
+      <Loader messages={null} showtext={false} />
+    </>
     );
 
-  return children;
+    if(!loading) return children;
 };
 
 export default PrivateRoute;

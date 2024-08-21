@@ -26,33 +26,24 @@ const PostCard = ({
   showBookmarkButton = true,
   submitBookmark,
 }) => {
-  const defaultImageUrl = "/assets/default-post-image.svg";
-
   return (
     <Card maxW="2xl" mb={4} boxShadow="none">
       <CardHeader p={1} border="0">
         <Flex spacing="4">
-          <Flex flex="1" gap="4" alignItems="center" flexWrap="wrap">
+          <Flex flex="1" gap="2" alignItems="center" flexWrap="wrap">
             <Link href={`/channel/${post.channelId._id}`}>
-              {post.channelId?.channelIconImageUrl ? (
-                <Avatar
-                  size="sm"
-                  borderRadius={10}
-                  name={"test"}
-                  src={post.channelId?.channelIconImageUrl}
-                />
-              ) : (
-                <Avatar
-                  size="sm"
-                  borderRadius={10}
-                  name={"test"}
-                  src={defaultImageUrl}
-                />
-              )}
+              <Avatar
+                size="sm"
+                p="0"
+                borderRadius={10}
+                src={post.channelId?.channelIconImageUrl}
+              />
             </Link>
             <Box>
               <Link href={`/channel/${post.channelId._id}`}>
-                <Heading size="sm">{post.channelId?.channelName}</Heading>
+                <Text fontWeight="bold" fontSize="md">
+                  {post.channelId?.channelName}
+                </Text>
               </Link>
             </Box>
           </Flex>
@@ -64,11 +55,20 @@ const PostCard = ({
           )}
           {showBookmarkButton && (
             <IconButton
-              variant="ghost"
+              variant="nostyle"
               colorScheme={!post.isBookmarked ? "gray" : "green"}
               aria-label="See menu"
-              fontSize="20px"
-              icon={!post.isBookmarked ? <CiBookmark /> : <BookmarkFilled />}
+              fontSize="lg"
+              textAlign="right"
+              justifyContent="flex-end"
+              p="0"
+              icon={
+                !post.isBookmarked ? (
+                  <CiBookmark style={{ margin: -6 }} />
+                ) : (
+                  <BookmarkFilled style={{ margin: -6 }} />
+                )
+              }
               onClick={() => submitBookmark("post", post._id)}
             />
           )}
@@ -79,19 +79,19 @@ const PostCard = ({
           border="1px solid lightgray"
           borderRadius="md"
           objectFit="cover"
+          h="300px"
           src={post.mainImageURL || "/assets/default-post-image.svg"}
           alt={post.header}
         />
       )}
       <CardBody ml="1" p="0" border="0">
         <Text
-          fontSize="12px"
-          mt="1"
+          fontSize="sm"
+          pt="2"
           display="flex"
           gap="10px"
           alignItems="center"
           color="textlight"
-          pb={2}
         >
           {post.section} - {post.subSection} • {formatDate(post.createdAt)} •
           6min read
@@ -108,13 +108,19 @@ const PostCard = ({
           </Button> */}
         </Text>
 
-        <Link href={`post/${post._id}`}>
-          <Heading mb="1" size="md" as="h6">
+        <Link href={`/post/${post._id}`}>
+          <Text
+            py="1"
+            mb="1"
+            fontWeight="bold"
+            fontSize="1.5rem"
+            lineHeight="2rem"
+          >
             {post.header}
-          </Heading>
+          </Text>
         </Link>
         <Text
-          fontSize="16px"
+          fontSize="md"
           textAlign="justify"
           dangerouslySetInnerHTML={{
             __html: getExcerpt(DOMPurify.sanitize(post.bodyRichText), 150),

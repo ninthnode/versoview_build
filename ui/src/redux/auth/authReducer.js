@@ -6,10 +6,12 @@ import {
   SIGNUP_FAILURE,
   LOGOUT_SUCCESS,
   LOADING_START,
+  USER_VERIFIED
 } from "./types";
 
 const initialState = {
   isAuthenticated: false,
+  userVerified: false,
   user: null,
   loading: false,
   error: null,
@@ -43,6 +45,11 @@ const authReducer = (state = initialState, action = { type: null }) => {
         user: [],
         loading: false,
         error: action.payload,
+      };
+      case USER_VERIFIED:
+      return {
+        ...state,
+        userVerified: true,
       };
     case SIGNUP_SUCCESS:
       return {

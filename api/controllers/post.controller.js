@@ -91,11 +91,20 @@ module.exports.create = asyncHandler(async (req, res) => {
 // Get all post
 module.exports.getAllPost = asyncHandler(async (req, res) => {
   try {
+    // LOGIC
+    // 1. Followed channel post
+    // 2. User's post
+    // 3. Genre 
+    // 4. Find Unique Posts
+
     const userId = req.user._id;
     const page = Number.parseInt(req.query.page) || 1;
     const limit = Number.parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
     const userData = await User.findOne({ _id: userId });
+
+    const userPosts = await Post.find({userId: userData._id}).populate("channelId");
+
     const genres = userData.genre;
 
     const userFollows = await Follow.find({ userId }).exec();
@@ -104,11 +113,11 @@ module.exports.getAllPost = asyncHandler(async (req, res) => {
     const postDataGenre = await Post.find({
       section: { $in: genres },
     }).populate("channelId");
-    const postDatachannel = await Post.find({
+    const postFollowedchannel = await Post.find({
       channelId: { $in: followedChannelIds },
     }).populate("channelId");
 
-    let combinedPosts = [...postDataGenre, ...postDatachannel];
+    let combinedPosts = [...postDataGenre,...userPosts, ...postFollowedchannel];
 
     const uniquePosts = Array.from(
       new Map(combinedPosts.map((post) => [post._id.toString(), post])).values()
@@ -355,7 +364,7 @@ module.exports.getPostByChannelId = asyncHandler(async (req, res) => {
 module.exports.updatePost = asyncHandler(async (req, res) => {
   try {
     const postId = req.params._id;
-    const isPostExist = await Post.findOne(postId);
+    const isPostExist = await Post.findOne({_id:postId});
 
     if (!isPostExist) {
       return res.status(404).json({ error: "Post not found" });

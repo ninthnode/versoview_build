@@ -83,7 +83,6 @@ const About = ({
   followChannel,
   unfollowChannel,
 }) => {
-  const defaultImageUrl = "/assets/default-post-image.svg";
 
   return (
     <Box
@@ -99,8 +98,6 @@ const About = ({
           ml={2}
           src={
             channelIconImageUrl
-              ? channelIconImageUrl.toString()
-              : defaultImageUrl
           }
           size="lg"
           alt={channelName}

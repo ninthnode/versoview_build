@@ -54,8 +54,15 @@ function SignupForm({ loading, handleSubmit, handleChange, backendError }) {
           type="text"
           placeholder="Khalid Saeed"
           name="channelName"
+          maxLength='32'
           onChange={handleChange}
+          isInvalid={groupedErrors?.channelName&&groupedErrors.channelName}
         />
+        {groupedErrors?.channelName && (
+          <FormHelperText color='red.500'>
+            {groupedErrors.channelName.text}
+          </FormHelperText>
+        )}
       </FormControl>
       <FormControl id="last_name" mt={4} isRequired>
         <Flex alignItems="center" gap={2} mb="2">
@@ -66,6 +73,7 @@ function SignupForm({ loading, handleSubmit, handleChange, backendError }) {
           type="text"
           placeholder="UserName"
           name="username"
+          maxLength='15'
           onChange={handleChange}
           isInvalid={groupedErrors?.username&&groupedErrors.username}
         />

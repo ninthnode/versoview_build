@@ -2,10 +2,18 @@ import React from "react";
 import { connect } from "react-redux";
 import { usePathname } from "next/navigation";
 import { RoutesList } from "@/routes/index";
-import { Flex, Box, Text, Image,Button,Heading,Avatar } from "@chakra-ui/react";
+import {
+  Flex,
+  Box,
+  Text,
+  Image,
+  Button,
+  Heading,
+  Avatar,
+} from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 
-const NavbarTitle = ({ navtitle,navicon }) => {
+const NavbarTitle = ({ navtitle, navicon }) => {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -26,20 +34,29 @@ const NavbarTitle = ({ navtitle,navicon }) => {
       {getRouteName(pathname) ? (
         <Flex>
           <Image src={"/assets/logo.svg"} alt="logo" mr={2} />
-          <Heading as='h5' fontSize='25px'>{getRouteName(pathname)}</Heading>
+          <Heading as="h5" fontSize="xl" fontWeight='extrabold'>
+            {getRouteName(pathname)}
+          </Heading>
         </Flex>
       ) : (
         <Flex alignItems="center" mb={2}>
           <Button pl="0" variant="ghost" onClick={() => router.back()}>
-            <Image m="0" src={"/assets/back.svg"}/>
+            <Image m="0" src={"/assets/back.svg"} />
           </Button>
-          {navicon&&<Avatar
-              size="md"
-              borderRadius={10}
-              name={"test"}
-              src={navicon}
-            />}
-            <Heading ml={2} as='h5' fontSize='23px'>{navtitle}</Heading>
+          {!pathname.startsWith("/post") && (
+            <>
+              {navicon && (
+                <Avatar
+                  size="md"
+                  borderRadius={10}
+                  src={navicon}
+                />
+              )}
+              <Heading ml={2} as="h5" fontSize="23px">
+                {navtitle}
+              </Heading>
+            </>
+          )}
         </Flex>
       )}
     </nav>

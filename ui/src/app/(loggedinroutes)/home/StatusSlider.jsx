@@ -35,7 +35,6 @@ const StatusItem = ({ status }) => {
         <Avatar
           size="lg"
           borderRadius={10}
-          name={status.name}
           src={status.avatar}
         />
         {!isLoading ? (
@@ -73,7 +72,7 @@ const getChannelsForLoggedoutUser = () => {
       r.data.data.map((c) => ({
         id: c._id,
         name: c.channelName,
-        avatar: c.channelIconImageUrl || "/assets/default-post-image.svg",
+        avatar: c.channelIconImageUrl,
       }))
     );
 };
@@ -92,7 +91,7 @@ const getChannels = () => {
       r.data.data.map((c) => ({
         id: c._id,
         name: c.channelName,
-        avatar: c.channelIconImageUrl || "/assets/default-post-image.svg",
+        avatar: c.channelIconImageUrl,
       }))
     );
 };

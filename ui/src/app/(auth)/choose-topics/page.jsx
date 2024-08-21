@@ -8,13 +8,12 @@ const TopicSelection = () => {
   const [topics, setTopics] = useState([]);
   const [selectedTopics, setSelectedTopics] = useState(new Set());
   const [error, setError] = useState(false);
-  const authState = useSelector((s) => s.auth.user.user);
-  const token = localStorage.getItem("token").replaceAll('"', "");
+  const authState = useSelector((s) => s.auth.user?.user);
   useEffect(() => {
     axios
       .get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/genre/getAllGenre`, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${localStorage.getItem("token").replaceAll('"', "")}`,
         },
       })
       .then((response) => {
@@ -52,7 +51,7 @@ const TopicSelection = () => {
         formData,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${localStorage.getItem("token").replaceAll('"', "")}`,
             ContentType: "application/json",
           },
         }

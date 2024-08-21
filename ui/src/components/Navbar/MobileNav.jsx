@@ -21,7 +21,6 @@ const MobileNav = ({ onOpen, ...rest }) => {
   };
   return (<>
     <Flex
-      mr={{ base: 0, md: 5 }}
       mt={{ base: 4 }}
       px={0}
       height="3rem"

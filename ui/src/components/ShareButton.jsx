@@ -45,10 +45,11 @@ const ShareButton = ({ disabled = false, url, title,shareButton=false }) => {
   return (
     <>
       <IconButton
-        variant="ghost"
-        color="gray.400"
+        variant="nostyle"
         aria-label="See menu"
+        color="textlight"
         fontSize='25px'
+        justifyContent='flex-end'
         icon={shareButton?<FiShare2/>:<FiMoreHorizontal/>}
         onClick={disabled?null:sharePost}
         disabled={disabled}

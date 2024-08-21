@@ -7,7 +7,6 @@ import {
   Text,
   Flex,
   Image,
-  Link,
   Heading,
   Card,
   CardBody,
@@ -24,9 +23,9 @@ import {
   useDisclosure,
   Textarea,
 } from "@chakra-ui/react";
-import { FaRegComment } from "react-icons/fa";
+import { BsChat } from "react-icons/bs";
 import { CiBookmark } from "react-icons/ci";
-
+import Link from "next/link";
 import { PiArrowFatDownLight, PiArrowFatUpLight } from "react-icons/pi";
 
 import { connect } from "react-redux";
@@ -110,10 +109,10 @@ function SinglePost({
             mb={4}
             style={{ "--card-shadow": "transparent" }}
           >
-            <CardHeader py={2} px="0" pl="1">
+            <CardHeader py={2} px="0">
               <Flex spacing="4">
                 <Flex flex="1" gap="4" alignItems="center" flexWrap="wrap">
-                  <Link href={`/channel/${postState.post.channelId._id}`}>
+                  <Link href={`/channel/${postState.channel._id}`}>
                     <Avatar
                       size="sm"
                       borderRadius={10}
@@ -125,10 +124,10 @@ function SinglePost({
                     />
                   </Link>
                   <Box>
-                    <Link href={`/channel/${postState.post.channelId._id}`}>
-                      <Heading fontSize="lg">
+                    <Link href={`/channel/${postState.channel._id}`}>
+                      <Text fontWeight="semibold" fontSize="md">
                         {postState.channel.channelName}
-                      </Heading>
+                      </Text>
                     </Link>
                   </Box>
                 </Flex>
@@ -139,13 +138,14 @@ function SinglePost({
                 <IconButton
                   variant="ghost"
                   aria-label="See menu"
-                  fontSize="20px"
+                  fontSize="lg"
+                  justifyContent="flex-end"
                   isDisabled={!isAuthenticated}
                   icon={
                     !postState.isBookmarked ? (
-                      <CiBookmark />
+                      <CiBookmark style={{margin:-5}}/>
                     ) : (
-                      <BookmarkFilled color="green" />
+                      <BookmarkFilled color="green" style={{margin:-5}}/>
                     )
                   }
                   onClick={() => submitBookmarkPost("post", postState.post._id)}
@@ -160,7 +160,7 @@ function SinglePost({
               alt={postState.post.header}
             />
             <CardBody pt="2" px="0">
-              <Text mt="1" display="flex" alignItems="center" pb={2}>
+              <Text fontSize="sm" mt="1" display="flex" alignItems="center" pb={2}>
                 {postState.post.section} - {postState.post.subSection} •{" "}
                 {formatDate(postState.post.createdAt)} • 6min read
               </Text>
@@ -169,12 +169,12 @@ function SinglePost({
               <Flex py="1" gap={1}>
                 <Flex w="300px" justify="space-between">
                   <Button
-                    pl="0"
+                    px="2"
                     variant="ghost"
                     fontWeight="regular"
                     color="textlight"
                     leftIcon={
-                      <FaRegComment colorScheme="textlight" fontSize="28px" />
+                      <BsChat colorScheme="textlight" fontSize="28px" />
                     }
                     isDisabled={!isAuthenticated}
                     onClick={() => onToggleCommentModal()}
@@ -182,7 +182,7 @@ function SinglePost({
                     {postState.commentsCount}
                   </Button>
                   <Button
-                    pl="0"
+                    px="2"
                     variant="ghost"
                     fontWeight="regular"
                     color="textlight"
@@ -201,7 +201,7 @@ function SinglePost({
                     <Text color={"green.500"}>{postState.votes.trueCount}</Text>
                   </Button>
                   <Button
-                    pl="0"
+                    px="2"
                     variant="ghost"
                     fontWeight="regular"
                     color="textlight"
@@ -234,18 +234,21 @@ function SinglePost({
                 onTouchEnd={handleSelection}
                 onClick={() => handleSelection}
               >
-                <Text mt="2" w="fit-content" p="1">
+                <Text mt="2" w="fit-content" p="1" fontSize='sm'>
                   By {postState.user.channelName}
                 </Text>
-                <Heading fontSize="2xl" as="h5" mb="2">
+                {/* <Heading fontSize="2xl" as="h5" mb="2">
+                  {postState.post.header}
+                </Heading> */}
+                <Heading py='2' mb="1" fontWeight='bold' fontSize='2.4rem' lineHeight='2rem'>
                   {postState.post.header}
                 </Heading>
-                <Heading fontSize="xl" as="h6" mb="4">
+                <Text py='2' mb="1" fontWeight='semibold' fontSize='1.4rem' lineHeight='2rem'>
                   {postState.post.standFirst}
-                </Heading>
+                </Text>
                 <Text
                   fontSize="md"
-                  textAlign="justify"
+                  textAlign="left"
                   dangerouslySetInnerHTML={{
                     __html: DOMPurify.sanitize(postState.post.bodyRichText),
                   }}
@@ -271,13 +274,14 @@ function SinglePost({
           <Modal size="xl" isOpen={isOpen} onClose={onClose}>
             <ModalOverlay />
             <ModalContent>
-              <ModalHeader>{postState.user.channelName}</ModalHeader>
+              <ModalHeader fontSize='md'>{postState.user.channelName}</ModalHeader>
               <ModalCloseButton />
               <ModalBody>
                 <Text mb="4">{`"${selectedText}"`}</Text>
                 <Textarea
                   defaultValue={commentText}
                   onChange={(e) => handleChangeComment(e.target.value)}
+                  fontSize='sm'
                   placeholder="type here to post to chat.."
                 />
               </ModalBody>
@@ -285,6 +289,7 @@ function SinglePost({
                 <Button
                   colorScheme="green"
                   mr={3}
+                  fontSize='sm'
                   onClick={() => submitComment()}
                 >
                   Post

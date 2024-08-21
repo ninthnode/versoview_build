@@ -4,7 +4,6 @@ import get from "@/app/utils/get";
 import {
   Box,
   Spinner,
-  Link,
   IconButton,
   Flex,
   Image,
@@ -18,11 +17,19 @@ import {
   Avatar,
   Divider,
 } from "@chakra-ui/react";
+import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import { MdKeyboardArrowDown } from "react-icons/md";
-import {  FaCheck as CheckIcon } from "react-icons/fa";
-import { IoStar as StarIcon, IoStarOutline as StarIconOutlined } from "react-icons/io5";
-import { FiMoreHorizontal } from 'react-icons/fi';
+import { FaCheck as CheckIcon } from "react-icons/fa";
+import {
+  IoStar as StarIcon,
+  IoStarOutline as StarIconOutlined,
+} from "react-icons/io5";
+import { FiMoreHorizontal } from "react-icons/fi";
+import { useDispatch } from "react-redux";
+import {
+  unfollowChannel,
+} from "@/redux/channel/channelActions";
 const pinChannel = (id) =>
   get(`channel/pinChannel/${id}`, true, { method: "PUT" }).then((r) => r.data);
 const unpinChannel = (id) =>
@@ -33,8 +40,8 @@ const unpinChannel = (id) =>
 const options = {
   Pinned: "PINNED",
   ByGenre: "BY GENRE",
-  AZ: "A - Z",
   Recent: "RECENT",
+  AZ: "A - Z",
 };
 
 function ViewBy({ view, setView, setSortedFollowings }) {
@@ -43,35 +50,68 @@ function ViewBy({ view, setView, setSortedFollowings }) {
       <Menu>
         <MenuButton
           as={Button}
-          rightIcon={<MdKeyboardArrowDown fontSize='25px'/>}
+          rightIcon={<MdKeyboardArrowDown fontSize="25px" />}
           bg="transparent"
         >
           View By
         </MenuButton>
-        <MenuList p='0' minW='150px'>
+        <MenuList p="0" minW="150px">
           {Object.values(options).map((option) => (
             <>
-            <MenuItem
-              w='100%'
-              pl={6}
-              justifyContent='left'
-              key={option}
-              onClick={() => {
-                setView(option);
-                setSortedFollowings((followings) =>
-                  followings.sort(sortFn(option))
-                );
-              }}
-            >
-              <Text 
-              fontWeight='bold' mr={4}>{option}</Text>
-              {view === option ? (
-                <CheckIcon />
-              ) : (
-                <Box w={4} h={4} />
-              )}
-            </MenuItem>
-            <Divider />
+              <MenuItem
+                w="100%"
+                pl={6}
+                justifyContent="left"
+                key={option}
+                onClick={() => {
+                  setView(option);
+                  setSortedFollowings((followings) =>
+                    followings.sort(sortFn(option))
+                  );
+                }}
+              >
+                <Text fontWeight="bold" mr={4}>
+                  {option}
+                </Text>
+                {view === option ? <CheckIcon /> : <Box w={4} h={4} />}
+              </MenuItem>
+              <Divider />
+            </>
+          ))}
+        </MenuList>
+      </Menu>
+    </>
+  );
+}
+
+function ListDropdown({ handleUnFollowChannel,channelId }) {
+  return (
+    <>
+      <Menu>
+        <MenuButton
+          as={Button}
+          bg="transparent"
+          mr={4}
+        >
+          <FiMoreHorizontal />
+        </MenuButton>
+        <MenuList p="0" minW="150px">
+          {Object.values(['unfollow']).map((option) => (
+            <>
+              <MenuItem
+                w="100%"
+                pl={6}
+                justifyContent="left"
+                key={option}
+                onClick={() => {
+                  handleUnFollowChannel(channelId)
+                }}
+              >
+                <Text fontWeight="bold" mr={4}>
+                  {option}
+                </Text>
+              </MenuItem>
+              <Divider />
             </>
           ))}
         </MenuList>
@@ -93,16 +133,18 @@ const sortFn = (view) => {
   }
 };
 
-const Following = ({ followings, user }) => {
+const Following = ({ followings, user,fetchfollowChannelList }) => {
   const [view, setView] = useState(options.Pinned);
   const [followingsDataSorted, setfollowingsDataSorted] = useState([]);
   const [followingLoading, setFollowingLoading] = useState(true);
+  const dispatch = useDispatch();
+
   useEffect(() => {
     if (followings.data) {
       const tempList = followings.data
-      .filter((i) => i.channelId)
-      .map((i) => ({ ...i.channelId, pinned: i.pinned }))
-      .toSorted(sortFn(options.Pinned));
+        .filter((i) => i.channelId)
+        .map((i) => ({ ...i.channelId, pinned: i.pinned }))
+        .toSorted(sortFn(options.Pinned));
       setfollowingsDataSorted(tempList);
       setFollowingLoading(false);
     }
@@ -121,13 +163,19 @@ const Following = ({ followings, user }) => {
     });
   };
 
+  const handleUnFollowChannel = async(channelId) => {
+    await dispatch(unfollowChannel(channelId));
+    fetchfollowChannelList()
+  }
+
   return (
     <Box>
-      <Box px={0} py={3} bg={user.profileBgColor}>
+      {/* <Box px={0} py={3} bg={user.profileBgColor}>
         <Flex justifyContent="space-between" alignItems="center">
           <Flex alignItems="center">
             <Avatar
-              src={user.profileImageUrl || "/assets/default-post-image.svg"}
+              borderRadius={10}
+              src={user.profileImageUrl}
               size="lg"
               alt={user.channelName}
             />
@@ -145,13 +193,14 @@ const Following = ({ followings, user }) => {
           <IconButton
             mr={4}
             aria-label="Menu"
-            colorScheme={user.profileBgColor}
-            icon={<FiMoreHorizontal/>}
+            variant="ghost"
+            color="#333"
+            icon={<FiMoreHorizontal />}
           />
         </Flex>
-      </Box>
-      <Divider />
-      <Flex justify="flex-start">
+      </Box> */}
+      {/* <Divider /> */}
+      <Flex justify="flex-start" py={3}>
         <ViewBy
           view={view}
           setView={setView}
@@ -161,8 +210,7 @@ const Following = ({ followings, user }) => {
       <Divider />
       {followingLoading ? (
         <Spinner />
-      ) : (
-        followingsDataSorted.length>0?
+      ) : followingsDataSorted.length > 0 ? (
         followingsDataSorted?.map((following) => (
           <Flex
             key={following._id || crypto.randomUUID()}
@@ -172,9 +220,9 @@ const Following = ({ followings, user }) => {
             _hover={{ shadow: "md", bg: "gray.50" }}
             transition="shadow 0.2s, background-color 0.2s"
           >
-            <Flex alignItems='center'>
+            <Flex alignItems="center">
               <IconButton
-                fontSize='25px'
+                fontSize="25px"
                 aria-label="Pin Channel"
                 colorScheme={user.profileBgColor}
                 onClick={() => handlePinUnpin(following)}
@@ -187,16 +235,16 @@ const Following = ({ followings, user }) => {
                 }
               />
               <Avatar
-                src={
-                  following?.channelIconImageUrl ||
-                  "/assets/default-post-image.svg"
-                }
+                borderRadius={10}
+                src={following?.channelIconImageUrl}
                 size="lg"
                 alt={user.channelName}
               />
               <Box ml={3}>
                 <Link href={`/channel/${following._id}`}>
-                  <Text fontSize='md' fontWeight="bold">{following?.channelName}</Text>
+                  <Text fontSize="md" fontWeight="bold">
+                    {following?.channelName}
+                  </Text>
                 </Link>
                 <Text fontSize="sm">
                   {Array.isArray(following.userId?.genre) &&
@@ -204,14 +252,16 @@ const Following = ({ followings, user }) => {
                 </Text>
               </Box>
             </Flex>
-            <IconButton
-            mr={4}
-            aria-label="Menu"
-            colorScheme={user.profileBgColor}
-            icon={<FiMoreHorizontal/>}
-          />
+            <ListDropdown
+              channelId={following._id}
+              handleUnFollowChannel={handleUnFollowChannel}
+            />
           </Flex>
-        )):<Text mt='4' textAlign={'center'}>No Followings</Text>
+        ))
+      ) : (
+        <Text mt="4" textAlign={"center"}>
+          No Followings
+        </Text>
       )}
     </Box>
   );

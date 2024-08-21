@@ -5,18 +5,18 @@ import BottomNavigationStyles from "./components/BottomNavigation";
 
 const customTheme = extendTheme({
   fonts: {
-    body: "SF-Pro-Display-Medium, sans-serif",
-    heading: "SF-Pro-Display-Bold, sans-serif",
-    button: "SF-Pro-Display-Bold",
-    p: "SF-Pro-Display-Medium",
-    span: "SF-Pro-Display-Medium, sans-serif",
+    body: "NotoSans-Bold, sans-serif",
+    heading: "Poppins-ExtraBold, sans-serif",
+    button: "NotoSans-Bold, sans-serif",
+    p: "NotoSans-Medium, sans-serif",
+    span: "NotoSans-Regular, sans-serif",
   },
   fontSizes: {
-    xs: "0.6rem",
-    sm: "0.875rem",
+    xs: "0.7rem",
+    sm: "0.865rem",
     md: "1rem",
-    lg: "1.25rem",
-    xl: "1.5rem",
+    lg: "1.55rem",
+    xl: "2.2rem",
     "2xl": "2rem",
     "3xl": "2.5rem",
     "4xl": "3rem",
@@ -24,28 +24,46 @@ const customTheme = extendTheme({
     "6xl": "5rem",
   },
   fontWeights: {
-    normal: 300,
+    normal: 400,
+    semibold:600,
+    bold:700,
+    extrabold:800,
   },
   styles: {
     global: {
       "@font-face": [
         {
-          fontFamily: "SF-Pro-Display-Regular",
-          src: 'url(/fonts/SF-Pro-Display-Regular.otf) format("opentype")',
+          fontFamily: "NotoSans-Regular",
+          src: 'url(/fonts/NotoSans-Regular.ttf) format("truetype")',
           fontWeight: "normal",
-          fontStyle: "normal",
         },
         {
-          fontFamily: "SF-Pro-Display-Bold",
-          src: 'url(/fonts/SF-Pro-Display-Bold.otf) format("opentype")',
+          fontFamily: "NotoSans-SemiBold",
+          src: 'url(/fonts/NotoSans-SemiBold.ttf) format("truetype")',
+          fontWeight: "semibold",
+        },
+        {
+          fontFamily: "NotoSans-Bold",
+          src: 'url(/fonts/NotoSans-Bold.ttf) format("truetype")',
           fontWeight: "bold",
-          fontStyle: "normal",
+        },
+        {
+          fontFamily: "Poppins-ExtraBold",
+          src: 'url(/fonts/Poppins-ExtraBold.ttf) format("truetype")',
+          fontWeight: "extrabold",
         },
       ],
       body: {
-        fontSize: "14px",
+        fontFamily: "NotoSans-Regular",
+        fontSize: "0.875rem",
         lineHeight: "22.4px",
-        background: "light",
+        fontWeight: "normal",
+      },
+      heading:{
+        fontFamily: "Poppins-ExtraBold",
+      },
+      a: {
+        lineHeight: "22.4px",
       },
     },
   },

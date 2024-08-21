@@ -27,7 +27,6 @@ const Page = ({
   setNavTitle,
 }) => {
   const { id } = params;
-  const defaultImageUrl = "/assets/default-post-image.svg";
 
   const [postList, setPostList] = useState([]);
 
@@ -41,7 +40,7 @@ const Page = ({
       fetchFollowers(id);
       setNavTitle(
         channelData.channelName,
-        channelData.channelIconImageUrl ? channelData.channelIconImageUrl.toString() : defaultImageUrl
+        channelData.channelIconImageUrl 
       );
     }
   }, [channelData]);

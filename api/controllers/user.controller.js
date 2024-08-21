@@ -8,21 +8,27 @@ const { Follow } = require("../models/follow.model");
 const bcrypt = require("bcryptjs");
 const { sendMail } = require("../config/nodemailer");
 
-const { generateToken } = require("../utils/generateToken");
+const { generateToken,generateRefreshToken } = require("../utils/generateToken");
 
 const v = require("valibot");
 
 const signUpSchema = v.object({
-  channelName: v.string(),
-  username: v.string(),
+  channelName: v.pipe(
+  v.string(),
+  v.maxLength(32, 'Must be less that 32 characters.')
+  ),
+  username: v.pipe(
+    v.string(),
+    v.maxLength(15, 'Must be less that 15 characters.'),
+    v.regex(/^[a-z0-9]*$/, "Must contain only lowercase letters and no spaces")
+    ),
   email: v.pipe(v.string(), v.email()),
   password: v.pipe(
     v.string(),
+    v.minLength(8, 'Must be atleast 8 characters.'),
     v.regex(/[A-Z]+/, "Must contain upper case characters"),
     v.regex(/[a-z]+/, "Must contain lowercase letter"),
-    v.regex(/[\$|\.|#|%|&|@|-]+/, "Must contain a symbol")
   ),
-
   genre: v.any(),
 });
 
@@ -74,6 +80,7 @@ module.exports.signUp = asyncHandler(async (req, res) => {
     password: hashedPassword,
     genre: req.body.genre || [],
     subGenre: [],
+    profileImageUrl:`${req.protocol}://${req.get('host')}/images/default-post-image.svg`
   });
 
   // create new channel
@@ -91,7 +98,7 @@ module.exports.signUp = asyncHandler(async (req, res) => {
     phone: req.body.phone || "",
     location: req.body.location || "",
     backgroundColor: req.body.backgroundColor || "",
-    channelIconImageUrl: req.body.location || "",
+    channelIconImageUrl: req.body.location || `${req.protocol}://${req.get('host')}/images/default-post-image.svg`,
     status: req.body.status,
   };
 
@@ -99,9 +106,10 @@ module.exports.signUp = asyncHandler(async (req, res) => {
 
   // Generate token
   const token = await generateToken(user._id, user.username);
+  const refreshtoken = await generateRefreshToken(user._id, user.username);
   res.status(201).json({
     status: 200,
-    data: { user, token },
+    data: { user, token,refreshtoken },
     message: "User signed up successfully",
   });
 });
@@ -126,6 +134,7 @@ module.exports.login = asyncHandler(async (req, res) => {
         const data = {
           user,
           token: await generateToken(user._id, user.username),
+          refreshtoken: await generateRefreshToken(user._id, user.username),
         };
         res.status(200);
         res.json({
@@ -136,6 +145,7 @@ module.exports.login = asyncHandler(async (req, res) => {
         const data = {
           user,
           token: await generateToken(user._id, user.username),
+          refreshtoken: await generateRefreshToken(user._id, user.username),
         };
         res.status(200);
         res.json({
@@ -178,6 +188,26 @@ module.exports.forgotPassword = asyncHandler(async (req, res) => {
     res.status(500).json({ error: "Failed to reset password" });
   }
 });
+
+// Token refresh endpoint
+module.exports.refreshTokenApi = asyncHandler(async (req, res) => {
+  const { refreshToken } = req.body;
+
+  if (!refreshToken) return res.sendStatus(401);
+  
+  
+  const cert = filesys.readFileSync(path.join(__dirname, "../jwtRS256.pem"));
+  jwt.verify(refreshToken, cert, { algorithms: ["RS256"] },async (err, user) => {
+    if (err) return res.sendStatus(403);
+    const accessToken = await generateToken(user.id, user.username)
+    // console.log(accessToken)
+    res.json({accessToken });
+  });
+
+});
+
+
+
 
 // Reset Password
 module.exports.resetPassword = asyncHandler(async (req, res) => {

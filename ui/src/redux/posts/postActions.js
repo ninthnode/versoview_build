@@ -1,7 +1,7 @@
 import { GET_POSTS_REQUEST, GET_POSTS_SUCCESS, GET_POSTS_FAILURE,
   GET_SINGLE_POST_SUCCESS,
   GET_RECENT_POSTS_SUCCESS,
-  GET_SINGLE_POST_VOTES_SUCCESS } from './postType';
+  SET_POST_EDIT } from './postType';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -18,6 +18,11 @@ export const getPostsSuccess = (posts) => ({
 export const getPostsFailure = (error) => ({
   type: GET_POSTS_FAILURE,
   payload: error,
+});
+
+export const setPostEdit = (isEditPost,postId) => ({
+  type: SET_POST_EDIT,
+  payload: {isEditPost,postId},
 });
 
 export const fetchPosts = () => {
@@ -211,7 +216,7 @@ const extractImageUrl = (url) => {
   const filename = segments.pop();
   return url.substring(0, url.indexOf(filename) + filename.length);
 };
-export const createNewPost = (key,content_type,uploadedImage,formData) => {
+export const createNewPost = (key,content_type,image,formData) => {
   return async (dispatch) => {
     dispatch(getPostsRequest());
     try {
@@ -219,7 +224,7 @@ export const createNewPost = (key,content_type,uploadedImage,formData) => {
 
         uploadFileToSignedUrl(
           response.data.signedUrl,
-          uploadedImage,
+          image,
           content_type,
           null,
           async (response2) => {
@@ -229,6 +234,41 @@ export const createNewPost = (key,content_type,uploadedImage,formData) => {
             const token = localStorage.getItem("token").replaceAll('"', "");
             const responsefile = await axios.post(
               `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/createPost`,
+              formData,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
+            window.location.href = "/home";
+          }
+        );
+      });
+
+    } catch (error) {
+      // dispatch(getPostsFailure(error.message));
+    }
+  };
+};
+export const editPost = (key,content_type,image,formData,editPostId) => {
+  return async (dispatch) => {
+    dispatch(getPostsRequest());
+    try {
+      getSignedUrl({ key, content_type }).then((response) => {
+
+        uploadFileToSignedUrl(
+          response.data.signedUrl,
+          image,
+          content_type,
+          null,
+          async (response2) => {
+            let newImageUrl = extractImageUrl(response2.config.url);
+            formData.mainImageURL = newImageUrl;
+
+            const token = localStorage.getItem("token").replaceAll('"', "");
+            const responsefile = await axios.put(
+              `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/updatePost/${editPostId}`,
               formData,
               {
                 headers: {

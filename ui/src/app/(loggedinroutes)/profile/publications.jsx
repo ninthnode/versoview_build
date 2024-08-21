@@ -1,49 +1,98 @@
-import { Accordion, AccordionItem, AccordionButton, AccordionPanel, AccordionIcon, Box, Badge, Button, Stack } from '@chakra-ui/react';
-import Link from 'next/link';
-function Publications({userPosts}) {
+import {
+  Accordion,
+  AccordionItem,
+  AccordionButton,
+  AccordionPanel,
+  AccordionIcon,
+  Box,
+  Badge,
+  Button,
+  Stack,
+  Text,
+  Flex
+} from "@chakra-ui/react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useDispatch } from "react-redux";
+import { setPostEdit } from "@/redux/posts/postActions";
+import { FaEdit } from "react-icons/fa";
+import { MdDelete } from "react-icons/md";
+
+function Publications({ userPosts }) {
+  const { push } = useRouter();
+  const dispatch = useDispatch();
+  const editPostHandler = async (id) => {
+    await dispatch(setPostEdit(true, id));
+    push("/publish");
+  };
   return (
     <Accordion allowMultiple>
       <AccordionItem>
-        <h2>
-          <AccordionButton>
-            <Box flex="1" textAlign="left">
-              PUBLICATIONS – 3
-            </Box>
-            <AccordionIcon />
-          </AccordionButton>
-        </h2>
-        <AccordionPanel>
-          <Accordion defaultIndex={[0]} allowMultiple>
-            <AccordionItem>
-              <h2>
-                <AccordionButton>
-                  <Box flex="1" textAlign="left">
-                    Summer 2023, June 1 2023
-                  </Box>
-                  <AccordionIcon />
-                </AccordionButton>
-              </h2>
-              <AccordionPanel>
+        <AccordionButton p={2}>
+          <Text fontSize="md" flex="1" textAlign="left">
+            PUBLICATIONS – 3
+          </Text>
+          <AccordionIcon />
+        </AccordionButton>
+        <AccordionPanel p={2}>
+          <Accordion defaultIndex={[0]} allowMultiple p={0}>
+            <AccordionItem p={0}>
+              <AccordionButton p={2}>
+                <Box flex="1" textAlign="left">
+                  Summer 2023, June 1 2023
+                </Box>
+                <AccordionIcon />
+              </AccordionButton>
+              <AccordionPanel p={0}>
                 <Stack spacing={0}>
                   {[
-                    { category: "Outdoor Living", title: "The Green Room", warning: true },
-                    { category: "Outdoor Living", title: "Farm to Plate", warning: true },
+                    {
+                      category: "Outdoor Living",
+                      title: "The Green Room",
+                      warning: true,
+                    },
+                    {
+                      category: "Outdoor Living",
+                      title: "Farm to Plate",
+                      warning: true,
+                    },
                     { category: "Trends", title: "Heavy Fabrics" },
                     { category: "Trends", title: "Spring Forward" },
-                    { category: "Style", title: "7 Ways to Upgrade Your Outdoor" },
+                    {
+                      category: "Style",
+                      title: "7 Ways to Upgrade Your Outdoor",
+                    },
                     { category: "Style", title: "Focus on the Front Yard" },
                     { category: "Travel", title: "Maldives" },
                   ].map((item, index) => (
-                    <Box key={index} display="flex" justifyContent="space-between" alignItems="center" p={2} borderWidth="1px" borderRadius="md">
+                    <Box
+                      key={index}
+                      display="flex"
+                      justifyContent="space-between"
+                      alignItems="center"
+                      p={2}
+                      borderWidth="1px"
+                      borderRadius="md"
+                    >
                       <Box>
-                        {item.warning && <Badge colorScheme="yellow" mr={2}>⚠️</Badge>}
-                        <Badge mr={2}>{item.category}</Badge>
-                        {item.title}
+                        <Flex>
+                        <>
+                        {item.warning && (
+                          <Badge colorScheme="yellow" mr={2}>
+                            ⚠️
+                          </Badge>
+                        )}
+                        <Badge fontSize='12px' mr={2}>{item.category}</Badge>
+                        </>
+                        <Text fontSize='sm'>{item.title}</Text>
+                        </Flex>
                       </Box>
-                      <Button size="sm" colorScheme="red">Edit</Button>
+                      <Button size="sm" colorScheme="red">
+                        Edit
+                      </Button>
                     </Box>
                   ))}
-                  <Button p='0'>Load next 10...</Button>
+                  <Button p="0">Load next 10...</Button>
                 </Stack>
               </AccordionPanel>
             </AccordionItem>
@@ -55,27 +104,60 @@ function Publications({userPosts}) {
 
       {/* Posts section */}
       <AccordionItem>
-        <h2>
-          <AccordionButton>
-            <Box flex="1" textAlign="left">
-              POSTS – {userPosts?userPosts.length:0}
-            </Box>
-            <AccordionIcon />
-          </AccordionButton>
-        </h2>
-        <AccordionPanel>
-                <Stack spacing={0}>
-                  {userPosts&&userPosts.map((item, index) => (
-                    <Box key={index} display="flex" justifyContent="space-between" alignItems="center" p={2} borderWidth="1px" borderRadius="md">
-                    <Link href={`/post/${item._id}`}>
-                      <Box>
-                        {item.header}
-                      </Box>
-                    </Link>
-                    </Box>
-                  ))}
-                </Stack>
-              </AccordionPanel>
+        <AccordionButton p={2}>
+          <Text fontSize="md" flex="1" textAlign="left">
+            POSTS – {userPosts ? userPosts.length : 0}
+          </Text>
+          <AccordionIcon />
+        </AccordionButton>
+        <AccordionPanel p='0'>
+          <Stack spacing={0}>
+            {userPosts &&
+              userPosts.map((item, index) => (
+                <Flex
+                  key={index}
+                  display="flex"
+                  justifyContent="space-between"
+                  alignItems="center"
+                  p={2}
+                  borderWidth="1px"
+                  borderRadius="md"
+                  w='100%'
+                >
+                  <Link href={`/post/${item._id}`}>
+                    <Text fontSize="sm">{item.header}</Text>
+                  </Link>
+
+                  <Flex gap={2}>
+                    <Button
+                      variant="default"
+                      size="small"
+                      bg="#FB5645"
+                      py={1}
+                      px={3}
+                      fontWeight="light"
+                      color="#fff"
+                      onClick={() => editPostHandler(item._id)}
+                    >
+                      <FaEdit />
+                    </Button>
+                    <Button
+                      variant="default"
+                      size="small"
+                      bg="#FB5645"
+                      py={1}
+                      px={3}
+                      fontWeight="light"
+                      color="#fff"
+                      // onClick={() => editPostHandler(item._id)}
+                    >
+                      <MdDelete/>
+                    </Button>
+                  </Flex>
+                </Flex>
+              ))}
+          </Stack>
+        </AccordionPanel>
       </AccordionItem>
     </Accordion>
   );

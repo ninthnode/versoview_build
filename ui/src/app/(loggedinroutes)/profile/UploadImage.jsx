@@ -44,10 +44,12 @@ const ImageUploadButton = ({
           <Box
             as="img"
             src={
-              uploadImage
-                ? window.URL.createObjectURL(uploadImage)
-                : selectedImage
+              uploadImage || selectedImage?
+              uploadImage ? window.URL.createObjectURL(uploadImage)
+                : selectedImage ?selectedImage :window.URL.createObjectURL(selectedImage)
+                : naImage
             }
+            loading="lazy"
             alt="Upload"
             objectFit="cover"
             boxSize="100%"
