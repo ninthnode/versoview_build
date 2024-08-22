@@ -66,7 +66,7 @@ const Comment = ({
       />
         <IconButton
           variant="ghost"
-          colorScheme={!isBookmarked ? "gray" : "green"}
+          color={!isBookmarked ? "gray" : "green.500"}
           aria-label="See menu"
           fontSize="lg"
           icon={!isBookmarked ? <CiBookmark /> : <BookmarkFilled />}
@@ -167,10 +167,10 @@ const CommentsModal = ({
             <Box mt="4" bg="white" rounded="md" shadow="md" w="100%">
               <Flex p={4}>
                 <Box mt={2} justifyContent="flex-start" w="100%" mb="2">
-                  <Text mb="2" fontWeight="bold" fontSize="lg">
+                  <Text mb="2" fontWeight="bold" fontSize="md">
                     Comments:
                   </Text>
-                  <Text fontSize="lg">{getExcerpt(postTitle, 50)}</Text>
+                  <Text fontSize="md">{getExcerpt(postTitle, 50)}</Text>
                 </Box>
                 <Button variant="ghost" onClick={onToggleCommentModal}>
                   <IoClose fontSize="22px" />

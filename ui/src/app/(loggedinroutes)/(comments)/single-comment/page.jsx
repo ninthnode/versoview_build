@@ -116,7 +116,7 @@ function SingleComment({
                 />
                   <IconButton
                     variant="ghost"
-                    colorScheme={!replay.isBookmarked ? "gray" : "green"}
+                    color={!replay.isBookmarked ? "gray" : "green.500"}
                     aria-label="See menu"
                     fontSize="lg"
                     icon={!replay.isBookmarked ? <CiBookmark /> : <BookmarkFilled />}

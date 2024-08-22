@@ -43,7 +43,7 @@ function RelatedArticleList() {
       {articles.map((article, index) => (
         <Flex key={index} justifyContent='space-between' borderBottom="1px solid #e2e8f0" py={3}>
           <Flex flexDir='column' justifyContent='space-between'>
-            <Text fontSize="23px" fontWeight="semibold">
+            <Text fontSize="1.2rem" fontWeight="semibold">
               {article.title}
             </Text>
             <Text fontSize="sm" color="gray.600">

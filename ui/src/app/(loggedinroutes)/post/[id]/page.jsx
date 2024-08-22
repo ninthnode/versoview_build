@@ -155,6 +155,7 @@ function SinglePost({
             <Image
               border="1px solid lightgray"
               borderRadius="md"
+              // h="300px"
               objectFit="cover"
               src={postState.post.mainImageURL}
               alt={postState.post.header}
@@ -237,13 +238,16 @@ function SinglePost({
                 <Text mt="2" w="fit-content" p="1" fontSize='sm'>
                   By {postState.user.channelName}
                 </Text>
+                {postState.user.credits&&<Text mt="2" w="fit-content" p="1" fontSize='sm'>
+                  Credits {postState.user.credits}
+                </Text>}
                 {/* <Heading fontSize="2xl" as="h5" mb="2">
                   {postState.post.header}
                 </Heading> */}
-                <Heading py='2' mb="1" fontWeight='bold' fontSize='2.4rem' lineHeight='2rem'>
+                <Heading py='2' mb="1" fontWeight='bold' fontSize='lg' lineHeight='2rem'>
                   {postState.post.header}
                 </Heading>
-                <Text py='2' mb="1" fontWeight='semibold' fontSize='1.4rem' lineHeight='2rem'>
+                <Text pb='2' mb="1" fontWeight='semibold' fontSize='1.2rem' lineHeight='2rem'>
                   {postState.post.standFirst}
                 </Text>
                 <Text

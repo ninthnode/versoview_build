@@ -6,7 +6,7 @@ import BottomNavigationStyles from "./components/BottomNavigation";
 const customTheme = extendTheme({
   fonts: {
     body: "NotoSans-Bold, sans-serif",
-    heading: "Poppins-ExtraBold, sans-serif",
+    heading: "Poppins-bold, sans-serif",
     button: "NotoSans-Bold, sans-serif",
     p: "NotoSans-Medium, sans-serif",
     span: "NotoSans-Regular, sans-serif",
@@ -15,7 +15,7 @@ const customTheme = extendTheme({
     xs: "0.7rem",
     sm: "0.865rem",
     md: "1rem",
-    lg: "1.55rem",
+    lg: "1.74rem",
     xl: "2.2rem",
     "2xl": "2rem",
     "3xl": "2.5rem",

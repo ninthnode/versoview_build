@@ -1,6 +1,7 @@
 "use client";
 
 import "@/styles/global.css";
+import "@/styles/fonts.css";
 import { ChakraProvider } from "@chakra-ui/react";
 import customTheme from "@/styles/theme";
 import { Provider } from "react-redux";

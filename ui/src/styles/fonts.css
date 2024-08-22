@@ -1,0 +1,39 @@
+@font-face {
+    font-family: "Poppins-ExtraBold";
+    font-style: extrabold;
+    font-weight: 800;
+    font-display: swap;
+    src: url("/fonts/Poppins-ExtraBold.ttf") format("truetype");
+    unicode-range: U+20, U+21, U+23, U+26-29, U+2C-33, U+35-38, U+3A, U+3F,
+      U+41-57, U+61-7A, U+A9, U+E9, U+2013, U+2014, U+2026, U+2AF6, U+1F44B;
+  };
+
+  @font-face  {
+    font-family: "NotoSans-SemiBold";
+    font-style: semibold;
+    font-weight: 600;
+    font-display: swap;
+    src: url("/fonts/NotoSans-SemiBold.ttf") format("truetype");
+    unicode-range: U+20, U+21, U+23, U+26-29, U+2C-33, U+35-38, U+3A, U+3F,
+      U+41-57, U+61-7A, U+A9, U+E9, U+2013, U+2014, U+2026, U+2AF6, U+1F44B;
+  }
+
+
+  @font-face {
+    font-family: "NotoSans-Bold";
+    font-style: bold;
+    font-weight: 700;
+    font-display: swap;
+    src: url("/fonts/NotoSans-Bold.ttf") format("truetype");
+    unicode-range: U+20, U+21, U+23, U+26-29, U+2C-33, U+35-38, U+3A, U+3F,
+      U+41-57, U+61-7A, U+A9, U+E9, U+2013, U+2014, U+2026, U+2AF6, U+1F44B;
+  }
+  @font-face {
+    font-family: "NotoSans-Regular";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url("/fonts/NotoSans-Regular.ttf") format("truetype");
+    unicode-range: U+20, U+21, U+23, U+26-29, U+2C-33, U+35-38, U+3A, U+3F,
+      U+41-57, U+61-7A, U+A9, U+E9, U+2013, U+2014, U+2026, U+2AF6, U+1F44B;
+  }

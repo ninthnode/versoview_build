@@ -25,6 +25,7 @@ const PostCard = ({
   small = false,
   showBookmarkButton = true,
   submitBookmark,
+  isbookmarkScreenCard = false,
 }) => {
   return (
     <Card maxW="2xl" mb={4} boxShadow="none">
@@ -56,17 +57,17 @@ const PostCard = ({
           {showBookmarkButton && (
             <IconButton
               variant="nostyle"
-              colorScheme={!post.isBookmarked ? "gray" : "green"}
+              color={post.isBookmarked || isbookmarkScreenCard ? "green.500" : "gray"}
               aria-label="See menu"
               fontSize="lg"
               textAlign="right"
               justifyContent="flex-end"
               p="0"
               icon={
-                !post.isBookmarked ? (
-                  <CiBookmark style={{ margin: -6 }} />
-                ) : (
+                post.isBookmarked || isbookmarkScreenCard? (
                   <BookmarkFilled style={{ margin: -6 }} />
+                ) : (
+                  <CiBookmark style={{ margin: -6 }} />
                 )
               }
               onClick={() => submitBookmark("post", post._id)}
@@ -79,7 +80,7 @@ const PostCard = ({
           border="1px solid lightgray"
           borderRadius="md"
           objectFit="cover"
-          h="300px"
+          // h="300px"
           src={post.mainImageURL || "/assets/default-post-image.svg"}
           alt={post.header}
         />
@@ -109,15 +110,15 @@ const PostCard = ({
         </Text>
 
         <Link href={`/post/${post._id}`}>
-          <Text
+          <Heading
             py="1"
             mb="1"
             fontWeight="bold"
-            fontSize="1.5rem"
+            fontSize="lg"
             lineHeight="2rem"
           >
             {post.header}
-          </Text>
+          </Heading>
         </Link>
         <Text
           fontSize="md"

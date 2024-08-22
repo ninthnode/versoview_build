@@ -147,6 +147,9 @@ function PostPreview({
                 <Text mt="2" w="fit-content" p="1">
                   By {userChannel.channelName}
                 </Text>
+                {post.credits&&<Text mt="2" w="fit-content" p="1" fontSize='sm'>
+                  Credits {post.credits}
+                </Text>}
                 <Heading fontSize="2xl" as="h6" mt="2">
                   {post.header}
                 </Heading>

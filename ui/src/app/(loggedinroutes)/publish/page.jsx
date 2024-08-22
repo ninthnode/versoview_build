@@ -231,11 +231,13 @@ const PublishPost = () => {
                   <FormControl id="mainImage">
                     <Box
                       border="3px dashed #e2e8f0"
-                      w="100%"
-                      h="205px"
+                      width= "100%"
+                      maxWidth= "400px"
+                      height="200px"
                       display="flex"
                       alignItems="center"
                       justifyContent="center"
+                      m='0 auto'
                       position='relative'
                     >
                       <ImageCropper croppedImage={croppedImage} uploadedImage={uploadedImage} onCropComplete={handleCropComplete} />

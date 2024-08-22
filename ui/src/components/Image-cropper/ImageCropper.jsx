@@ -49,23 +49,11 @@ const ImageCropper = ({ onCropComplete, uploadedImage, croppedImage }) => {
               image={uploadedImage}
               crop={crop}
               zoom={zoom}
-              aspect={16 / 9}
+              aspect={16/9}
               onCropChange={setCrop}
               onZoomChange={setZoom}
               onCropComplete={onCropCompleteCallback}
-              style={{
-                containerStyle: {
-                  position: "relative",
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "contain",
-                },
-                mediaStyle: {
-                  objectFit: "contain",
-                  width: "100%",
-                  height: "100%",
-                },
-              }}
+              objectFit="cover"
             />
           ) : (
             <Image

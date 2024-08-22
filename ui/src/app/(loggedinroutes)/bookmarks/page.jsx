@@ -36,7 +36,7 @@ const Comment = ({
   commentText,
   openCommentModal,
 }) => (
-  <Box my="4">
+  <Box my="4" p={2} bg="#e5e5e5">
     <Box p={2} bg="#fff">
       <PostCard
         key={postId._id || crypto.randomUUID()}
@@ -53,7 +53,7 @@ const Comment = ({
         }}
       >
         <Link href={`post/${postId._id}`}>
-          <HStack spacing={4}>
+          <HStack spacing={4} alignItems='flex-start'>
             <Avatar name={singleComment.userId.username} />
             <VStack align="start" spacing={1}>
               <Text fontWeight="bold">{singleComment.userId.username}</Text>
@@ -76,7 +76,7 @@ const Comment = ({
       <Box position="absolute" top="0" right="0">
         <IconButton
           variant="ghost"
-          colorScheme={!isBookmarked ? "gray" : "green"}
+          color={!isBookmarked ? "gray" : "green.500"}
           aria-label="See menu"
           fontSize="20px"
           icon={!isBookmarked ? <CiBookmark /> : <BookmarkFilled />}
@@ -125,13 +125,16 @@ const Bookmark = ({
             postBookmarks.map((post) => {
               if (post.postId) {
                 return (
-                  <Box p={2} bg="#fff" key={post.postId._id}>
+                  <Box p={2} bg="#e5e5e5" key={post.postId._id}>
+                  <Box p={2} bg="#fff">
                     <PostCard
                       key={post._id || crypto.randomUUID()}
                       post={post.postId}
                       showBookmark={true}
                       submitBookmark={submitPostBookmark}
+                      isbookmarkScreenCard={true}
                     />
+                  </Box>
                   </Box>
                 );
               } else if (

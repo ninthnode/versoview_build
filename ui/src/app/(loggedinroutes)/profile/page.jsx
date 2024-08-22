@@ -28,6 +28,8 @@ import ChannelName from "./channel-name";
 import ShareChannel from "./share-channel";
 import Publications from "./publications";
 import RewardsList from "./rewardsList";
+import genres from "@/static-data/genres";
+import MultiSelectDropdown from "@/components/MultiSelectDropdown";
 
 function Profile() {
   const dispatch = useDispatch();
@@ -285,17 +287,11 @@ function Profile() {
               <Flex gap={10}>
                 <Text fontSize="md">Genre</Text>
                 {isEditing ? (
-                  <Input
-                    bg="#fff"
-                    defaultValue={user.genre?.join(",")}
-                    placeholder="Comma-Separated"
-                    onChange={(e) =>
-                      setGenre(e.target.value.split(",").map((i) => i.trim()))
-                    }
-                  />
+                  <MultiSelectDropdown selectedOptions={genre} setGenre={setGenre} options={genres} placeholder={'Select genres'}/>
                 ) : (
                   <Text fontSize="sm">{user.genre?.join(" & ")}</Text>
                 )}
+                
               </Flex>
               <Flex gap={4}>
                 <Text fontSize="md">Subgenre</Text>
