@@ -134,6 +134,28 @@ function Profile() {
     await dispatch(deletePost(id));
     dispatch(fetchUser(authState.id));
   }
+  useEffect(() => {
+    // Initialize a new array for subgenres
+    let newSubgenres = [];
+
+    // Iterate over the selected genres
+    genre.forEach(selectedGenre => {
+      // Find the genre in the genres array
+      const genreObj = genres.find(g => g.genre === selectedGenre);
+
+      // If the genre is found, add its subgenres to the newSubgenres array
+      if (genreObj) {
+        newSubgenres = [...newSubgenres, ...genreObj.subGenres];
+      }
+    });
+
+    // Remove duplicates from newSubgenres array
+    newSubgenres = [...new Set(newSubgenres)];
+    console.log(newSubgenres)
+    // Set the new subgenre array
+    setSubGenre(newSubgenres);
+  }, [genre]); 
+  
   return (
     user && (
       <Box bg="#F5F5F5" ml={{ base: "0", sm: "4" }} mb="60px" maxW="xl">
@@ -292,23 +314,24 @@ function Profile() {
                 )}
                 
               </Flex>
-              <Flex gap={4}>
+              <Flex gap={2}>
                 <Text fontSize="md">Subgenre</Text>
-                {isEditing ? (
+                {/* {isEditing ? (
                   <Input
                     bg="#fff"
                     on
-                    defaultValue={user.subGenre?.join(",")}
+                    defaultValue={subGenre?.join(",")}
                     placeholder="Comma-Separated"
+                     fontSize="sm"
                     onChange={(e) =>
                       setSubGenre(
                         e.target.value.split(",").map((i) => i.trim())
                       )
                     }
                   />
-                ) : (
-                  <Text fontSize="sm">{user.subGenre?.join(" & ")}</Text>
-                )}
+                ) : ( */}
+                  <Text fontSize="sm" fontWeight="normal" h='fit-content' maxW='100%' textOverflow="ellipsis" whiteSpace="normal" p={2}>{subGenre?.join(" , ")}</Text>
+                {/* )} */}
               </Flex>
             </Box>
             <Divider h="1px" bg="#333" />

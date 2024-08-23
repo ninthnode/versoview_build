@@ -24,12 +24,16 @@ const Search = () => {
           setSearchResults(data.data || []);
         } catch (error) {
           // console.error("Error fetching search results", error);
+          setSearchResults([]);
         } finally {
           setIsSearching(false);
         }
       };
 
       fetchData();
+    }
+    else{
+      setSearchResults([])
     }
   }, [search, category]);
 
@@ -119,7 +123,7 @@ const Search = () => {
             )
           )
         ) : (
-          search && !isSearching && <Text>No results matched your search</Text>
+          search && !isSearching ? <Text>No results matched your search</Text>:<Text>Type to Search...</Text>
         )}
       </Box>
     </Box>

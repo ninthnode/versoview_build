@@ -26,6 +26,8 @@ import dynamic from "next/dynamic";
 import PostPreview from "./PostPreview"; 
 import { useToast } from "@chakra-ui/react";
 import ImageCropper from "@/components/Image-cropper/ImageCropper";
+import { setPostEdit } from "@/redux/posts/postActions";
+
 const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), {
   ssr: false,
 });
@@ -59,7 +61,7 @@ const PublishPost = () => {
 
   useEffect(() => {
     const fetchAndSetData = async () => {
-      if (isEditPost && singlePostEditContent?.post === undefined) {
+      if (singlePostEditContent?.post === undefined) {
         await dispatch(getPostByIdEditData(editPostId));
       }
   
@@ -84,7 +86,7 @@ const PublishPost = () => {
       }
     };
   
-    fetchAndSetData();
+    if(isEditPost)fetchAndSetData();
   }, [isEditPost, singlePostEditContent]);
   
   
@@ -186,6 +188,12 @@ const PublishPost = () => {
     setIsEditing(!isEditing)
   }
 
+  useEffect(() => {
+
+    return async() => {
+     await dispatch(setPostEdit(false, ''))
+    };
+  }, []);
   return (
     <Box mb={"60px"}>
       <Flex py={5}>
@@ -196,7 +204,7 @@ const PublishPost = () => {
           mr={5}
           display={{ base: "none", md: "block" }}
         >
-          <Heading size="md" mb={4}>
+          <Heading fontSize="md" textAlign='center' my={4}>
             PDF PREVIEW
           </Heading>
           <Box border="1px solid #e2e8f0" h="80vh">
@@ -213,7 +221,7 @@ const PublishPost = () => {
             <Stack spacing={4}>
                 <Box>
                 <Flex justifyContent='space-between' alignItems='center'>
-                    <Text fontSize="sm">MAIN IMAGE</Text>
+                    <Text fontSize="sm">MAIN IMAGE *</Text>
                     <div>
                     <Input
                       visibility='hidden'
@@ -272,7 +280,7 @@ const PublishPost = () => {
                         value={selectedSubSection}
                         onChange={(e) => setSelectedSubSection(e.target.value)}
                         disabled={!selectedSection}
-                      >{console.log(selectedSubSection)}
+                      >
                         <option value="">Select a sub-section</option>
                         {selectedSection &&
                           genres[selectedSection].subGenres.map((subGenre) => (
@@ -344,7 +352,8 @@ const PublishPost = () => {
             justifyContent="center"
             alignItems="center"
           >
-            <PostPreview post={formData} uploadedImage={croppedImage}
+            <PostPreview post={formData} 
+            croppedImage={croppedImage} uploadedImage={uploadedImage}
               selectedSection={genres[selectedSection].genre}
               selectedSubSection={selectedSubSection}
               userChannel={userChannel}

@@ -30,6 +30,7 @@ import DOMPurify from "dompurify";
 function PostPreview({
   post,
   uploadedImage,
+  croppedImage,
   selectedSection,
   selectedSubSection,
   userChannel,
@@ -79,7 +80,7 @@ function PostPreview({
               border="1px solid lightgray"
               borderRadius="md"
               objectFit="cover"
-              src={uploadedImage}
+              src={croppedImage}
               alt={post.header}
             />
             <CardBody pt="2" px="0">

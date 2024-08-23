@@ -9,7 +9,7 @@ const ImageCropper = ({ onCropComplete, uploadedImage, croppedImage }) => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(true);
 
   const onCropCompleteCallback = useCallback(
     (croppedArea, croppedAreaPixels) => {
@@ -57,7 +57,7 @@ const ImageCropper = ({ onCropComplete, uploadedImage, croppedImage }) => {
             />
           ) : (
             <Image
-              objectFit="contain"
+              objectFit="cover"
               src={croppedImage?croppedImage:uploadedImage}
               alt="Cropped Image"
               w="100%"

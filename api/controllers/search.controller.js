@@ -8,22 +8,36 @@ module.exports.searchArticles = asyncHandler(async (req, res) => {
   try {
     const query = req.params.article;
 
-    const searchedChannels = await Post.find({
+    // Return an error if the query is invalid or empty
+    if (!query || query.length === 0) {
+      return res.status(400).json({ status: 400, message: "Invalid search query" });
+    }
+
+    // Use regular expressions to match the exact word
+    const searchConditions = {
+      // $or: [
+      //   { header: { $regex: `\\b${query}\\b`, $options: "i" } },
+      //   { section: { $regex: `\\b${query}\\b`, $options: "i" } },
+      //   { subSection: { $regex: `\\b${query}\\b`, $options: "i" } },
+      //   { bodyRichText: { $regex: `\\b${query}\\b`, $options: "i" } }
+      // ]
       $or: [
-        { header: { $regex: new RegExp(query, "i") } },
-        { section: { $regex: new RegExp(query, "i") } },
-        { subSection: { $regex: new RegExp(query, "i") } },
-        { bodyRichText: { $regex: new RegExp(query, "i") } },
-      ],
-    }).populate("channelId");
+        { header: { $regex: query, $options: "i" } },
+        { section: { $regex: query, $options: "i" } },
+        { subSection: { $regex: query, $options: "i" } },
+        { bodyRichText: { $regex: query, $options: "i" } }
+      ]
+    };
 
-    if (!searchedChannels?.length)
+    const searchedPosts = await Post.find(searchConditions).populate("channelId");
+
+    if (!searchedPosts?.length) {
       return res
-        .status(400)
+        .status(404)
         .json({ status: 404, message: "No articles matched this search" });
+    }
 
-    return res.status(200).json({ status: 200, data: searchedChannels });
-    // db.channels.aggregate([{ $search: {text: {path: {wildcard: '*'}, query: '@ryan'}, index: 'idx_channelName'}}])
+    return res.status(200).json({ status: 200, data: searchedPosts });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
