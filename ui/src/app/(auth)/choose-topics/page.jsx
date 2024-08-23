@@ -103,7 +103,7 @@ const TopicSelection = () => {
               color={Array.from(selectedTopics).length < 3 ? "#333" : "#fff"}
               bg={Array.from(selectedTopics).length < 3 ? "gray.200" : "primary"}
               onClick={() => {
-                Array.from(selectedTopics).length < 3 ? "" : handleSubmit();
+                handleSubmit();
               }}
             >
               Enter

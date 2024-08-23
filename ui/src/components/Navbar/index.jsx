@@ -48,7 +48,7 @@ const Navbar = ({ children }) => {
             <BottomNavigation
               value={index}
               onChange={(newIndex) => {
-                window.location.href = SidebarRoutes[newIndex].url;
+                router.push(SidebarRoutes[newIndex].url);
               }}
               colorScheme="white"
               boxShadow="0 -4px 6px rgba(0, 0, 0, 0.1)"
@@ -65,9 +65,6 @@ const Navbar = ({ children }) => {
               {SidebarRoutes.map((route) => (
                 <BottomNavigationItem
                   key={route.name}
-                  onClick={() => {
-                    router.push(route.url);
-                  }}
                 >
                   <BottomNavigationIcon
                     as={route.icon}

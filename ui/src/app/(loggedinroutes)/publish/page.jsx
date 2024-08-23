@@ -17,7 +17,7 @@ import {
   Select,
   Spinner,
 } from "@chakra-ui/react";
-import { createNewPost,editPost,getPostById } from "@/redux/posts/postActions";
+import { createNewPost,editPost,getPostByIdEditData } from "@/redux/posts/postActions";
 import { fetchLoggedInUserChannel } from "@/redux/channel/channelActions";
 import { useDispatch, useSelector } from "react-redux";
 import genres from "@/static-data/genres";
@@ -36,7 +36,7 @@ const PublishPost = () => {
   const postLoading = useSelector((s) => s.post.loading);
   const isEditPost = useSelector((s) => s.post.isEditPost);
   const editPostId = useSelector((s) => s.post.editPostId);
-  const singlePost = useSelector((s) => s.post.singlePost);
+  const singlePostEditContent = useSelector((s) => s.post.singlePostEditContent);
   const userChannel = useSelector((s) => s.channel.userChannel);
   const [isEditing, setIsEditing] = useState(true);
   const [uploadedImage, setUploadedImage] = useState(null);
@@ -59,25 +59,25 @@ const PublishPost = () => {
 
   useEffect(() => {
     const fetchAndSetData = async () => {
-      if (isEditPost && singlePost?.post === undefined) {
-        await dispatch(getPostById(editPostId));
+      if (isEditPost && singlePostEditContent?.post === undefined) {
+        await dispatch(getPostByIdEditData(editPostId));
       }
   
-      if (singlePost?.post) {
+      if (singlePostEditContent?.post) {
         setFormData((prevFormData) => ({
           ...prevFormData,
-          header: singlePost.post.header,
-          standFirst: singlePost.post.standFirst,
-          credits: singlePost.post.credits,
-          bodyRichText: singlePost.post.bodyRichText,
+          header: singlePostEditContent.post.header,
+          standFirst: singlePostEditContent.post.standFirst,
+          credits: singlePostEditContent.post.credits,
+          bodyRichText: singlePostEditContent.post.bodyRichText,
         }));
   
-        let sectionIndex = genres.findIndex((g) => g.genre === singlePost.post.section);
+        let sectionIndex = genres.findIndex((g) => g.genre === singlePostEditContent.post.section);
         setSelectedSection(sectionIndex);
-        setSelectedSubSection(singlePost.post.subSection);
+        setSelectedSubSection(singlePostEditContent.post.subSection);
         
-        let imageName = singlePost.post.mainImageURL.lastIndexOf('/') + 1;
-        let postImage = await blobToFile(singlePost.post.mainImageURL, imageName);
+        let imageName = singlePostEditContent.post.mainImageURL.lastIndexOf('/') + 1;
+        let postImage = await blobToFile(singlePostEditContent.post.mainImageURL, imageName);
         const imageDataUrl = await readFile(postImage);
         setUploadedImage(imageDataUrl);
         setCroppedImage(imageDataUrl);
@@ -85,7 +85,7 @@ const PublishPost = () => {
     };
   
     fetchAndSetData();
-  }, [isEditPost, singlePost]);
+  }, [isEditPost, singlePostEditContent]);
   
   
 
@@ -272,7 +272,7 @@ const PublishPost = () => {
                         value={selectedSubSection}
                         onChange={(e) => setSelectedSubSection(e.target.value)}
                         disabled={!selectedSection}
-                      >
+                      >{console.log(selectedSubSection)}
                         <option value="">Select a sub-section</option>
                         {selectedSection &&
                           genres[selectedSection].subGenres.map((subGenre) => (
@@ -326,11 +326,10 @@ const PublishPost = () => {
               </FormControl>
               <Button
                 disabled={postLoading}
-                size="sm"
                 colorScheme="green"
                 onClick={handlePreviewPage}
-                fontSize='xl'
-                py={6}
+                fontSize='md'
+                py={4}
               >
                 {postLoading && <Spinner size="sm" color="white" />}
                 {postLoading ? "Creating Post.." : "Save & Preview"}

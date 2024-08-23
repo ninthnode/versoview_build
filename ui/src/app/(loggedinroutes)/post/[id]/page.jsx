@@ -37,7 +37,8 @@ import {
 import { addCommentToPost,getCommentByPostId } from "@/redux/comments/commentAction";
 import { FaBookmark as BookmarkFilled } from "react-icons/fa";
 import { addRemoveBookmarks } from "@/redux/bookmarks/bookmarkAction";
-import ShareButton from "@/components/ShareButton";
+import PostMenu from "@/components/posts/PostMenu";
+import ShareButton from "@/components/posts/ShareButton";
 import Comments from "@/app/(loggedinroutes)/(comments)/comments/[id]/page";
 import { formatDate } from "@/app/utils/DateUtils";
 import RelatedArticleList from "./RelatedArticleList";
@@ -131,7 +132,7 @@ function SinglePost({
                     </Link>
                   </Box>
                 </Flex>
-                <ShareButton
+                <PostMenu
                   url={`${process.env.NEXT_PUBLIC_FRONTEND_URL}/post/${postState.post._id}`}
                   title={postState.post.header}
                 />

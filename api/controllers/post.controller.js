@@ -89,6 +89,27 @@ module.exports.create = asyncHandler(async (req, res) => {
 //   }
 // });
 // Get all post
+
+function calculateReadingTime(text, time = 250) {
+  let words = text.trim().match(/\S+/g) || [];
+  let wordCount = words.length;
+  let totalMinutes = wordCount / time;
+  
+  totalMinutes = Math.ceil(totalMinutes);
+  
+  let hours = Math.floor(totalMinutes / 60);
+  let minutes = totalMinutes % 60;
+
+  if (hours > 0) {
+      return `${hours}.${minutes < 10 ? '0' : ''}${minutes}hrs`;
+  } else {
+    if(minutes<1)
+      return `${minutes} mins`;
+    else
+      return `less than ${minutes} min`;
+  }
+}
+
 module.exports.getAllPost = asyncHandler(async (req, res) => {
   try {
     // LOGIC
@@ -133,6 +154,7 @@ module.exports.getAllPost = asyncHandler(async (req, res) => {
         return {
           ...post.toObject(),
           isBookmarked: !!bookmark,
+          readingTime: calculateReadingTime(post.bodyRichText),
         };
       })
     );
@@ -158,12 +180,16 @@ module.exports.getPostIfUserNotLoggedIn = asyncHandler(async (req, res) => {
     const postData = await Post.find({ userId: postId })
       .populate("channelId")
       .sort({ createdAt: -1 });
-
-    const totalPosts = await Post.countDocuments();
+      let newpostData = postData.map((p)=>{
+        return {
+          ...p.toObject(),
+          readingTime: calculateReadingTime(p.bodyRichText),
+        }
+      })
 
     res.status(200).json({
       message: "Success",
-      data: postData,
+      data: newpostData,
     });
   } catch (error) {
     console.error(error);
@@ -387,15 +413,14 @@ module.exports.updatePost = asyncHandler(async (req, res) => {
 module.exports.deletePost = asyncHandler(async (req, res) => {
   try {
     const postId = req.params._id;
-
-    const postToDelete = await Post.findById(postId);
-
+    console.log(postId)
+    
+    const postToDelete = await Post.find({_id:postId });
+    
     if (!postToDelete) {
       return res.status(404).json({ error: "Post not found" });
     }
-
-    await postToDelete.remove();
-
+    await Post.findOneAndDelete({_id:postId });
     res
       .status(200)
       .json({ message: "Post deleted successfully", data: postToDelete });

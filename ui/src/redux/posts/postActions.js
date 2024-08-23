@@ -1,7 +1,8 @@
 import { GET_POSTS_REQUEST, GET_POSTS_SUCCESS, GET_POSTS_FAILURE,
   GET_SINGLE_POST_SUCCESS,
   GET_RECENT_POSTS_SUCCESS,
-  SET_POST_EDIT } from './postType';
+  SET_POST_EDIT,
+  GET_SINGLE_POST_EDITDATA_SUCCESS } from './postType';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -92,6 +93,31 @@ export const getPostById = (postId) => {
       const data = await response.data.data
       dispatch({
         type: GET_SINGLE_POST_SUCCESS,
+        payload: data,
+      });
+    } catch (error) {
+      // dispatch(getPostsFailure(error.message));
+    }
+  };
+};
+export const getPostByIdEditData = (postId) => {
+  return async (dispatch,getState) => {
+    dispatch(getPostsRequest());
+    const { auth } = getState();
+
+    try {
+      let response
+      if (auth.isAuthenticated){
+        const token = localStorage.getItem("token").replaceAll('"', "");
+       response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/getPost/${postId}`, { 
+        headers: {
+        Authorization: `Bearer ${token}`,
+        }
+      });
+    }
+      const data = await response.data.data
+      dispatch({
+        type: GET_SINGLE_POST_EDITDATA_SUCCESS,
         payload: data,
       });
     } catch (error) {
@@ -281,6 +307,26 @@ export const editPost = (key,content_type,image,formData,editPostId) => {
         );
       });
 
+    } catch (error) {
+      // dispatch(getPostsFailure(error.message));
+    }
+  };
+};
+
+export const deletePost = (postId) => {
+  return async (dispatch) => {
+    try {
+      const token = localStorage.getItem("token").replaceAll('"', "");
+
+      const response = await axios.delete(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/deletePost/${postId}`,{ 
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      toast(response.data.message,{
+        autoClose: 3000,
+        type:'success'
+      })
     } catch (error) {
       // dispatch(getPostsFailure(error.message));
     }

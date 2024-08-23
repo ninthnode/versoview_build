@@ -18,7 +18,7 @@ import { setPostEdit } from "@/redux/posts/postActions";
 import { FaEdit } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 
-function Publications({ userPosts }) {
+function Publications({ userPosts,deletePostHandler }) {
   const { push } = useRouter();
   const dispatch = useDispatch();
   const editPostHandler = async (id) => {
@@ -149,7 +149,7 @@ function Publications({ userPosts }) {
                       px={3}
                       fontWeight="light"
                       color="#fff"
-                      // onClick={() => editPostHandler(item._id)}
+                      onClick={() => deletePostHandler(item._id)}
                     >
                       <MdDelete/>
                     </Button>

@@ -96,6 +96,7 @@ const Home = ({
                   {postList.map?.((post) => (
                     <Box key={post._id}>
                       <PostCard
+                        showBookmarkButton={user?true:false}
                         key={post._id || crypto.randomUUID()}
                         post={post}
                         submitBookmark={submitBookmarkPost}
@@ -119,6 +120,7 @@ const Home = ({
                 ) : (
                   recentPostList.map((post) => (
                     <PostCard
+                    showBookmarkButton={user?true:false}
                       key={post.id}
                       post={post}
                       submitBookmark={submitBookmarkRecentPost}

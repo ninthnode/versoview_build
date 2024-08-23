@@ -20,41 +20,44 @@ import {
   ModalBody,
   ModalCloseButton,
   IconButton,
+  Text
 } from "@chakra-ui/react";
 import { FiMoreHorizontal } from 'react-icons/fi';
 import { FiShare2 } from "react-icons/fi";
 
-const ShareButton = ({ disabled = false, url, title,shareButton=false }) => {
+const ShareButton = ({ url, title,shareButton=false,disabled=false }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const openModal = () => setIsOpen(true);
   const closeModal = () => setIsOpen(false);
 
-  const sharePost = ()=>{
-    if(navigator.share){
-      navigator.share({
-        title: title,
-        text: title,
-        url: url
-      })
-    }else{
+const sharePost = ()=>{
+  if(navigator.share){
+    navigator.share({
+      title: title,
+      text: title,
+      url: url
+    })
+  }else{
 
-      openModal()
-    }
+    openModal()
   }
+}
   return (
     <>
-      <IconButton
+      {shareButton?
+        <IconButton
         variant="nostyle"
         aria-label="See menu"
         color="textlight"
         fontSize='25px'
         justifyContent='flex-end'
-        icon={shareButton?<FiShare2/>:<FiMoreHorizontal/>}
-        onClick={disabled?null:sharePost}
-        disabled={disabled}
+        icon={<FiShare2/>}
+        isDisabled={disabled}
+        onClick={sharePost}
         p='0'
-      />
+      />:
+      <Button justifyContent='flex-start' m='0' p='0' variant="nostyle" pl='4' onClick={sharePost} w='100%'>Share</Button>}
       <Modal isOpen={isOpen} onClose={closeModal}>
         <ModalOverlay />
         <ModalContent>

@@ -1,18 +1,24 @@
-import { GET_POSTS_REQUEST, GET_POSTS_SUCCESS, GET_POSTS_FAILURE,
+import {
+  GET_POSTS_REQUEST,
+  GET_POSTS_SUCCESS,
+  GET_POSTS_FAILURE,
   GET_SINGLE_POST_SUCCESS,
   GET_SINGLE_POST_VOTES_SUCCESS,
   GET_RECENT_POSTS_SUCCESS,
-  SET_POST_EDIT } from './postType';
+  SET_POST_EDIT,
+  GET_SINGLE_POST_EDITDATA_SUCCESS,
+} from "./postType";
 
 const initialState = {
   loading: false,
   posts: [],
-  error: '',
-  singlePost:{},
-  postVotes:[],
-  recentPosts:[],
-  isEditPost:false,
-  editPostId:'',
+  error: "",
+  singlePost: {},
+  postVotes: [],
+  recentPosts: [],
+  isEditPost: false,
+  editPostId: "",
+  singlePostEditContent: {},
 };
 
 const postsReducer = (state = initialState, action) => {
@@ -27,40 +33,47 @@ const postsReducer = (state = initialState, action) => {
         ...state,
         loading: false,
         posts: action.payload,
-        error: '',
+        error: "",
       };
     case GET_RECENT_POSTS_SUCCESS:
       return {
         ...state,
         loading: false,
         recentPosts: action.payload,
-        error: '',
+        error: "",
       };
-      case GET_POSTS_FAILURE:
-        return {
-          ...state,
-          loading: false,
-          posts: [],
-          error: action.payload,
-        };
-      case GET_SINGLE_POST_SUCCESS:
-        return {
-          ...state,
-          loading: false,
-          singlePost: action.payload,
-          error: '',
-        };
-      case GET_SINGLE_POST_VOTES_SUCCESS:
-        return {
-          ...state,
-          postVotes:action.payload
-        };
-      case SET_POST_EDIT:
-        return {
-          ...state,
-          isEditPost:action.payload.isEditPost,
-          editPostId:action.payload.postId,
-        };
+    case GET_POSTS_FAILURE:
+      return {
+        ...state,
+        loading: false,
+        posts: [],
+        error: action.payload,
+      };
+    case GET_SINGLE_POST_SUCCESS:
+      return {
+        ...state,
+        loading: false,
+        singlePost: action.payload,
+        error: "",
+      };
+    case GET_SINGLE_POST_VOTES_SUCCESS:
+      return {
+        ...state,
+        postVotes: action.payload,
+      };
+    case GET_SINGLE_POST_EDITDATA_SUCCESS:
+      return {
+        ...state,
+        loading: false,
+        singlePostEditContent: action.payload,
+        error: "",
+      };
+    case SET_POST_EDIT:
+      return {
+        ...state,
+        isEditPost: action.payload.isEditPost,
+        editPostId: action.payload.postId,
+      };
     default:
       return state;
   }

@@ -22,6 +22,7 @@ import {
 import { MdLogout } from "react-icons/md";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchUser, updateUser } from "@/redux/profile/actions";
+import { deletePost } from "@/redux/posts/postActions";
 import dynamic from "next/dynamic";
 import UploadImage from "@/app/(loggedinroutes)/profile/UploadImage";
 import ChannelName from "./channel-name";
@@ -55,6 +56,7 @@ function Profile() {
   const [facebook, setFacebook] = useState();
   const [telegram, setTelegram] = useState();
   const [channelName, setChannelName] = useState();
+
   useEffect(() => {
     if (authState) dispatch(fetchUser(authState.id));
   }, [authState]);
@@ -128,13 +130,10 @@ function Profile() {
       setSelectedImage(file);
     }
   };
-  const useraaa = {
-    channelName: "HomeBeautiful",
-    username: "Versoview",
-    profileUrl: "https://www.versoview.com",
-    email: "versoview@gmail.com",
-    profileLocation: "New York, USA",
-  };
+  const deletePostHandler = async(id) => {
+    await dispatch(deletePost(id));
+    dispatch(fetchUser(authState.id));
+  }
   return (
     user && (
       <Box bg="#F5F5F5" ml={{ base: "0", sm: "4" }} mb="60px" maxW="xl">
@@ -383,7 +382,7 @@ function Profile() {
               Library
             </Text>
             <Box textAlign="left" w="100%">
-              <Publications userPosts={user.posts} />
+              <Publications userPosts={user.posts} deletePostHandler={deletePostHandler}/>
             </Box>
             <Divider h="1px" bg="#333" />
             <Box textAlign="left" w="100%">

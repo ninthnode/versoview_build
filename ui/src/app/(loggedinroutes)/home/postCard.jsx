@@ -17,7 +17,7 @@ import Link from "next/link";
 import { CiSearch, CiBookmark, CiUser } from "react-icons/ci";
 import { FaBookmark as BookmarkFilled } from "react-icons/fa6";
 import { formatDate } from "../../utils/DateUtils";
-import ShareButton from "@/components/ShareButton";
+import PostMenu from "@/components/posts/PostMenu";
 import getExcerpt from "@/app/utils/GetExcerpt";
 import DOMPurify from "dompurify";
 const PostCard = ({
@@ -49,7 +49,7 @@ const PostCard = ({
             </Box>
           </Flex>
           {!small && (
-            <ShareButton
+            <PostMenu
               url={`${process.env.NEXT_PUBLIC_FRONTEND_URL}/post/${post._id}`}
               title={post.header}
             />
@@ -94,8 +94,8 @@ const PostCard = ({
           alignItems="center"
           color="textlight"
         >
-          {post.section} - {post.subSection} • {formatDate(post.createdAt)} •
-          6min read
+        {post.section} - {post.subSection} • {formatDate(post.createdAt)} • {" "}
+          {post.readingTime} read
           {/* <Button
             variant="ghost"
             colorScheme="gray"

@@ -16,13 +16,13 @@ import {
   IconButton,
   Spinner
 } from "@chakra-ui/react";
-import { FaRegComment } from "react-icons/fa";
 import { CiBookmark } from "react-icons/ci";
-
+import { BsChat } from "react-icons/bs";
+import ShareButton from "@/components/posts/ShareButton";
 import { PiArrowFatDownLight, PiArrowFatUpLight } from "react-icons/pi";
 
 import { connect } from "react-redux";
-import ShareButton from "@/components/ShareButton";
+import PostMenu from "@/components/posts/PostMenu";
 import { formatDate } from "@/app/utils/DateUtils";
 import { setNavTitle } from "@/redux/navbar/action";
 import DOMPurify from "dompurify";
@@ -65,7 +65,7 @@ function PostPreview({
                     <Heading size="sm">{userChannel.channelName}</Heading>
                   </Box>
                 </Flex>
-                <ShareButton url={``} title={"post.header"} disabled={true} />
+                <PostMenu url={``} title={"post.header"} disabled={true} />
                 <IconButton
                   variant="ghost"
                   aria-label="See menu"
@@ -97,21 +97,22 @@ function PostPreview({
 
               <Divider />
               <Flex py="1" gap={1}>
-                <Flex w="240px" justify="space-between">
+                <Flex w="300px" justify="space-between">
                   <Button
-                    pl="0"
+                    px="2"
                     variant="ghost"
                     fontWeight="regular"
                     color="textlight"
                     leftIcon={
-                      <FaRegComment colorScheme="textlight" fontSize="28px" />
+                      <BsChat colorScheme="textlight" fontSize="28px" />
                     }
-                    disabled={true}
+                    isDisabled={true}
+                    onClick={() => onToggleCommentModal()}
                   >
                     0
                   </Button>
                   <Button
-                    pl="0"
+                    px="2"
                     variant="ghost"
                     fontWeight="regular"
                     color="textlight"
@@ -121,12 +122,16 @@ function PostPreview({
                         fontSize="28px"
                       />
                     }
-                    disabled={true}
+                    isDisabled={true}
+                    onClick={() => {
+                      updatePostUpvote(params.id);
+                      getPostById(params.id);
+                    }}
                   >
                     <Text color={"green.500"}>0</Text>
                   </Button>
                   <Button
-                    pl="0"
+                    px="2"
                     variant="ghost"
                     fontWeight="regular"
                     color="textlight"
@@ -136,10 +141,22 @@ function PostPreview({
                         fontSize="28px"
                       />
                     }
-                    disabled={true}
+                    isDisabled={true}
+                    onClick={() => {
+                      updatePostDownvote(params.id);
+                      getPostById(params.id);
+                    }}
                   >
                     <Text color={"red.500"}>0</Text>
                   </Button>
+                </Flex>
+                <Flex w="100%" justify="flex-end">
+                  <ShareButton
+                    url={``}
+                    title=''
+                    shareButton={true}
+                    isDisabled={true}
+                  />
                 </Flex>
               </Flex>
               <Divider />
@@ -150,15 +167,15 @@ function PostPreview({
                 {post.credits&&<Text mt="2" w="fit-content" p="1" fontSize='sm'>
                   Credits {post.credits}
                 </Text>}
-                <Heading fontSize="2xl" as="h6" mt="2">
+                <Heading py='2' mb="1" fontWeight='bold' fontSize='lg' lineHeight='2rem'>
                   {post.header}
                 </Heading>
-                <Heading fontSize="xl" as="h6" mb="4">
+                <Text pb='2' mb="1" fontWeight='semibold' fontSize='1.2rem' lineHeight='2rem'>
                   {post.standFirst}
-                </Heading>
+                </Text>
                 <Text
-                  fontSize='md'
-                  textAlign="justify"
+                  fontSize="md"
+                  textAlign="left"
                   dangerouslySetInnerHTML={{
                     __html: DOMPurify.sanitize(post.bodyRichText),
                   }}
@@ -169,7 +186,7 @@ function PostPreview({
                 size="full"
                 w='100%'
                 colorScheme="red"
-                fontSize='lg'
+                fontSize='md'
                 textAlign='center'
                 py={3}
                 onClick={handlePreviewPage}
@@ -191,8 +208,8 @@ function PostPreview({
                 w='100%'
                 size="full"
                 colorScheme="green"
-                fontSize='lg'
-                py={3}
+                fontSize='md'
+                py={4}
                 onClick={isEditPost?handleEditSubmit:handleSubmit}
               >
                 {postLoading && <Spinner size="sm" color="white" />}
