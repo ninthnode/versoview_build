@@ -57,14 +57,16 @@ const PostCard = ({
           {showBookmarkButton && (
             <IconButton
               variant="nostyle"
-              color={post.isBookmarked || isbookmarkScreenCard ? "green.500" : "gray"}
+              color={
+                post.isBookmarked || isbookmarkScreenCard ? "green.500" : "gray"
+              }
               aria-label="See menu"
               fontSize="lg"
               textAlign="right"
               justifyContent="flex-end"
               p="0"
               icon={
-                post.isBookmarked || isbookmarkScreenCard? (
+                post.isBookmarked || isbookmarkScreenCard ? (
                   <BookmarkFilled style={{ margin: -6 }} />
                 ) : (
                   <CiBookmark style={{ margin: -6 }} />
@@ -94,8 +96,12 @@ const PostCard = ({
           alignItems="center"
           color="textlight"
         >
-        {post.section} - {post.subSection} • {formatDate(post.createdAt)} • {" "}
+          {post.section} - {post.subSection} • {formatDate(post.createdAt)} •{" "}
           {post.readingTime} read
+          <Flex cursor="pointer" mx="1">
+            <Image src="../assets/chat-icon.png" h="24px" w="28px" />
+            <Text ml="1">0</Text>
+          </Flex>
           {/* <Button
             variant="ghost"
             colorScheme="gray"

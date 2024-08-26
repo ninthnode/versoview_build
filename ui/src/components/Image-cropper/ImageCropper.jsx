@@ -3,9 +3,10 @@ import Cropper from "react-easy-crop";
 import { getCroppedImg } from "./cropImage";
 import { FaCheck } from "react-icons/fa";
 import { MdModeEdit } from "react-icons/md";
-import { Image,Text } from "@chakra-ui/react";
+import { Image, Text,Flex } from "@chakra-ui/react";
+import { FaCamera } from "react-icons/fa";
 
-const ImageCropper = ({ onCropComplete, uploadedImage, croppedImage }) => {
+const ImageCropper = ({ onCropComplete, uploadedImage, croppedImage,imageSizeError }) => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
@@ -49,7 +50,7 @@ const ImageCropper = ({ onCropComplete, uploadedImage, croppedImage }) => {
               image={uploadedImage}
               crop={crop}
               zoom={zoom}
-              aspect={16/9}
+              aspect={16 / 9}
               onCropChange={setCrop}
               onZoomChange={setZoom}
               onCropComplete={onCropCompleteCallback}
@@ -58,7 +59,7 @@ const ImageCropper = ({ onCropComplete, uploadedImage, croppedImage }) => {
           ) : (
             <Image
               objectFit="cover"
-              src={croppedImage?croppedImage:uploadedImage}
+              src={croppedImage ? croppedImage : uploadedImage}
               alt="Cropped Image"
               w="100%"
               h="100%"
@@ -101,7 +102,16 @@ const ImageCropper = ({ onCropComplete, uploadedImage, croppedImage }) => {
             )}
           </div>
         </div>
-      ): <label for="files" class="btn">Camera Icon</label>}
+      ) : (
+        <Flex flexDirection={
+          "column"
+        } alignItems="center">
+          <label for="files" class="btn">
+            <FaCamera fontSize="3rem" />
+          </label>
+          <Text>{imageSizeError}</Text>
+        </Flex>
+      )}
     </div>
   );
 };

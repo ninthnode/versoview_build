@@ -36,6 +36,7 @@ const Comment = ({
   downvoteComment,
   setshowReply,
   showReply,
+  postId
 }) => {
   const [replayCount, setReplayCount] = useState(0);
 
@@ -130,7 +131,9 @@ const Comment = ({
         </Button>
       </Flex>
     </HStack>
-    {showReply == _id && <SingleComment id={_id} commentHead={commentText} commentUsername={userId.channelName} setReplayCount={setReplayCount}/>}
+    {showReply == _id && <SingleComment id={_id} commentHead={commentText} commentUsername={userId.channelName} setReplayCount={setReplayCount}
+      postId={postId}
+    />}
   </Box>
 )
 };
@@ -143,6 +146,7 @@ const CommentsModal = ({
   isOpenCommentModal,
   onToggleCommentModal,
   postTitle,
+  postId
 }) => {
   const [showReply, setshowReply] = useState("");
   return (
@@ -192,6 +196,7 @@ const CommentsModal = ({
                         upvoteComment={upvoteComment}
                         downvoteComment={downvoteComment}
                         submitBookmark={submitBookmark}
+                        postId={postId}
                       />
                     ))
                   ) : (

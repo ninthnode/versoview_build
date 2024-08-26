@@ -106,7 +106,7 @@ function calculateReadingTime(text, time = 250) {
     if(minutes<1)
       return `${minutes} mins`;
     else
-      return `less than ${minutes} min`;
+      return `${minutes} min`;
   }
 }
 
@@ -263,6 +263,7 @@ module.exports.getPostById = asyncHandler(async (req, res) => {
       user: userData,
       votes: voteCounts,
       isBookmarked: !!bookmark,
+      readingTime: calculateReadingTime(postData.bodyRichText),
     };
 
     const postIfUserAlreadyRead = await Post.findOne({
@@ -1243,6 +1244,22 @@ module.exports.getCommentReplies = asyncHandler(async (req, res) => {
     return res.status(200).json({ data: replies });
   } catch (err) {
     console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+module.exports.getCommentAndRepliesCount = asyncHandler(async (req, res) => {
+  const postId = req.params._id;
+  try {
+    const comments = await PostComment.find({ postId: postId });
+    let totalRepliesCount = 0;
+    for (const comment of comments) {
+      const repliesCount = await PostCommentReply.countDocuments({ postCommentId: comment._id });
+      totalRepliesCount += repliesCount;
+    }
+    return res.status(200).json({ commentCount: comments.length, repliesCount: totalRepliesCount });
+  } catch (err) {
+    console.error(err);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 });

@@ -186,24 +186,13 @@ const getSignedUrl = async ({ key, content_type }) => {
   return response.data;
 };
 
-const uploadFileToSignedUrl = (
-  signedUrl,
-  file,
-  contentType,
-  onProgress,
-  onComplete
-) => {
-  axios
-    .put(signedUrl, file, {
-      onUploadProgress: onUploadProgress,
-      headers: {
-        "Content-Type": contentType,
-      },
-    })
-    .then(onComplete)
-    .catch((err) => {
-      console.error(err.response);
-    });
+const uploadFileToSignedUrl = (signedUrl, file, contentType, onProgress) => {
+  return axios.put(signedUrl, file, {
+    onUploadProgress: onUploadProgress,
+    headers: {
+      "Content-Type": contentType,
+    },
+  });
 };
 let uploadToastId = null;
 const onUploadProgress = (progressEvent) => {
@@ -246,31 +235,34 @@ export const createNewPost = (key,content_type,image,formData) => {
   return async (dispatch) => {
     dispatch(getPostsRequest());
     try {
-      getSignedUrl({ key, content_type }).then((response) => {
+      if (image) {
+        const signedUrlResponse = await getSignedUrl({ key, content_type });
 
-        uploadFileToSignedUrl(
-          response.data.signedUrl,
+        const uploadResponse = await uploadFileToSignedUrl(
+          signedUrlResponse.data.signedUrl,
           image,
-          content_type,
-          null,
-          async (response2) => {
-            let newImageUrl = extractImageUrl(response2.config.url);
-            formData.mainImageURL = newImageUrl;
-
-            const token = localStorage.getItem("token").replaceAll('"', "");
-            const responsefile = await axios.post(
-              `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/createPost`,
-              formData,
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              }
-            );
-            window.location.href = "/home";
-          }
+          content_type
         );
-      });
+
+        const newImageUrl = extractImageUrl(uploadResponse.config.url);
+        formData.mainImageURL = newImageUrl;
+      }
+      else{
+        console.log(process.env.NEXT_PUBLIC_BACKEND_URL+'/images/default-post-img.jpg')
+        formData.mainImageURL = process.env.NEXT_PUBLIC_BACKEND_URL+'/images/default-post-img.jpg';
+      }
+
+      const token = localStorage.getItem("token").replaceAll('"', "");
+      const responsefile = await axios.post(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/createPost`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      window.location.href = "/home";
 
     } catch (error) {
       // dispatch(getPostsFailure(error.message));

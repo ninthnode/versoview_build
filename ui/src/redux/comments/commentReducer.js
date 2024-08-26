@@ -3,6 +3,7 @@ import {
   GET_COMMENTS_SUCCESS,
   GET_COMMENTS_FAILURE,
   GET_COMMENT_REPLIES_SUCCESS,
+  GET_COMMENT_AND_REPLIES_COUNT,
   OPEN_COMMENTS_MODAL,
   CLOSE_COMMENTS_MODAL,
 } from "./commentType";
@@ -11,6 +12,7 @@ const initialState = {
   loading: false,
   comments: [],
   error: "",
+  postTotalComments: 0,
   singleCommentReplies: {},
   isModalCommentsOpen:false
 };
@@ -40,6 +42,11 @@ const commentsReducer = (state = initialState, action) => {
       return {
         ...state,
         singleCommentReplies: action.payload,
+      };
+    case GET_COMMENT_AND_REPLIES_COUNT:
+      return {
+        ...state,
+        postTotalComments: action.payload.commentCount+action.payload.repliesCount,
       };
     case OPEN_COMMENTS_MODAL:
       return {

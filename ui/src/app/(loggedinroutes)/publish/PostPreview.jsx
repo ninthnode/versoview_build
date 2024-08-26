@@ -46,11 +46,11 @@ function PostPreview({
         <>
           <Card
             w={"100%"}
-            mt={2}
+            mt={0}
             mb={4}
             style={{ "--card-shadow": "transparent" }}
           >
-            <CardHeader py={0} px="0">
+            <CardHeader py={2} px="0">
               <Flex spacing="4">
                 <Flex flex="1" gap="4" alignItems="center" flexWrap="wrap">
                   <Avatar
@@ -64,11 +64,12 @@ function PostPreview({
                 </Flex>
                 <PostMenu url={``} title={"post.header"} disabled={true} />
                 <IconButton
-                  variant="ghost"
                   aria-label="See menu"
-                  fontSize="20px"
-                  icon={<CiBookmark />}
-                  disabled={true}
+                  fontSize="lg"
+                  variant="nostyle"
+                  justifyContent="flex-end"
+                  icon={<CiBookmark style={{ margin: -5 }}/>}
+                  isDisabled={true}
                 />
               </Flex>
             </CardHeader>
@@ -76,7 +77,8 @@ function PostPreview({
               border="1px solid lightgray"
               borderRadius="md"
               objectFit="cover"
-              src={croppedImage}
+              maxH="250px"
+              src={croppedImage?croppedImage:'assets/default-post-image.svg'}
               alt={post.header}
             />
             <CardBody pt="2" px="0">
@@ -206,7 +208,7 @@ function PostPreview({
                 size="full"
                 colorScheme="green"
                 fontSize='md'
-                py={4}
+                py={3}
                 onClick={isEditPost?handleEditSubmit:handleSubmit}
               >
                 {postLoading && <Spinner size="sm" color="white" />}

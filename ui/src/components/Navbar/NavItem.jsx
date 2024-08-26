@@ -14,9 +14,6 @@ const NavItem = ({ icon,link, children,isActive,url, ...rest }) => {
         role="group"
         bg={'transparent'}
         color={'#333'}
-        _hover={{
-          bg:  isActive ? 'secondary' : 'light',
-        }}
         {...rest}
       >
       <Flex flexDirection='column' justify='center' textAlign='center'>

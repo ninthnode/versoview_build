@@ -34,7 +34,11 @@ import {
   updatePostUpvote,
   updatePostDownvote,
 } from "@/redux/posts/postActions";
-import { addCommentToPost,getCommentByPostId } from "@/redux/comments/commentAction";
+import {
+  addCommentToPost,
+  getCommentByPostId,
+  getCommentAndRepliesCount
+} from "@/redux/comments/commentAction";
 import { FaBookmark as BookmarkFilled } from "react-icons/fa";
 import { addRemoveBookmarks } from "@/redux/bookmarks/bookmarkAction";
 import PostMenu from "@/components/posts/PostMenu";
@@ -48,6 +52,7 @@ function SinglePost({
   params,
   postState,
   getPostById,
+  getCommentAndRepliesCount,
   addCommentToPost,
   updatePostUpvote,
   updatePostDownvote,
@@ -56,7 +61,8 @@ function SinglePost({
   isModalCommentsOpen,
   isAuthenticated,
   commentState,
-  getCommentByPostId
+  getCommentByPostId,
+  postTotalComments
 }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedText, setSelectedText] = useState("");
@@ -69,6 +75,7 @@ function SinglePost({
   }, [isModalCommentsOpen]);
   useEffect(() => {
     getPostById(params.id);
+    getCommentAndRepliesCount(params.id);
   }, [getPostById, params.id]);
 
   const handleChangeComment = (text) => {
@@ -133,16 +140,16 @@ function SinglePost({
                   title={postState.post.header}
                 />
                 <IconButton
-                  variant="ghost"
+                  variant="nostyle"
                   aria-label="See menu"
                   fontSize="lg"
                   justifyContent="flex-end"
                   isDisabled={!isAuthenticated}
                   icon={
                     !postState.isBookmarked ? (
-                      <CiBookmark style={{margin:-5}}/>
+                      <CiBookmark style={{ margin: -5 }} />
                     ) : (
-                      <BookmarkFilled color="green" style={{margin:-5}}/>
+                      <BookmarkFilled color="green" style={{ margin: -5 }} />
                     )
                   }
                   onClick={() => submitBookmarkPost("post", postState.post._id)}
@@ -157,10 +164,22 @@ function SinglePost({
               src={postState.post.mainImageURL}
               alt={postState.post.header}
             />
-            <CardBody pt="2" px="0">
-              <Text fontSize="sm" mt="1" display="flex" alignItems="center" pb={2}>
+            <CardBody pt="0" px="0">
+              <Text
+                fontSize="sm"
+                py="2"
+                display="flex"
+                gap="10px"
+                alignItems="center"
+                color="textlight"
+              >
                 {postState.post.section} - {postState.post.subSection} •{" "}
-                {formatDate(postState.post.createdAt)} • 6min read
+                {formatDate(postState.post.createdAt)} • {" "}
+                  {postState.readingTime} read
+                <Flex cursor="pointer" mx='1'>
+                  <Image src="../assets/chat-icon.png" h="24px" w="28px" />
+                  <Text ml='1'>0</Text>
+                </Flex>
               </Text>
 
               <Divider />
@@ -168,20 +187,24 @@ function SinglePost({
                 <Flex w="300px" justify="space-between">
                   <Button
                     px="2"
-                    variant="ghost"
+                    variant="nostyle"
                     fontWeight="regular"
                     color="textlight"
                     leftIcon={
-                      <BsChat colorScheme="textlight" fontSize="28px" />
+                      <BsChat
+                        colorScheme="textlight"
+                        fontSize="28px"
+                        style={{ marginLeft: -7 }}
+                      />
                     }
                     isDisabled={!isAuthenticated}
                     onClick={() => onToggleCommentModal()}
                   >
-                    {commentState?.length}
+                    {postTotalComments?postTotalComments:0}
                   </Button>
                   <Button
                     px="2"
-                    variant="ghost"
+                    variant="nostyle"
                     fontWeight="regular"
                     color="textlight"
                     leftIcon={
@@ -200,7 +223,7 @@ function SinglePost({
                   </Button>
                   <Button
                     px="2"
-                    variant="ghost"
+                    variant="nostyle"
                     fontWeight="regular"
                     color="textlight"
                     leftIcon={
@@ -232,19 +255,33 @@ function SinglePost({
                 onTouchEnd={handleSelection}
                 onClick={() => handleSelection}
               >
-                <Text mt="2" w="fit-content" p="1" fontSize='sm'>
+                <Text mt="2" w="fit-content" p="1" fontSize="sm">
                   By {postState.user.channelName}
                 </Text>
-                {postState.user.credits&&<Text mt="2" w="fit-content" p="1" fontSize='sm'>
-                  Credits {postState.user.credits}
-                </Text>}
+                {postState.user.credits && (
+                  <Text mt="2" w="fit-content" p="1" fontSize="sm">
+                    Credits {postState.user.credits}
+                  </Text>
+                )}
                 {/* <Heading fontSize="2xl" as="h5" mb="2">
                   {postState.post.header}
                 </Heading> */}
-                <Heading py='2' mb="1" fontWeight='bold' fontSize='lg' lineHeight='2rem'>
+                <Heading
+                  py="2"
+                  mb="1"
+                  fontWeight="bold"
+                  fontSize="lg"
+                  lineHeight="2rem"
+                >
                   {postState.post.header}
                 </Heading>
-                <Text pb='2' mb="1" fontWeight='semibold' fontSize='1.2rem' lineHeight='2rem'>
+                <Text
+                  pb="2"
+                  mb="1"
+                  fontWeight="semibold"
+                  fontSize="1.2rem"
+                  lineHeight="2rem"
+                >
                   {postState.post.standFirst}
                 </Text>
                 <Text
@@ -256,7 +293,7 @@ function SinglePost({
                 />
               </div>
 
-              <Divider mt={4}/>
+              <Divider mt={4} />
               <Comments
                 postTitle={postState.post.header}
                 id={params.id}
@@ -275,14 +312,16 @@ function SinglePost({
           <Modal size="xl" isOpen={isOpen} onClose={onClose}>
             <ModalOverlay />
             <ModalContent>
-              <ModalHeader fontSize='md'>{postState.user.channelName}</ModalHeader>
+              <ModalHeader fontSize="md">
+                {postState.user.channelName}
+              </ModalHeader>
               <ModalCloseButton />
               <ModalBody>
                 <Text mb="4">{`"${selectedText}"`}</Text>
                 <Textarea
                   defaultValue={commentText}
                   onChange={(e) => handleChangeComment(e.target.value)}
-                  fontSize='sm'
+                  fontSize="sm"
                   placeholder="type here to post to chat.."
                 />
               </ModalBody>
@@ -290,7 +329,7 @@ function SinglePost({
                 <Button
                   colorScheme="green"
                   mr={3}
-                  fontSize='sm'
+                  fontSize="sm"
                   onClick={() => submitComment()}
                 >
                   Post
@@ -311,11 +350,13 @@ const mapStateToProps = (state) => ({
   postState: state.post.singlePost,
   votes: state.post.postVotes,
   isModalCommentsOpen: state.comment.isModalCommentsOpen,
-  commentState: state.comment.comments
+  commentState: state.comment.comments,
+  postTotalComments: state.comment.postTotalComments,
 });
 
 const mapDispatchToProps = (dispatch) => ({
   getPostById: (id) => dispatch(getPostById(id)),
+  getCommentAndRepliesCount: (id) => dispatch(getCommentAndRepliesCount(id)),
   getCommentByPostId: (id) => dispatch(getCommentByPostId(id)),
   addCommentToPost: (id, comment) => dispatch(addCommentToPost(id, comment)),
   updatePostUpvote: (id) => dispatch(updatePostUpvote(id)),

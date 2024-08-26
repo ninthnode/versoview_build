@@ -4,6 +4,7 @@ import {
   GET_COMMENTS_SUCCESS,
   GET_COMMENTS_FAILURE,
   GET_COMMENT_REPLIES_SUCCESS,
+  GET_COMMENT_AND_REPLIES_COUNT,
   OPEN_COMMENTS_MODAL,
   CLOSE_COMMENTS_MODAL,
 } from "./commentType";
@@ -46,6 +47,7 @@ export const getCommentByPostId = (postId) => {
       );
       const data = await response.data.data;
       dispatch(getCommentsSuccess(data));
+      dispatch(getCommentAndRepliesCount(postId));
     } catch (error) {
       dispatch(getCommentsFailure(error));
     }
@@ -64,6 +66,8 @@ export const addCommentToPost = (postId, commentObj) => {
           },
         }
       );
+      
+      dispatch(getCommentAndRepliesCount(postId));
       toast(response.data.statusText, {
         autoClose: 3000,
         type: "success",
@@ -77,7 +81,7 @@ export const addCommentToPost = (postId, commentObj) => {
     }
   };
 };
-export const getCommentRepliesByCommentId = (commentId) => {
+export const getCommentRepliesByCommentId = (commentId,postId) => {
   return async (dispatch) => {
     try {
       const token = localStorage.getItem("token").replaceAll('"', "");
@@ -90,9 +94,32 @@ export const getCommentRepliesByCommentId = (commentId) => {
           },
         }
       );
+      
+      dispatch(getCommentAndRepliesCount(postId));
       const data = await response.data;
       dispatch({
         type: GET_COMMENT_REPLIES_SUCCESS,
+        payload: data,
+      });
+    } catch (error) {}
+  };
+};
+export const getCommentAndRepliesCount = (postId) => {
+  return async (dispatch) => {
+    try {
+      const token = localStorage.getItem("token").replaceAll('"', "");
+
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/getCommentAndRepliesCount/${postId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const data = await response.data;
+      dispatch({
+        type: GET_COMMENT_AND_REPLIES_COUNT,
         payload: data,
       });
     } catch (error) {}
@@ -183,7 +210,7 @@ export const updateCommentReplayDownvote = (commentId, replayId) => {
     } catch (error) {}
   };
 };
-export const replayToPostComment = (commentId, commentReply) => {
+export const replayToPostComment = (commentId, commentReply,postId) => {
   return async (dispatch) => {
     try {
       const token = localStorage.getItem("token").replaceAll('"', "");
@@ -197,6 +224,7 @@ export const replayToPostComment = (commentId, commentReply) => {
         }
       );
       dispatch(getCommentRepliesByCommentId(commentId));
+      dispatch(getCommentAndRepliesCount(postId));
       toast(response.data.statusText, {
         autoClose: 3000,
         type: "success",

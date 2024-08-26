@@ -1,5 +1,5 @@
 "use client";
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Flex,
@@ -17,13 +17,17 @@ import {
   Select,
   Spinner,
 } from "@chakra-ui/react";
-import { createNewPost,editPost,getPostByIdEditData } from "@/redux/posts/postActions";
+import {
+  createNewPost,
+  editPost,
+  getPostByIdEditData,
+} from "@/redux/posts/postActions";
 import { fetchLoggedInUserChannel } from "@/redux/channel/channelActions";
 import { useDispatch, useSelector } from "react-redux";
 import genres from "@/static-data/genres";
 import DOMPurify from "dompurify";
 import dynamic from "next/dynamic";
-import PostPreview from "./PostPreview"; 
+import PostPreview from "./PostPreview";
 import { useToast } from "@chakra-ui/react";
 import ImageCropper from "@/components/Image-cropper/ImageCropper";
 import { setPostEdit } from "@/redux/posts/postActions";
@@ -38,7 +42,9 @@ const PublishPost = () => {
   const postLoading = useSelector((s) => s.post.loading);
   const isEditPost = useSelector((s) => s.post.isEditPost);
   const editPostId = useSelector((s) => s.post.editPostId);
-  const singlePostEditContent = useSelector((s) => s.post.singlePostEditContent);
+  const singlePostEditContent = useSelector(
+    (s) => s.post.singlePostEditContent
+  );
   const userChannel = useSelector((s) => s.channel.userChannel);
   const [isEditing, setIsEditing] = useState(true);
   const [uploadedImage, setUploadedImage] = useState(null);
@@ -46,6 +52,7 @@ const PublishPost = () => {
   const [selectedSubSection, setSelectedSubSection] = useState("");
 
   const [croppedImage, setCroppedImage] = useState(null);
+  const [imageSizeError, setImageSizeError] = useState("");
 
   const handleCropComplete = (croppedImageUrl) => {
     setCroppedImage(croppedImageUrl);
@@ -64,7 +71,7 @@ const PublishPost = () => {
       if (singlePostEditContent?.post === undefined) {
         await dispatch(getPostByIdEditData(editPostId));
       }
-  
+
       if (singlePostEditContent?.post) {
         setFormData((prevFormData) => ({
           ...prevFormData,
@@ -73,33 +80,45 @@ const PublishPost = () => {
           credits: singlePostEditContent.post.credits,
           bodyRichText: singlePostEditContent.post.bodyRichText,
         }));
-  
-        let sectionIndex = genres.findIndex((g) => g.genre === singlePostEditContent.post.section);
+
+        let sectionIndex = genres.findIndex(
+          (g) => g.genre === singlePostEditContent.post.section
+        );
         setSelectedSection(sectionIndex);
         setSelectedSubSection(singlePostEditContent.post.subSection);
-        
-        let imageName = singlePostEditContent.post.mainImageURL.lastIndexOf('/') + 1;
-        let postImage = await blobToFile(singlePostEditContent.post.mainImageURL, imageName);
+
+        let imageName =
+          singlePostEditContent.post.mainImageURL.lastIndexOf("/") + 1;
+        let postImage = await blobToFile(
+          singlePostEditContent.post.mainImageURL,
+          imageName
+        );
         const imageDataUrl = await readFile(postImage);
         setUploadedImage(imageDataUrl);
         setCroppedImage(imageDataUrl);
       }
     };
-  
-    if(isEditPost)fetchAndSetData();
-  }, [isEditPost, singlePostEditContent]);
-  
-  
 
+    if (isEditPost) fetchAndSetData();
+  }, [isEditPost, singlePostEditContent]);
 
   useEffect(() => {
-    dispatch(fetchLoggedInUserChannel())
-  }, [])
-  
+    dispatch(fetchLoggedInUserChannel());
+  }, []);
 
   const handleFileSelect = async (e) => {
+    const maxSize = 5 * 1024 * 1024;
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
+      if (file.size > maxSize) {
+        setImageSizeError(
+          "File size exceeds the 5MB limit. Select a smaller file."
+        );
+        setUploadedImage("");
+        setCroppedImage("");
+        return;
+      }
+      setImageSizeError("");
       const imageDataUrl = await readFile(file);
       setUploadedImage(imageDataUrl);
     }
@@ -108,32 +127,38 @@ const PublishPost = () => {
   const readFile = (file) => {
     return new Promise((resolve) => {
       const reader = new FileReader();
-      reader.addEventListener('load', () => resolve(reader.result), false);
+      reader.addEventListener("load", () => resolve(reader.result), false);
       reader.readAsDataURL(file);
     });
   };
 
-  async function blobToFile(blobUrl,fileName) {
+  async function blobToFile(blobUrl, fileName) {
     const response = await fetch(blobUrl);
     const blob = await response.blob();
-    
+
     const file = new File([blob], fileName, {
       type: blob.type,
       lastModified: Date.now(),
     });
-  
+
     return file;
   }
-  
-  
+
   const handleSubmit = async () => {
     try {
-    const defaultFileName = `image-${Date.now()}.png`;
-    const fileName = defaultFileName;
-  
-      let image = croppedImage?await blobToFile(croppedImage,fileName): await blobToFile(uploadedImage,fileName);
-      const content_type = image.type;
-      const key = `test/image/${image.name}`;
+      let image = "";
+      let content_type = "";
+      let key = "";
+      if (croppedImage) {
+        const defaultFileName = `image-${Date.now()}.png`;
+        const fileName = defaultFileName;
+
+        image = croppedImage
+        ? await blobToFile(croppedImage, fileName)
+        : await blobToFile(uploadedImage, fileName);;
+         content_type = image.type;
+         key = `test/image/${image.name}`;
+      }
       formData.section = genres[selectedSection].genre;
       formData.subSection = selectedSubSection;
       dispatch(createNewPost(key, content_type, image, formData));
@@ -143,15 +168,22 @@ const PublishPost = () => {
   };
   const handleEditSubmit = async () => {
     try {
-    const defaultFileName = `image-${Date.now()}.png`;
-    const fileName = defaultFileName;
-  
-      let image = await blobToFile(croppedImage,fileName);
-      const content_type = image.type;
-      const key = `test/image/${image.name}`;
+      let image = "";
+      let content_type = "";
+      let key = "";
+      if (croppedImage) {
+        const defaultFileName = `image-${Date.now()}.png`;
+        const fileName = defaultFileName;
+
+        image = croppedImage
+        ? await blobToFile(croppedImage, fileName)
+        : await blobToFile(uploadedImage, fileName);;
+         content_type = image.type;
+         key = `test/image/${image.name}`;
+      }
       formData.section = genres[selectedSection].genre;
       formData.subSection = selectedSubSection;
-      dispatch(editPost(key, content_type, image, formData,editPostId));
+      dispatch(editPost(key, content_type, image, formData, editPostId));
     } catch (error) {
       console.error("Error submitting form:", error);
     }
@@ -164,34 +196,29 @@ const PublishPost = () => {
       bodyRichText: sanitizedText,
     }));
   };
-  const handlePreviewPage=()=>{
+  const handlePreviewPage = () => {
     const { header, standFirst, credits, bodyRichText } = formData;
 
     if (
       !header ||
-      !standFirst ||
-      !credits ||
-      !bodyRichText ||
       !selectedSection ||
-      !selectedSubSection ||
-      !croppedImage
+      !selectedSubSection
     ) {
       toast({
         title: "Incomplete Form",
-        description: "Please fill in all required fields.",
+        description: "Please fill in all mendatory * fields.",
         status: "warning",
         duration: 5000,
         isClosable: true,
       });
       return;
     }
-    setIsEditing(!isEditing)
-  }
+    setIsEditing(!isEditing);
+  };
 
   useEffect(() => {
-
-    return async() => {
-     await dispatch(setPostEdit(false, ''))
+    return async () => {
+      await dispatch(setPostEdit(false, ""));
     };
   }, []);
   return (
@@ -204,7 +231,7 @@ const PublishPost = () => {
           mr={5}
           display={{ base: "none", md: "block" }}
         >
-          <Heading fontSize="md" textAlign='center' my={4}>
+          <Heading fontSize="md" textAlign="center" my={4}>
             PDF PREVIEW
           </Heading>
           <Box border="1px solid #e2e8f0" h="80vh">
@@ -219,126 +246,133 @@ const PublishPost = () => {
           <Box w={{ base: "100%", lg: "60%" }}>
             {/* Form Section */}
             <Stack spacing={4}>
-                <Box>
-                <Flex justifyContent='space-between' alignItems='center'>
-                    <Text fontSize="sm">MAIN IMAGE *</Text>
-                    <div>
+              <Box>
+                <Flex justifyContent="space-between" alignItems="center">
+                  <Text fontSize="sm">MAIN IMAGE</Text>
+                  <div>
                     <Input
-                      visibility='hidden'
+                      visibility="hidden"
                       id="files"
-                        type="file"
-                        accept="image/*"
-                        size="sm"
-                        mt={2}
-                        w={'6.8rem'}
-                        onChange={handleFileSelect}
-                      />
-                      <label for="files" class="btn">UPLOAD IMAGE</label>
-                    </div>
-                  </Flex>
-                  <FormControl id="mainImage">
-                    <Box
-                      border="3px dashed #e2e8f0"
-                      width= "100%"
-                      maxWidth= "400px"
-                      height="200px"
-                      display="flex"
-                      alignItems="center"
-                      justifyContent="center"
-                      m='0 auto'
-                      position='relative'
-                    >
-                      <ImageCropper croppedImage={croppedImage} uploadedImage={uploadedImage} onCropComplete={handleCropComplete} />
-                    </Box>
-                  </FormControl>
-                </Box>
-                <Box>
-                  <Flex
-                    mb="4"
-                    direction={{ base: "row", md: "column" }}
-                    gap={2}
+                      type="file"
+                      accept="image/*"
+                      size="sm"
+                      mt={2}
+                      w={"6.8rem"}
+                      onChange={handleFileSelect}
+                    />
+                    <label for="files" class="btn">
+                      UPLOAD IMAGE
+                    </label>
+                  </div>
+                </Flex>
+                <FormControl id="mainImage">
+                  <Box
+                    border="3px dashed #e2e8f0"
+                    width="100%"
+                    maxWidth="360px"
+                    height="200px"
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    m="0 auto"
+                    position="relative"
+                    borderColor={imageSizeError != "" ? "red.500" : "#e2e8f0"}
                   >
-                    <FormControl id="section" mr={4}>
-                      <FormLabel fontSize="sm">SECTION*</FormLabel>
-                      <Select
-                        size="sm"
-                        value={selectedSection}
-                        onChange={(e) => setSelectedSection(e.target.value)}
-                      >
-                        <option value="">Select a section</option>
-                        {Object.keys(genres).map((genre) => (
-                          <option key={genre} value={genre}>
-                            {genres[genre].genre}
+                    <ImageCropper
+                      croppedImage={croppedImage}
+                      uploadedImage={uploadedImage}
+                      onCropComplete={handleCropComplete}
+                      imageSizeError={imageSizeError}
+                    />
+                  </Box>
+                </FormControl>
+              </Box>
+              <Box>
+                <Flex mb="4" direction={{ base: "row", md: "column" }} gap={2}>
+                  <FormControl id="section" mr={4}>
+                    <FormLabel fontSize="sm">SECTION*</FormLabel>
+                    <Select
+                      size="sm"
+                      value={selectedSection}
+                      onChange={(e) => setSelectedSection(e.target.value)}
+                    >
+                      <option value="">Select a section</option>
+                      {Object.keys(genres).map((genre) => (
+                        <option key={genre} value={genre}>
+                          {genres[genre].genre}
+                        </option>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  <FormControl id="subSection">
+                    <FormLabel fontSize="sm">SUB SECTION*</FormLabel>
+                    <Select
+                      size="sm"
+                      value={selectedSubSection}
+                      onChange={(e) => setSelectedSubSection(e.target.value)}
+                      disabled={!selectedSection}
+                    >
+                      <option value="">Select a sub-section</option>
+                      {selectedSection &&
+                        genres[selectedSection].subGenres.map((subGenre) => (
+                          <option key={subGenre} value={subGenre}>
+                            {subGenre}
                           </option>
                         ))}
-                      </Select>
-                    </FormControl>
-                    <FormControl id="subSection">
-                      <FormLabel fontSize="sm">SUB SECTION*</FormLabel>
-                      <Select
-                        size="sm"
-                        value={selectedSubSection}
-                        onChange={(e) => setSelectedSubSection(e.target.value)}
-                        disabled={!selectedSection}
-                      >
-                        <option value="">Select a sub-section</option>
-                        {selectedSection &&
-                          genres[selectedSection].subGenres.map((subGenre) => (
-                            <option key={subGenre} value={subGenre}>
-                              {subGenre}
-                            </option>
-                          ))}
-                      </Select>
-                    </FormControl>
-                  </Flex>
-                  <FormControl id="header" mb="4">
-                    <FormLabel fontSize="sm">HEADER*</FormLabel>
-                    <Input
-                      size="sm"
-                      type="text"
-                      placeholder="The Green Room"
-                      value={formData.header}
-                      maxLength={70}
-                      onChange={(e) =>
-                        setFormData({ ...formData, header: e.target.value })
-                      }
-                    />
+                    </Select>
                   </FormControl>
-                  <FormControl id="standFirst" mb="4">
-                    <FormLabel fontSize="sm">STAND-FIRST*</FormLabel>
-                    <Input
-                      size="sm"
-                      type="text"
-                      placeholder="Nature's colour palette helps lines this..."
-                      value={formData.standFirst}
-                      maxLength={150}
-                      onChange={(e) =>
-                        setFormData({ ...formData, standFirst: e.target.value })
-                      }
-                    />
-                  </FormControl>
-                  <FormControl id="credits" mb="4">
-                    <FormLabel fontSize="sm">CREDITS*</FormLabel>
-                    <Input
-                      size="sm"
-                      type="text"
-                      placeholder="Suzy Tan & Hadaway Smythe"
-                      value={formData.credits}
-                      onChange={(e) =>
-                        setFormData({ ...formData, credits: e.target.value })
-                      }
-                    />
-                  </FormControl>
-                </Box>
+                </Flex>
+                <FormControl id="header" mb="4">
+                  <FormLabel fontSize="sm">HEADER*</FormLabel>
+                  <Input
+                    size="sm"
+                    type="text"
+                    placeholder="The Green Room"
+                    value={formData.header}
+                    maxLength={70}
+                    onChange={(e) =>
+                      setFormData({ ...formData, header: e.target.value })
+                    }
+                  />
+                </FormControl>
+                <FormControl id="standFirst" mb="4">
+                  <FormLabel fontSize="sm">STAND-FIRST</FormLabel>
+                  <Input
+                    size="sm"
+                    type="text"
+                    placeholder="Nature's colour palette helps lines this..."
+                    value={formData.standFirst}
+                    maxLength={150}
+                    onChange={(e) =>
+                      setFormData({ ...formData, standFirst: e.target.value })
+                    }
+                  />
+                </FormControl>
+                <FormControl id="credits" mb="4">
+                  <FormLabel fontSize="sm">CREDITS</FormLabel>
+                  <Input
+                    size="sm"
+                    type="text"
+                    placeholder="Suzy Tan & Hadaway Smythe"
+                    value={formData.credits}
+                    onChange={(e) =>
+                      setFormData({ ...formData, credits: e.target.value })
+                    }
+                  />
+                </FormControl>
+              </Box>
               <FormControl id="bodyRichText">
-                <FormLabel fontSize="sm">BODY COPY*</FormLabel>
-                <RichTextEditor handleTextBodyChange={handleTextBodyChange} bodyRichText={formData.bodyRichText}/>
+                <FormLabel fontSize="sm">BODY COPY</FormLabel>
+                <RichTextEditor
+                  handleTextBodyChange={handleTextBodyChange}
+                  bodyRichText={formData.bodyRichText}
+                />
               </FormControl>
               <Button
                 disabled={postLoading}
                 colorScheme="green"
                 onClick={handlePreviewPage}
-                fontSize='md'
+                fontSize="md"
                 py={4}
               >
                 {postLoading && <Spinner size="sm" color="white" />}
@@ -354,8 +388,10 @@ const PublishPost = () => {
             justifyContent="center"
             alignItems="center"
           >
-            <PostPreview post={formData} 
-            croppedImage={croppedImage} uploadedImage={uploadedImage}
+            <PostPreview
+              post={formData}
+              croppedImage={croppedImage}
+              uploadedImage={uploadedImage}
               selectedSection={genres[selectedSection].genre}
               selectedSubSection={selectedSubSection}
               userChannel={userChannel}

@@ -42,25 +42,26 @@ function SingleComment({
   commentHead,
   commentUsername,
   addRemoveBookmarks,
-  setReplayCount
+  setReplayCount,
+  postId
 }) {
   const [replayText, setReplayText] = React.useState("");
   React.useEffect(() => {
-    getCommentRepliesByCommentId(id);
+    getCommentRepliesByCommentId(id,postId);
   }, [getCommentRepliesByCommentId]);
 
   const handleChangeReplayText = (e) => {
     setReplayText(e.target.value);
   };
   const submitReplayText = (commentId, replayText) => {
-    replayToPostComment(commentId, replayText);
+    replayToPostComment(commentId, replayText,postId);
     setReplayText("");
   };
 
   const submitBookmark = async (type, commentId) => {
     const response = await addRemoveBookmarks(type, commentId);
     // const updatedData = { isBookmarked: response.data.isBookmarked };
-    getCommentRepliesByCommentId(id)
+    getCommentRepliesByCommentId(id,postId)
   };
   useEffect(() => {
     if(replies)

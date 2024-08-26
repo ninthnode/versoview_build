@@ -30,6 +30,7 @@ const {
 	commentVoting,
 	commentReply,
 	getCommentReplies,
+	getCommentAndRepliesCount,
 	unreadPost,
 	getAllUnreadPost,
 	deleteUnreadPost,
@@ -70,6 +71,7 @@ router.get("/getPdfSlides", protectUser, getAllPdfSlides);
 router.post("/postComment/:_id", protectUser, postComment);
 router.get("/getAllComment/:_id", protectUser, getAllComment);
 router.get("/getAllCommentReplies/:_id", protectUser, getAllCommentReplies);
+router.get("/getCommentAndRepliesCount/:_id", protectUser, getCommentAndRepliesCount);
 router.post("/postCommentReply/:_id", protectUser, postCommentReply);
 router.post("/commentReply/:_id", protectUser, commentReply);
 router.get("/getCommentReplies/:_id", protectUser, getCommentReplies);

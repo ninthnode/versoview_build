@@ -96,6 +96,7 @@ const Comments = ({
       {commentList && (
         <CommentsModal
         postTitle={postTitle}
+        postId={postId}
           commentList={commentList}
           upvoteComment={upvoteComment}
           downvoteComment={downvoteComment}

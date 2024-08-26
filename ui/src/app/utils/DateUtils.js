@@ -4,7 +4,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 dayjs.extend(relativeTime);
 
 export const formatDate = (dateString) =>
-  dayjs(dateString).format("MMM DD YYYY");
+  dayjs(dateString).format("MMM DD");
 export const formatTime = (dateString) =>
   dayjs(dateString).format("HH:mm:ss");
 
