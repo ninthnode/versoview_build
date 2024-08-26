@@ -15,12 +15,6 @@ module.exports.searchArticles = asyncHandler(async (req, res) => {
 
     // Use regular expressions to match the exact word
     const searchConditions = {
-      // $or: [
-      //   { header: { $regex: `\\b${query}\\b`, $options: "i" } },
-      //   { section: { $regex: `\\b${query}\\b`, $options: "i" } },
-      //   { subSection: { $regex: `\\b${query}\\b`, $options: "i" } },
-      //   { bodyRichText: { $regex: `\\b${query}\\b`, $options: "i" } }
-      // ]
       $or: [
         { header: { $regex: query, $options: "i" } },
         { section: { $regex: query, $options: "i" } },

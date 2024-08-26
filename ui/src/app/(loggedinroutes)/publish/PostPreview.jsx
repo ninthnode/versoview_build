@@ -56,11 +56,7 @@ function PostPreview({
                   <Avatar
                     size="sm"
                     borderRadius={10}
-                    src={
-                      userChannel.channelIconImageUrl
-                        ? userChannel.channelIconImageUrl
-                        : "../assets/default-post-image.svg"
-                    }
+                    src={userChannel.channelIconImageUrl}
                   />
                   <Box>
                     <Heading size="sm">{userChannel.channelName}</Heading>

@@ -96,7 +96,7 @@ function ListDropdown({ handleUnFollowChannel,channelId }) {
           <FiMoreHorizontal />
         </MenuButton>
         <MenuList p="0" minW="150px">
-          {Object.values(['unfollow']).map((option) => (
+          {Object.values(['Unfollow']).map((option) => (
             <>
               <MenuItem
                 w="100%"
@@ -134,7 +134,7 @@ const sortFn = (view) => {
 };
 
 const Following = ({ followings, user,fetchfollowChannelList }) => {
-  const [view, setView] = useState(options.Pinned);
+  const [view, setView] = useState(options.Recent);
   const [followingsDataSorted, setfollowingsDataSorted] = useState([]);
   const [followingLoading, setFollowingLoading] = useState(true);
   const dispatch = useDispatch();
@@ -144,7 +144,7 @@ const Following = ({ followings, user,fetchfollowChannelList }) => {
       const tempList = followings.data
         .filter((i) => i.channelId)
         .map((i) => ({ ...i.channelId, pinned: i.pinned }))
-        .toSorted(sortFn(options.Pinned));
+        .toSorted(sortFn(options.Recent));
       setfollowingsDataSorted(tempList);
       setFollowingLoading(false);
     }

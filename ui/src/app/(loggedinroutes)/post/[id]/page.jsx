@@ -55,6 +55,7 @@ function SinglePost({
   setNavTitle,
   isModalCommentsOpen,
   isAuthenticated,
+  commentState,
   getCommentByPostId
 }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -80,7 +81,6 @@ function SinglePost({
       commentText: commentText,
     };
     addCommentToPost(params.id, commentObj);
-    getPostById(params.id);
     getCommentByPostId(params.id);
     setCommentText("");
     setSelectedText("");
@@ -117,11 +117,7 @@ function SinglePost({
                     <Avatar
                       size="sm"
                       borderRadius={10}
-                      src={
-                        postState.channel.channelIconImageUrl !== ""
-                          ? postState.channel.channelIconImageUrl
-                          : "../assets/default-post-image.svg"
-                      }
+                      src={postState.channel.channelIconImageUrl}
                     />
                   </Link>
                   <Box>
@@ -181,7 +177,7 @@ function SinglePost({
                     isDisabled={!isAuthenticated}
                     onClick={() => onToggleCommentModal()}
                   >
-                    {postState.commentsCount}
+                    {commentState?.length}
                   </Button>
                   <Button
                     px="2"
@@ -315,6 +311,7 @@ const mapStateToProps = (state) => ({
   postState: state.post.singlePost,
   votes: state.post.postVotes,
   isModalCommentsOpen: state.comment.isModalCommentsOpen,
+  commentState: state.comment.comments
 });
 
 const mapDispatchToProps = (dispatch) => ({

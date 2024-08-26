@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Box,
   HStack,
@@ -41,7 +41,8 @@ function SingleComment({
   loading,
   commentHead,
   commentUsername,
-  addRemoveBookmarks
+  addRemoveBookmarks,
+  setReplayCount
 }) {
   const [replayText, setReplayText] = React.useState("");
   React.useEffect(() => {
@@ -61,6 +62,11 @@ function SingleComment({
     // const updatedData = { isBookmarked: response.data.isBookmarked };
     getCommentRepliesByCommentId(id)
   };
+  useEffect(() => {
+    if(replies)
+    setReplayCount(replies.length)
+  }, [replies])
+  
   return (
     <Box px={{ base: 0 }}>
       {comment && (

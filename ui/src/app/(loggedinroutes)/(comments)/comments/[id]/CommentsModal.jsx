@@ -28,7 +28,6 @@ const Comment = ({
   submitBookmark,
   trueCount,
   falseCount,
-  replyCount,
   userId,
   excerpt,
   createdAt,
@@ -37,7 +36,10 @@ const Comment = ({
   downvoteComment,
   setshowReply,
   showReply,
-}) => (
+}) => {
+  const [replayCount, setReplayCount] = useState(0);
+
+  return(
   <Box w="100%" mb={4} bg="#fff">
     <HStack align="start" spacing={4} position="relative" px={4} pt={6}>
       <Avatar size='md' name={userId.channelName} src={userId.profileImageUrl} />
@@ -124,13 +126,14 @@ const Comment = ({
           }
         >
         <BsChat colorScheme="#333" fontSize="28px" />
-          <Text ml={2}>{replyCount}</Text>
+          <Text ml={2}>{replayCount}</Text>
         </Button>
       </Flex>
     </HStack>
-    {showReply == _id && <SingleComment id={_id} commentHead={commentText} commentUsername={userId.channelName} />}
+    {showReply == _id && <SingleComment id={_id} commentHead={commentText} commentUsername={userId.channelName} setReplayCount={setReplayCount}/>}
   </Box>
-);
+)
+};
 
 const CommentsModal = ({
   commentList,

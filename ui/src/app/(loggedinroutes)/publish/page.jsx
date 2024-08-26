@@ -298,6 +298,7 @@ const PublishPost = () => {
                       type="text"
                       placeholder="The Green Room"
                       value={formData.header}
+                      maxLength={70}
                       onChange={(e) =>
                         setFormData({ ...formData, header: e.target.value })
                       }
@@ -310,6 +311,7 @@ const PublishPost = () => {
                       type="text"
                       placeholder="Nature's colour palette helps lines this..."
                       value={formData.standFirst}
+                      maxLength={150}
                       onChange={(e) =>
                         setFormData({ ...formData, standFirst: e.target.value })
                       }

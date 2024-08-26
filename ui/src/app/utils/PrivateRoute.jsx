@@ -9,6 +9,7 @@ import Loader from "@/components/Loader";
 const PrivateRoute = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const stateUser = useSelector((state) => state.auth.user?.user);
   const dispatch = useDispatch();
   const router = useRouter();
   const path = usePathname();
@@ -17,15 +18,15 @@ const PrivateRoute = ({ children }) => {
     const fetchData = async () => {
       let user;
       try {
-        if (!user) {
+        if (!user&&!stateUser) {
           user = await dispatch(verifyUser());
         }
 
-        if (user) {
+        if (user || stateUser) {
           setIsAuthenticated(true);
           if (
             AuthRoutes.find((route) => path == route.url) &&
-            user &&
+            (user || stateUser) &&
             !ProtectedRoutes.find((route) => path.startsWith(route.url))
           )
             router.push("/home");
@@ -34,7 +35,7 @@ const PrivateRoute = ({ children }) => {
             !AuthRoutes.find((route) => path.startsWith(route.url)) &&
             !path.startsWith("/home") &&
             !path.startsWith("/post") &&
-            !user
+            !(user || stateUser)
           )
             router.push("/login");
         }

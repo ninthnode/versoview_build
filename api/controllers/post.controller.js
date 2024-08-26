@@ -251,7 +251,6 @@ module.exports.getPostById = asyncHandler(async (req, res) => {
       },
       { trueCount: 0, falseCount: 0 }
     );
-    const comments = await PostComment.find({ postId: postId });
     const bookmark = await Bookmark.findOne({
       userId: mainuserId,
       postId: postId,
@@ -263,7 +262,6 @@ module.exports.getPostById = asyncHandler(async (req, res) => {
       channel: channelData,
       user: userData,
       votes: voteCounts,
-      commentsCount: comments.length,
       isBookmarked: !!bookmark,
     };
 
@@ -441,7 +439,11 @@ module.exports.upvotePost = asyncHandler(async (req, res) => {
       postId: postId,
     });
     if (isAlreadyVoted && isAlreadyVoted.voteType === true) {
-      return res.status(200).json({ status: 400, message: "Already upvoted" });
+      await Vote.findOneAndDelete({
+        votingUserId: userId,
+        postId: postId,
+      });
+      return res.status(200).json({ status: 400, message: "vote removed" });
     }
     if (isAlreadyVoted && isAlreadyVoted.voteType === false) {
       isAlreadyVoted.voteType = true;
@@ -475,9 +477,14 @@ module.exports.downvotePost = asyncHandler(async (req, res) => {
       postId: postId,
     });
     if (isAlreadyVoted && isAlreadyVoted.voteType === false) {
+      //delete
+      await Vote.findOneAndDelete({
+        votingUserId: userId,
+        postId: postId,
+      });
       return res
         .status(200)
-        .json({ status: 400, message: "Already downvoted" });
+        .json({ status: 400, message: "vote removed" });
     }
     if (isAlreadyVoted && isAlreadyVoted.voteType === true) {
       isAlreadyVoted.voteType = false;
@@ -1117,7 +1124,11 @@ module.exports.upvoteComment = asyncHandler(async (req, res) => {
       postCommentId: postCommentId,
     });
     if (isAlreadyVoted && isAlreadyVoted.voteType === true) {
-      return res.status(200).json({ status: 400, message: "Already upvoted" });
+      await CommentVote.findOneAndDelete({
+        votingUserId: userId,
+        postCommentId: postCommentId,
+      });
+      return res.status(200).json({ status: 400, message: "vote removed" });
     }
     if (isAlreadyVoted && isAlreadyVoted.voteType === false) {
       isAlreadyVoted.voteType = true;
@@ -1151,9 +1162,13 @@ module.exports.downvoteComment = asyncHandler(async (req, res) => {
       postCommentId: postCommentId,
     });
     if (isAlreadyVoted && isAlreadyVoted.voteType === false) {
+      await CommentVote.findOneAndDelete({
+        votingUserId: userId,
+        postCommentId: postCommentId,
+      });
       return res
         .status(200)
-        .json({ status: 400, message: "Already downvoted" });
+        .json({ status: 400, message: "vote removed" });
     }
     if (isAlreadyVoted && isAlreadyVoted.voteType === true) {
       isAlreadyVoted.voteType = false;

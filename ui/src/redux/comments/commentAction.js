@@ -53,7 +53,6 @@ export const getCommentByPostId = (postId) => {
 };
 export const addCommentToPost = (postId, commentObj) => {
   return async (dispatch) => {
-    dispatch(getCommentsRequest());
     try {
       const token = localStorage.getItem("token").replaceAll('"', "");
       const response = await axios.post(
@@ -80,7 +79,6 @@ export const addCommentToPost = (postId, commentObj) => {
 };
 export const getCommentRepliesByCommentId = (commentId) => {
   return async (dispatch) => {
-    dispatch(getCommentsRequest());
     try {
       const token = localStorage.getItem("token").replaceAll('"', "");
 
@@ -187,7 +185,6 @@ export const updateCommentReplayDownvote = (commentId, replayId) => {
 };
 export const replayToPostComment = (commentId, commentReply) => {
   return async (dispatch) => {
-    dispatch(getCommentsRequest());
     try {
       const token = localStorage.getItem("token").replaceAll('"', "");
       const response = await axios.post(
