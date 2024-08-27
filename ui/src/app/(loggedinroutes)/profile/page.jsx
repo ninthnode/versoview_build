@@ -31,13 +31,16 @@ import Publications from "./publications";
 import RewardsList from "./rewardsList";
 import genres from "@/static-data/genres";
 import MultiSelectDropdown from "@/components/MultiSelectDropdown";
-
+import useConfirmationDialog from "@/components/useConfirmationDialog"
 function Profile() {
   const dispatch = useDispatch();
   const authState = useSelector((state) => state.auth?.user?.user);
   const profileState = useSelector((state) => state.profile);
   const { loading, user, error } = profileState;
 
+  const [showDialog, ConfirmationDialogComponent] = useConfirmationDialog(
+    'Are you sure you want to delete this post?'
+  );
   const [isEditing, setIsEditing] = useState(false);
   const [isUpdating, setUpdating] = useState(false);
 
@@ -130,10 +133,14 @@ function Profile() {
       setSelectedImage(file);
     }
   };
-  const deletePostHandler = async(id) => {
-    await dispatch(deletePost(id));
-    dispatch(fetchUser(authState.id));
-  }
+  const deletePostHandler = async (id) => {
+    const confirmed = await showDialog();
+    if (confirmed) {
+      await dispatch(deletePost(id));
+      dispatch(fetchUser(authState.id));
+    }
+  };
+  
   useEffect(() => {
     // Initialize a new array for subgenres
     let newSubgenres = [];
@@ -159,6 +166,7 @@ function Profile() {
   return (
     user && (
       <Box bg="#F5F5F5" ml={{ base: "0", sm: "4" }} mb="60px" maxW="xl">
+      {ConfirmationDialogComponent}
         <Box
           mt={2}
           borderWidth="1px"

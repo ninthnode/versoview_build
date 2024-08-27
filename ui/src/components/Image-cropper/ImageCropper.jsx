@@ -6,7 +6,7 @@ import { MdModeEdit } from "react-icons/md";
 import { Image, Text,Flex } from "@chakra-ui/react";
 import { FaCamera } from "react-icons/fa";
 
-const ImageCropper = ({ onCropComplete, uploadedImage, croppedImage,imageSizeError }) => {
+const ImageCropper = ({ onCropComplete, uploadedImage, croppedImage,imageSizeError,setCroppedImage }) => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
@@ -31,6 +31,7 @@ const ImageCropper = ({ onCropComplete, uploadedImage, croppedImage,imageSizeErr
 
   const handleEdit = () => {
     setIsEditing(true);
+    setCroppedImage(null);
   };
 
   return (
@@ -85,6 +86,7 @@ const ImageCropper = ({ onCropComplete, uploadedImage, croppedImage,imageSizeErr
                   fontSize: "24px",
                   padding: "5px",
                   borderRadius: "5px",
+                  backgroundColor: "green",
                 }}
               />
             ) : (

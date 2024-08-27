@@ -213,6 +213,16 @@ const PublishPost = () => {
       });
       return;
     }
+    if(uploadedImage?!croppedImage:false){
+      toast({
+        title: "Save The Image",
+        description: "Save The Image After Cropping",
+        status: "warning",
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
     setIsEditing(!isEditing);
   };
 
@@ -270,22 +280,26 @@ const PublishPost = () => {
                     border="3px dashed #e2e8f0"
                     width="100%"
                     maxWidth="360px"
-                    height="200px"
+                    height="205px"
                     display="flex"
                     alignItems="center"
                     justifyContent="center"
                     m="0 auto"
                     position="relative"
-                    borderColor={imageSizeError != "" ? "red.500" : "#e2e8f0"}
+                    borderColor={imageSizeError != "" ? "red.500" : croppedImage?"#e2e8f0": uploadedImage ? "green.500":"#e2e8f0"}
                   >
                     <ImageCropper
                       croppedImage={croppedImage}
                       uploadedImage={uploadedImage}
                       onCropComplete={handleCropComplete}
                       imageSizeError={imageSizeError}
+                      setCroppedImage ={setCroppedImage}
                     />
                   </Box>
                 </FormControl>
+              </Box>
+              <Box p='0'>
+              <Text p='0' fontSize="xs" color='textlight' lineHeight='4px'>*Want to upload a PDF? - Use Desktop Version</Text>
               </Box>
               <Box>
                 <Flex mb="4" direction={{ base: "row", md: "column" }} gap={2}>

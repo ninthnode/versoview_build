@@ -7,8 +7,11 @@ export default function DashboardLayout({ children }) {
   const userVerified = useSelector((s) => s.auth.userVerified);
 
   return (
+    <>
     <Navbar>
       {userVerified&&children}
     </Navbar>
+    <div id="dialog-root"></div>
+    </>
   );
 }

@@ -258,9 +258,9 @@ function SinglePost({
                 <Text mt="2" w="fit-content" p="1" fontSize="sm">
                   By {postState.user.channelName}
                 </Text>
-                {postState.user.credits && (
+                {postState.post.credits && (
                   <Text mt="2" w="fit-content" p="1" fontSize="sm">
-                    Credits {postState.user.credits}
+                    Credits: {postState.post.credits}
                   </Text>
                 )}
                 {/* <Heading fontSize="2xl" as="h5" mb="2">

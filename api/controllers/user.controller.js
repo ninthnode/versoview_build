@@ -80,7 +80,7 @@ module.exports.signUp = asyncHandler(async (req, res) => {
     password: hashedPassword,
     genre: req.body.genre || [],
     subGenre: [],
-    profileImageUrl:`${req.protocol}://${req.get('host')}/images/default-post-image.svg`
+    profileImageUrl:`${req.protocol}://${req.get('host')}/images/default-icon.svg`
   });
 
   // create new channel
@@ -98,7 +98,7 @@ module.exports.signUp = asyncHandler(async (req, res) => {
     phone: req.body.phone || "",
     location: req.body.location || "",
     backgroundColor: req.body.backgroundColor || "",
-    channelIconImageUrl: req.body.location || `${req.protocol}://${req.get('host')}/images/default-post-image.svg`,
+    channelIconImageUrl: req.body.location || `${req.protocol}://${req.get('host')}/images/default-icon.svg`,
     status: req.body.status,
   };
 
