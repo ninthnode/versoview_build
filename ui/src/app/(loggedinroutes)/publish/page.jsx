@@ -30,13 +30,15 @@ import dynamic from "next/dynamic";
 import PostPreview from "./PostPreview";
 import { useToast } from "@chakra-ui/react";
 import ImageCropper from "@/components/Image-cropper/ImageCropper";
-import { setPostEdit } from "@/redux/posts/postActions";
+import { useRouter } from "next/navigation";
 
 const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), {
   ssr: false,
 });
 const PublishPost = () => {
   const dispatch = useDispatch();
+  const pathname = useRouter();
+
   const toast = useToast();
 
   const postLoading = useSelector((s) => s.post.loading);
@@ -95,7 +97,7 @@ const PublishPost = () => {
         );
         const imageDataUrl = await readFile(postImage);
         setUploadedImage(imageDataUrl);
-        setCroppedImage(imageDataUrl);
+        // setCroppedImage(imageDataUrl);
       }
     };
 
@@ -226,11 +228,7 @@ const PublishPost = () => {
     setIsEditing(!isEditing);
   };
 
-  useEffect(() => {
-    return async () => {
-      await dispatch(setPostEdit(false, ""));
-    };
-  }, []);
+
   return (
     <Box mb={"60px"}>
       <Flex py={5}>
@@ -286,7 +284,7 @@ const PublishPost = () => {
                     justifyContent="center"
                     m="0 auto"
                     position="relative"
-                    borderColor={imageSizeError != "" ? "red.500" : croppedImage?"#e2e8f0": uploadedImage ? "green.500":"#e2e8f0"}
+                    borderColor={imageSizeError != "" ? "red.500" : croppedImage&&uploadedImage?"#e2e8f0": uploadedImage ? "green.500":"#e2e8f0"}
                   >
                     <ImageCropper
                       croppedImage={croppedImage}
@@ -294,6 +292,7 @@ const PublishPost = () => {
                       onCropComplete={handleCropComplete}
                       imageSizeError={imageSizeError}
                       setCroppedImage ={setCroppedImage}
+                      setUploadedImage={setUploadedImage}
                     />
                   </Box>
                 </FormControl>

@@ -82,13 +82,13 @@ function SinglePost({
     setCommentText(text);
   };
 
-  const submitComment = () => {
+  const submitComment = async() => {
     const commentObj = {
       excerpt: selectedText,
       commentText: commentText,
     };
-    addCommentToPost(params.id, commentObj);
-    getCommentByPostId(params.id);
+    await addCommentToPost(params.id, commentObj);
+    await getCommentByPostId(params.id);
     setCommentText("");
     setSelectedText("");
     onClose();

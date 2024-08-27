@@ -195,19 +195,20 @@ const uploadFileToSignedUrl = (signedUrl, file, contentType, onProgress) => {
   });
 };
 let uploadToastId = null;
+let isEditing = false;
 const onUploadProgress = (progressEvent) => {
   const { loaded, total } = progressEvent;
   const uploadProgress = Math.round((loaded / total) * 100);
   if (uploadProgress !== null) {
     if (uploadToastId === null) {
-      uploadToastId = toast.info(`Creating Post: ${uploadProgress}%`, {
+      uploadToastId = toast.info(isEditing?`Editing Post: ${uploadProgress}%`:`Creating Post: ${uploadProgress}%`, {
         position: "bottom-right",
         progress: uploadProgress / 100,
         autoClose: false,
       });
     } else {
       toast.update(uploadToastId, {
-        render: `Creating Post: ${uploadProgress}%`,
+        render: isEditing?`Editing Post: ${uploadProgress}%`:`Creating Post: ${uploadProgress}%`,
         progress: uploadProgress / 100,
         autoClose: false,
       });
@@ -270,34 +271,40 @@ export const createNewPost = (key,content_type,image,formData) => {
   };
 };
 export const editPost = (key,content_type,image,formData,editPostId) => {
-  return async (dispatch) => {
+  return async (dispatch,getState) => {
     dispatch(getPostsRequest());
     try {
-      getSignedUrl({ key, content_type }).then((response) => {
+      const isEditPost = getState((s) => s.post.isEditPost);
+      if(isEditPost){
+        isEditing =true
+      }
+      if (image) {
+        const signedUrlResponse = await getSignedUrl({ key, content_type });
 
-        uploadFileToSignedUrl(
-          response.data.signedUrl,
+        const uploadResponse = await uploadFileToSignedUrl(
+          signedUrlResponse.data.signedUrl,
           image,
-          content_type,
-          null,
-          async (response2) => {
-            let newImageUrl = extractImageUrl(response2.config.url);
-            formData.mainImageURL = newImageUrl;
-
-            const token = localStorage.getItem("token").replaceAll('"', "");
-            const responsefile = await axios.put(
-              `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/updatePost/${editPostId}`,
-              formData,
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              }
-            );
-            window.location.href = "/home";
-          }
+          content_type
         );
-      });
+
+        const newImageUrl = extractImageUrl(uploadResponse.config.url);
+        formData.mainImageURL = newImageUrl;
+      }
+      else{
+        formData.mainImageURL = process.env.NEXT_PUBLIC_BACKEND_URL+'/images/default-post-img.jpg';
+      }
+
+      const token = localStorage.getItem("token").replaceAll('"', "");
+      const responsefile = await axios.put(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/updatePost/${editPostId}`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      window.location.href = "/home";
 
     } catch (error) {
       // dispatch(getPostsFailure(error.message));

@@ -1,12 +1,12 @@
 import React, { useState, useCallback } from "react";
 import Cropper from "react-easy-crop";
 import { getCroppedImg } from "./cropImage";
-import { FaCheck } from "react-icons/fa";
+import { FaCheck, FaTimes } from "react-icons/fa";
 import { MdModeEdit } from "react-icons/md";
 import { Image, Text,Flex } from "@chakra-ui/react";
 import { FaCamera } from "react-icons/fa";
 
-const ImageCropper = ({ onCropComplete, uploadedImage, croppedImage,imageSizeError,setCroppedImage }) => {
+const ImageCropper = ({ onCropComplete, uploadedImage, croppedImage,imageSizeError,setCroppedImage,setUploadedImage }) => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
@@ -70,12 +70,13 @@ const ImageCropper = ({ onCropComplete, uploadedImage, croppedImage,imageSizeErr
             style={{
               position: "absolute",
               top: "-5px",
-              right: "-12px",
+              right: "-30px",
               display: "flex",
               alignItems: "center",
               gap: "10px",
             }}
           >
+          <Flex flexDirection='column' gap='2'>
             {isEditing ? (
               <FaCheck
                 onClick={handleCrop}
@@ -102,6 +103,18 @@ const ImageCropper = ({ onCropComplete, uploadedImage, croppedImage,imageSizeErr
                 }}
               />
             )}
+            <FaTimes
+                onClick={()=>setUploadedImage(null)}
+                style={{
+                  borderRadius: "5px",
+                  padding: "5px",
+                  backgroundColor: "red",
+                  cursor: "pointer",
+                  color: "#fff",
+                  fontSize: "24px",
+                }}
+              />
+              </Flex>
           </div>
         </div>
       ) : (

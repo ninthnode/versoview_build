@@ -212,7 +212,7 @@ function PostPreview({
                 onClick={isEditPost?handleEditSubmit:handleSubmit}
               >
                 {postLoading && <Spinner size="sm" color="white" />}
-                {postLoading ? "Creating Post.." : "Save"}
+                {postLoading ? isEditPost?"Editing Post..":"Creating Post.." : "Save"}
               </Button>
             </CardBody>
           </Card>

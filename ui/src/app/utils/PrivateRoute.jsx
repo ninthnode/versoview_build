@@ -5,6 +5,7 @@ import { verifyUser } from "@/redux/auth/authActions";
 import { useRouter, usePathname } from "next/navigation";
 import { ProtectedRoutes, AuthRoutes, RoutesList } from "@/routes/index";
 import Loader from "@/components/Loader";
+import { setPostEdit } from "@/redux/posts/postActions";
 
 const PrivateRoute = ({ children }) => {
   const [loading, setLoading] = useState(true);
@@ -47,8 +48,19 @@ const PrivateRoute = ({ children }) => {
     };
 
     fetchData();
+   
   }, [dispatch, router, path]);
 
+  useEffect(() => {
+    return async() => {
+      if(path== '/publish'){
+        console.log(path)
+        await dispatch(setPostEdit(false, ""))
+
+      } 
+    };
+  }, [path])
+  
   if (loading) {
     return (
       <>
