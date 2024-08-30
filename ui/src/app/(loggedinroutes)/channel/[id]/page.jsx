@@ -25,15 +25,20 @@ const Page = ({
   fetchFollowings,
   addRemoveBookmarks,
   setNavTitle,
+  user,
+  isPostLoading,
+  isChannelLoading
 }) => {
   const { id } = params;
 
   const [postList, setPostList] = useState([]);
 
   useEffect(() => {
-    fetchChannel(id);
-    fetchPosts(id);
-  }, [id]);
+    if(user){
+      fetchChannel(id);
+      fetchPosts(id);
+    }
+  }, [id,user]);
   useEffect(() => {
     if (channelData) {
       fetchFollowings(channelData.userId);
@@ -60,18 +65,17 @@ const Page = ({
   }, [posts]);
   return (
     <Box>
-      {channelData && postList && (
         <Channel
           channelDetail={channelData}
           followers={followers}
           followings={followings}
-          userId={channelData.userId}
           posts={postList}
           submitBookmarkPost={submitBookmarkPost}
           isFollowed={false}
           channelId={id}
+          isPostLoading={isPostLoading}
+          isChannelLoading={isChannelLoading}
         />
-      )}
     </Box>
   );
 };
@@ -81,6 +85,9 @@ const mapStateToProps = (state) => ({
   posts: state.channel.posts,
   followers: state.channel.followers,
   followings: state.channel.followings,
+  isChannelLoading: state.channel.isChannelLoading,
+  isPostLoading: state.channel.isPostLoading,
+  user: state.auth.user?.user,
 });
 
 const mapDispatchToProps = {

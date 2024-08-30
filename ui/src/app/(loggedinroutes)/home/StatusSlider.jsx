@@ -5,7 +5,7 @@ import axios from "axios";
 import Link from "next/link";
 import get from "@/app/utils/get";
 import { useSelector } from "react-redux";
-
+import AvatarShimmer from "../../../components/posts/AvatarShimmer";
 const StatusItem = ({ status }) => {
   const authState = useSelector((s) => s.auth?.user?.user);
 
@@ -99,12 +99,16 @@ const getChannels = () => {
 const StatusSlider = () => {
   const [channels, setChannels] = useState([]);
   const authState = useSelector((s) => s.auth?.user?.user);
+  const authVerified = useSelector((s) => s.auth?.userVerified);
 
   useEffect(() => {
-    if (authState) getChannels().then(setChannels);
-    else getChannelsForLoggedoutUser().then(setChannels);
-  }, []);
+    if(authVerified){
+      if (authState) getChannels().then(setChannels);
+      else getChannelsForLoggedoutUser().then(setChannels);
+    }
+  }, [authVerified]);
 
+  if(channels.length==0) return <AvatarShimmer/>
   return channels.length>0&& (
     <Box
       overflowX="scroll"

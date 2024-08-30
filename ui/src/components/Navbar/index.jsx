@@ -18,6 +18,7 @@ import {
   BottomNavigationLabel,
 } from "chakra-ui-bottom-navigation";
 import SidebarRoutes from "../../routes/SidebarRoutes";
+import RightSidebar from "./RightSidebar";
 import { useRouter, usePathname } from "next/navigation";
 
 const Navbar = ({ children }) => {
@@ -28,7 +29,7 @@ const Navbar = ({ children }) => {
   const [index, setIndex] = React.useState(routeIndex);
 
   return (
-    <Box minH="100vh" bg="light">
+    <Flex minH="100vh" bg="light">
       <SidebarContent
         onClose={onClose}
         display={{ base: "none", md: "block" }}
@@ -79,9 +80,11 @@ const Navbar = ({ children }) => {
               ))}
             </BottomNavigation>
           </Box>
-        </Box>
+        </Box>  
       </Flex>
-    </Box>
+      
+      <RightSidebar/>
+    </Flex>
   );
 };
 

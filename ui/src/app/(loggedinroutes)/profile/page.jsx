@@ -32,6 +32,8 @@ import RewardsList from "./rewardsList";
 import genres from "@/static-data/genres";
 import MultiSelectDropdown from "@/components/MultiSelectDropdown";
 import useConfirmationDialog from "@/components/useConfirmationDialog"
+import ShareButton from "@/components/posts/ShareButton";
+
 function Profile() {
   const dispatch = useDispatch();
   const authState = useSelector((state) => state.auth?.user?.user);
@@ -53,6 +55,7 @@ function Profile() {
   const [url, setUrl] = useState();
   const [username, setUsername] = useState();
   const [email, setEmail] = useState();
+  const [phone, setPhone] = useState();
   const [location, setLocation] = useState();
   const [twitter, setTwitter] = useState();
   const [instagram, setInstagram] = useState();
@@ -72,6 +75,7 @@ function Profile() {
       setAbout(user.profileAbout);
       setUsername(user.username);
       setEmail(user.email);
+      setPhone(user.profilePhone);
       setLocation(user.profileLocation);
       setTwitter(user.profileTwitter);
       setInstagram(user.profileInstagram);
@@ -91,6 +95,7 @@ function Profile() {
       subGenre: subGenre,
       profileUrl: url,
       profileEmail: email,
+      profilePhone: phone,
       profileLocation: location,
       profileInstagram: instagram,
       profileTelegram: telegram,
@@ -157,8 +162,7 @@ function Profile() {
     });
 
     // Remove duplicates from newSubgenres array
-    newSubgenres = [...new Set(newSubgenres)];
-    console.log(newSubgenres)
+    newSubgenres = [...new Set(newSubgenres)]
     // Set the new subgenre array
     setSubGenre(newSubgenres);
   }, [genre]); 
@@ -302,14 +306,11 @@ function Profile() {
               <Text fontSize="lg" fontWeight="bold" mb="2">
                 Share Channel
               </Text>
-              <ShareChannel
-                isEditing={isEditing}
-                instaRef={setInstagram}
-                teleRef={setTelegram}
-                twiRef={setTwitter}
-                faceRef={setFacebook}
-                user={user}
-              />
+              <ShareButton
+                    url={`${process.env.NEXT_PUBLIC_FRONTEND_URL}/channel/${user.posts.channelId}`}
+                    title={user.posts.header}
+                    shareButton={true}
+                  />
             </Box>
             <Divider h="1px" bg="#333" />
             <Box textAlign="left" w="100%">
@@ -392,6 +393,21 @@ function Profile() {
                   <Text fontSize="md">
                     <Link href={`mailto:${user.email}`} isExternal>
                       {user.email}
+                    </Link>
+                  </Text>
+                )}
+                <Text fontSize="md">Phone:</Text>
+                {isEditing ? (
+                  <Input
+                    bg="#fff"
+                    onChange={(e) => setPhone(e.target.value)}
+                    defaultValue={user.profilePhone}
+                    type="number"
+                  />
+                ) : (
+                  <Text fontSize="md">
+                    <Link href={`tel:${user.profilePhone}`} isExternal>
+                      {user.profilePhone}
                     </Link>
                   </Text>
                 )}

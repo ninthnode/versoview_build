@@ -38,9 +38,9 @@ const unpinChannel = (id) =>
   );
 
 const options = {
+  Recent: "RECENT",
   Pinned: "PINNED",
   ByGenre: "BY GENRE",
-  Recent: "RECENT",
   AZ: "A - Z",
 };
 

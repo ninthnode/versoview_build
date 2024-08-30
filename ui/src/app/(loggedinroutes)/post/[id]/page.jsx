@@ -175,9 +175,9 @@ function SinglePost({
               >
                 {postState.post.section} - {postState.post.subSection} •{" "}
                 {formatDate(postState.post.createdAt)} • {" "}
-                  {postState.readingTime} read
-                <Flex cursor="pointer" mx='1'>
-                  <Image src="../assets/chat-icon.png" h="24px" w="28px" />
+                  {postState.readingTime} read •{" "}
+                <Flex cursor="pointer">
+                  <Image src="../assets/chat-icon.png" h="1.2rem" w="1.4rem" />
                   <Text ml='1'>0</Text>
                 </Flex>
               </Text>

@@ -128,6 +128,10 @@ const genres =[
       "Cruise",
       "Travel"
     ]
+  },
+  {
+    "genre": "Other",
+    "subGenres": []
   }
 ]
 

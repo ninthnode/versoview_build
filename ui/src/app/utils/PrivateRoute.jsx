@@ -8,6 +8,7 @@ import Loader from "@/components/Loader";
 import { setPostEdit } from "@/redux/posts/postActions";
 
 const PrivateRoute = ({ children }) => {
+  const userVerified = useSelector((s) => s.auth.userVerified);
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const stateUser = useSelector((state) => state.auth.user?.user);
@@ -54,18 +55,25 @@ const PrivateRoute = ({ children }) => {
   useEffect(() => {
     return async() => {
       if(path== '/publish'){
-        console.log(path)
         await dispatch(setPostEdit(false, ""))
 
       } 
     };
   }, [path])
   
+
+  const verifyExeceptionRoutes = ['/home','/channel']
+  const RenderScreen = () =>
+    userVerified ||
+    verifyExeceptionRoutes.find((route) => path.startsWith(route)) ? (
+      children
+    ) : (
+      <Loader messages={null} showtext={false} />
+    ); 
   if (loading) {
     return (
       <>
-      {children}
-      <Loader messages={null} showtext={false} />
+      <RenderScreen/>
     </>
     );
   }
@@ -77,8 +85,7 @@ const PrivateRoute = ({ children }) => {
   ) {
     return (
       <>
-      {children}
-      <Loader messages={null} showtext={false} />
+      <RenderScreen/>
     </>
     );
   }
@@ -90,12 +97,11 @@ const PrivateRoute = ({ children }) => {
   )
     return (
       <>
-      {children}
-      <Loader messages={null} showtext={false} />
+      <RenderScreen/>
     </>
     );
 
-    if(!loading) return children;
+    if(!loading) return <RenderScreen/>;
 };
 
 export default PrivateRoute;

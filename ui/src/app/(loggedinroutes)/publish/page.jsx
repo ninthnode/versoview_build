@@ -31,13 +31,14 @@ import PostPreview from "./PostPreview";
 import { useToast } from "@chakra-ui/react";
 import ImageCropper from "@/components/Image-cropper/ImageCropper";
 import { useRouter } from "next/navigation";
+import useDeviceType from "@/components/useDeviceType";
 
 const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), {
   ssr: false,
 });
 const PublishPost = () => {
   const dispatch = useDispatch();
-  const pathname = useRouter();
+  const deviceType = useDeviceType();
 
   const toast = useToast();
 
@@ -298,7 +299,7 @@ const PublishPost = () => {
                 </FormControl>
               </Box>
               <Box p='0'>
-              <Text p='0' fontSize="xs" color='textlight' lineHeight='4px'>*Want to upload a PDF? - Use Desktop Version</Text>
+              {deviceType=='phone'&&<Text p='0' fontSize="xs" color='textlight' lineHeight='4px'>*Want to upload a PDF? - Use Desktop Version</Text>}
               </Box>
               <Box>
                 <Flex mb="4" direction={{ base: "row", md: "column" }} gap={2}>

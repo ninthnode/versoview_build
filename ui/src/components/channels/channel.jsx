@@ -9,12 +9,15 @@ import {
 } from "@chakra-ui/react";
 import About from "./about";
 import PostCard from "@/app/(loggedinroutes)/home/postCard";
+import PostCardShimmer from "../posts/PostCardShimmer";
 
 export default function Channel({
   channelDetail,
   posts,
   isFollowed,
-  followers,followings,submitBookmarkPost
+  followers,followings,submitBookmarkPost,
+  isPostLoading,
+  isChannelLoading
 }) {
 
   return (
@@ -36,7 +39,9 @@ export default function Channel({
                 followingCount={followings?.length}
                 {...channelDetail}
                 isFollowed={isFollowed}
+                isChannelLoading={isChannelLoading}
               />
+              {isPostLoading&&<PostCardShimmer/>}
               {posts && posts.length ? (
                 posts.map((post) => <PostCard key={post._id} post={post} submitBookmark={submitBookmarkPost} />)
               ) : (

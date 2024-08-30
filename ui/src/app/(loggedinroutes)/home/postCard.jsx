@@ -12,6 +12,7 @@ import {
   IconButton,
   Image,
   Text,
+  Skeleton
 } from "@chakra-ui/react";
 import Link from "next/link";
 import { CiSearch, CiBookmark, CiUser } from "react-icons/ci";
@@ -78,14 +79,16 @@ const PostCard = ({
         </Flex>
       </CardHeader>
       {!small && (
+        post.mainImageURL?
         <Image
           border="1px solid lightgray"
           borderRadius="md"
           objectFit="cover"
           // h="300px"
-          src={post.mainImageURL || "/assets/default-post-image.svg"}
+          src={post.mainImageURL}
           alt={post.header}
-        />
+        />:
+        <Skeleton height="300px" mb={4} />
       )}
       <CardBody ml="1" p="0" border="0">
         <Text
@@ -97,9 +100,9 @@ const PostCard = ({
           color="textlight"
         >
           {post.section} - {post.subSection} • {formatDate(post.createdAt)} •{" "}
-          {post.readingTime} read
-          <Flex cursor="pointer" mx="1">
-            <Image src="../assets/chat-icon.png" h="24px" w="28px" />
+          {post.readingTime} read •{" "}
+          <Flex cursor="pointer">
+            <Image src="../assets/chat-icon.png" h="1.2rem" w="1.4rem" />
             <Text ml="1">0</Text>
           </Flex>
           {/* <Button

@@ -25,7 +25,9 @@ import {
     posts: [],
     followers: [],
     followings:[],
-    isLoading: false,
+    isChannelLoading: true,
+    isPostLoading: true,
+    isFollowLoading: false,
     error: null,
     isFollowing: false,
   };
@@ -33,49 +35,65 @@ import {
   const channelReducer = (state = initialState, action) => {
     switch (action.type) {
       case FETCH_CHANNEL_REQUEST:
+        return {
+          ...state,
+          isChannelLoading: true,
+        };
       case FETCH_POSTS_REQUEST:
+        return {
+          ...state,
+          isPostLoading: true,
+        };
       case FETCH_FOLLOWERS_REQUEST:
+        return {
+          ...state,
+          isFollowLoading: true,
+        };
       case FOLLOW_CHANNEL_REQUEST:
+        return {
+          ...state,
+          isFollowLoading: true,
+        };
       case UNFOLLOW_CHANNEL_REQUEST:
         return {
           ...state,
-          isLoading: true,
+          isFollowLoading: true,
         };
       case FETCH_CHANNEL_SUCCESS:
         return {
           ...state,
           channel: action.payload,
-          isLoading: false,
+          isChannelLoading: false,
         };
       case FETCH_POSTS_SUCCESS:
         return {
           ...state,
           posts: action.payload,
-          isLoading: false,
+          isPostLoading: false,
         };
       case FETCH_FOLLOWERS_SUCCESS:
         return {
           ...state,
           followers: action.payload,
-          isLoading: false,
+          isFollowLoading:false
         };
       case FETCH_FOLLOWINGS_SUCCESS:
         return {
           ...state,
           followings: action.payload,
-          isLoading: false,
+          isFollowLoading:false
         };
       case FOLLOW_CHANNEL_SUCCESS:
         return {
           ...state,
           isFollowing: true,
-          isLoading: false,
+          isFollowLoading:false
         };
       case UNFOLLOW_CHANNEL_SUCCESS:
         return {
           ...state,
           isFollowing: false,
-          isLoading: false,
+          isFollowLoading:false
         };
       case FETCH_CHANNEL_FAILURE:
       case FETCH_POSTS_FAILURE:
@@ -85,13 +103,15 @@ import {
         return {
           ...state,
           error: action.error,
-          isLoading: false,
+          isChannelLoading: false,
+          isPostLoading: false,
+          isFollowLoading:false
         };
         case FETCH_USER_CHANNEL:
         return {
           ...state,
           userChannel: action.payload,
-          isLoading: false,
+          isFollowLoading:false
         };
       default:
         return state;

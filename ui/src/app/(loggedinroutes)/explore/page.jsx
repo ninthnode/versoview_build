@@ -51,13 +51,6 @@ const Search = () => {
     <Box mt={2}>
       <Box position="relative" mt={1} rounded="md" shadow="sm">
         <Flex position="absolute" insetY="0" left="0" align="center" pl={3} pointerEvents="none">
-          {/* <svg xmlns="http://www.w3.org/2000/svg" className="mt-1 text-gray-500 size-6 sm:text-sm" viewBox="0 0 24 24">
-            <title>Search</title>
-            <path
-              fill="currentColor"
-              d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5l-1.5 1.5l-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16A6.5 6.5 0 0 1 3 9.5A6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14S14 12 14 9.5S12 5 9.5 5"
-            />
-          </svg> */}
         </Flex>
         <Input
           type="text"
@@ -74,7 +67,6 @@ const Search = () => {
           <Select
             onChange={(e) => setCategory(e.target.value)}
             value={category}
-            pr={7}
             pl={2}
             py={0}
             h="full"
@@ -103,12 +95,12 @@ const Search = () => {
               </>
             ) : (
               <Link href={`/channel/${result.channelId}`} key={result.id}>
-              <Flex key={result.id} py={4} my={1} rounded="md" shadow="md" bg={result.profileBgColor}>
+              <Flex key={result.id} py={4} px={2} my={1} rounded="md" shadow="md" bg={result.profileBgColor}>
                 <Image
                   src={result.profileImageUrl || "/assets/default-post-image.svg"}
                   alt="user profile"
                   boxSize="40px"
-                  rounded="full"
+                  rounded="md"
                   mr={3}
                 />
                 <Flex direction="column">

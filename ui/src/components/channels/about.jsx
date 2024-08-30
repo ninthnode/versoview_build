@@ -82,6 +82,7 @@ const About = ({
   isLoading,
   followChannel,
   unfollowChannel,
+  isChannelLoading
 }) => {
 
   return (
@@ -93,6 +94,10 @@ const About = ({
       bg="lightgray"
       borderRadius="md"
     >
+    {isChannelLoading?
+      <Flex h='150px' w='100%' justifyContent='center' alignItems='center'><Spinner color="#333"/></Flex>
+      :
+      <>
       <Flex flexDirection="column" justifyContent="space-between" mr={4}>
         <Avatar
           ml={2}
@@ -169,12 +174,15 @@ const About = ({
           </Flex>
         </Flex>
       </Box>
+      </>
+    }
+     
     </Box>
   );
 };
 
 const mapStateToProps = (state) => ({
-  isLoading: state.channel.isLoading,
+  isLoading: state.channel.isFollowLoading,
 });
 
 const mapDispatchToProps = {

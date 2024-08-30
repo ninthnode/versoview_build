@@ -10,7 +10,7 @@ import {
 } from "./postType";
 
 const initialState = {
-  loading: false,
+  loading: true,
   posts: [],
   error: "",
   singlePost: {},

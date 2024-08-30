@@ -1,15 +1,14 @@
 "use client";
 
-import Navbar from "@/components/Navbar";
 import { useSelector } from "react-redux";
+import Navbar from "@/components/Navbar";
 
 export default function DashboardLayout({ children }) {
-  const userVerified = useSelector((s) => s.auth.userVerified);
 
   return (
     <>
     <Navbar>
-      {userVerified&&children}
+      {children}
     </Navbar>
     <div id="dialog-root"></div>
     </>

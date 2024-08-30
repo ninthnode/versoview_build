@@ -956,7 +956,7 @@ module.exports.postCommentReply = asyncHandler(async (req, res) => {
     return res.status(201).json({
       status: 201,
       data: newComment,
-      statusText: "New Comment Replay Added!",
+      statusText: "Comment Reply Added!",
     });
   } catch (error) {
     console.error(error);

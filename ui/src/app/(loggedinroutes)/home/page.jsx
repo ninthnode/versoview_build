@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Tabs,
@@ -22,9 +22,12 @@ import PostCard from "./postCard";
 import StatusSlider from "./StatusSlider";
 import Following from "./following";
 import { fetchUser } from "@/redux/profile/actions";
+import PostCardShimmer from "../../../components/posts/PostCardShimmer";
+import useDeviceType from "@/components/useDeviceType";
 
 const Home = ({
   postsState,
+  loading,
   posts,
   recentPosts,
   fetchPosts,
@@ -34,22 +37,26 @@ const Home = ({
   followings,
   fetchUser,
   user,
+  authVerified,
   userDetails
 }) => {
   const [tabIndex, setTabIndex] = useState(0);
   const [postList, setPostList] = useState([]);
   const [recentPostList, setRecentPostList] = useState([]);
+  const deviceType = useDeviceType();
 
   useEffect(() => {
-    if (tabIndex === 0) {
-      fetchPosts();
-    } else if (tabIndex === 1) {
-      fetchRecentlyViewedPosts();
-    } else if (tabIndex === 2) {
-      fetchfollowChannelList(); 
-       fetchUser(user.id);
+    if(authVerified){
+      if (tabIndex === 0) {
+        fetchPosts();
+      } else if (tabIndex === 1) {
+        fetchRecentlyViewedPosts();
+      } else if (tabIndex === 2) {
+        fetchfollowChannelList(); 
+         fetchUser(user.id);
+      }
     }
-  }, [tabIndex]);
+  }, [tabIndex,authVerified]);
 
   useEffect(() => {
     if (posts.length > 0) setPostList(posts);
@@ -82,17 +89,18 @@ const Home = ({
         <TabList gap={2} h="3rem" borderColor='lightgray'>
           <Tab pl="0">Latest</Tab>
           <Tab pl="1" isDisabled={!user}>Recently viewed</Tab>
-          <Tab pl="1" isDisabled={!user}>Following</Tab>
+          {deviceType!='desktop'&&
+          <Tab pl="1" isDisabled={!user}>Following</Tab>}
         </TabList>
 
         <TabPanels p="0">
           <TabPanel p="0">
             <Box mt='2'>
-              {postsState.loading ? (
-                <Spinner size="sm" color="#333" />
+              {<StatusSlider />}
+              {loading || !authVerified ? (
+                <PostCardShimmer />
               ) : (
                 <>
-                  {<StatusSlider />}
                   {postList.map?.((post) => (
                     <Box key={post._id}>
                       <PostCard
@@ -110,11 +118,11 @@ const Home = ({
           </TabPanel>
           <TabPanel p="0">
           <Box mt='2'>
-            {postsState.loading ? (
-              <Spinner size="sm" color="#333" />
+                {recentPostList && <StatusSlider />}
+            {loading ? (
+              <PostCardShimmer />
             ) : (
               <>
-                {recentPostList && <StatusSlider />}
                 {tabIndex === 1 && recentPostList.length == 0 ? (
                   <Text>No Post Viewed!</Text>
                 ) : (
@@ -133,7 +141,7 @@ const Home = ({
           </TabPanel>
           <TabPanel p='0'>
           <Box mt='2'>
-            {userDetails&&followings.data && (
+            {userDetails&&followings.data && deviceType!='desktop' && (
               <Following followings={followings} user={userDetails} fetchfollowChannelList={fetchfollowChannelList}/>
             )}
             </Box>
@@ -146,10 +154,12 @@ const Home = ({
 
 const mapStateToProps = (state) => ({
   postsState: state.post,
+  loading: state.post.loading,
   posts: state.post.posts,
   recentPosts: state.post.recentPosts,
   followings: state.channel.followings,
   user: state.auth.user?.user,
+  authVerified: state.auth.userVerified,
   userDetails: state.profile.user
 });
 
