@@ -22,6 +22,7 @@ import {
   ModalCloseButton,
   useDisclosure,
   Textarea,
+  Tooltip
 } from "@chakra-ui/react";
 import { BsChat } from "react-icons/bs";
 import { CiBookmark } from "react-icons/ci";
@@ -47,6 +48,7 @@ import Comments from "@/app/(loggedinroutes)/(comments)/comments/[id]/page";
 import { formatDate } from "@/app/utils/DateUtils";
 import RelatedArticleList from "./RelatedArticleList";
 import DOMPurify from "dompurify";
+import {getExcerptText} from "@/app/utils/GetExcerpt";
 
 function SinglePost({
   params,
@@ -118,8 +120,8 @@ function SinglePost({
             style={{ "--card-shadow": "transparent" }}
           >
             <CardHeader py={2} px="0">
-              <Flex spacing="4">
-                <Flex flex="1" gap="4" alignItems="center" flexWrap="wrap">
+                <Flex w="100%" justifyContent="space-between" alignItems="center">
+                  <Flex alignItems='center' w={{base:'220px',sm:'100%'}}>
                   <Link href={`/channel/${postState.channel._id}`}>
                     <Avatar
                       size="sm"
@@ -127,15 +129,19 @@ function SinglePost({
                       src={postState.channel.channelIconImageUrl}
                     />
                   </Link>
-                  <Box>
                     <Link href={`/channel/${postState.channel._id}`}>
-                      <Text fontWeight="semibold" fontSize="md">
-                        {postState.channel.channelName}
+                      <Text ml='2' fontWeight="semibold" fontSize="md">
+                        <Tooltip
+                          label={postState.channel.channelName}
+                          aria-label="A tooltip"
+                        >
+                          {getExcerptText(postState.channel.channelName, 45)}
+                        </Tooltip>
                       </Text>
                     </Link>
-                  </Box>
-                </Flex>
-                <PostMenu
+                  </Flex>
+                  <Flex>
+                  <PostMenu
                   url={`${process.env.NEXT_PUBLIC_FRONTEND_URL}/post/${postState.post._id}`}
                   title={postState.post.header}
                 />
@@ -154,7 +160,8 @@ function SinglePost({
                   }
                   onClick={() => submitBookmarkPost("post", postState.post._id)}
                 />
-              </Flex>
+                  </Flex>
+                </Flex>
             </CardHeader>
             <Image
               border="1px solid lightgray"
@@ -174,11 +181,11 @@ function SinglePost({
                 color="textlight"
               >
                 {postState.post.section} - {postState.post.subSection} •{" "}
-                {formatDate(postState.post.createdAt)} • {" "}
-                  {postState.readingTime} read •{" "}
+                {formatDate(postState.post.createdAt)} • {postState.readingTime}{" "}
+                read •{" "}
                 <Flex cursor="pointer">
                   <Image src="../assets/chat-icon.png" h="1.2rem" w="1.4rem" />
-                  <Text ml='1'>0</Text>
+                  <Text ml="1">0</Text>
                 </Flex>
               </Text>
 
@@ -200,7 +207,7 @@ function SinglePost({
                     isDisabled={!isAuthenticated}
                     onClick={() => onToggleCommentModal()}
                   >
-                    {postTotalComments?postTotalComments:0}
+                    {postTotalComments ? postTotalComments : 0}
                   </Button>
                   <Button
                     px="2"
@@ -255,9 +262,9 @@ function SinglePost({
                 onTouchEnd={handleSelection}
                 onClick={() => handleSelection}
               >
-                <Text mt="2" w="fit-content" p="1" fontSize="sm">
+                {/* <Text mt="2" w="fit-content" p="1" fontSize="sm">
                   By {postState.user.channelName}
-                </Text>
+                </Text> */}
                 {postState.post.credits && (
                   <Text mt="2" w="fit-content" p="1" fontSize="sm">
                     Credits: {postState.post.credits}

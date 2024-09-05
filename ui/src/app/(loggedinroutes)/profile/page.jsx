@@ -170,7 +170,7 @@ function Profile() {
   return (
     user && (
       <Box bg="#F5F5F5" ml={{ base: "0", sm: "4" }} mb="60px" maxW="xl">
-      {ConfirmationDialogComponent}
+        {ConfirmationDialogComponent}
         <Box
           mt={2}
           borderWidth="1px"
@@ -306,22 +306,28 @@ function Profile() {
               <Text fontSize="lg" fontWeight="bold" mb="2">
                 Share Channel
               </Text>
-              <ShareButton
-                    url={`${process.env.NEXT_PUBLIC_FRONTEND_URL}/channel/${user.posts.channelId}`}
-                    title={user.posts.header}
-                    shareButton={true}
-                  />
+              {user && (
+                <ShareButton
+                  url={`${process.env.NEXT_PUBLIC_FRONTEND_URL}/channel/${user.channelId}`}
+                  title={user.channelName}
+                  shareButton={true}
+                />
+              )}
             </Box>
             <Divider h="1px" bg="#333" />
             <Box textAlign="left" w="100%">
               <Flex gap={10}>
                 <Text fontSize="md">Genre</Text>
                 {isEditing ? (
-                  <MultiSelectDropdown selectedOptions={genre} setGenre={setGenre} options={genres} placeholder={'Select genres'}/>
+                  <MultiSelectDropdown
+                    selectedOptions={genre}
+                    setGenre={setGenre}
+                    options={genres}
+                    placeholder={"Select genres"}
+                  />
                 ) : (
                   <Text fontSize="sm">{user.genre?.join(" & ")}</Text>
                 )}
-                
               </Flex>
               <Flex gap={2}>
                 <Text fontSize="md">Subgenre</Text>
@@ -339,7 +345,17 @@ function Profile() {
                     }
                   />
                 ) : ( */}
-                  <Text fontSize="sm" fontWeight="normal" h='fit-content' maxW='100%' textOverflow="ellipsis" whiteSpace="normal" p={2}>{subGenre?.join(" , ")}</Text>
+                <Text
+                  fontSize="sm"
+                  fontWeight="normal"
+                  h="fit-content"
+                  maxW="100%"
+                  textOverflow="ellipsis"
+                  whiteSpace="normal"
+                  p={2}
+                >
+                  {subGenre?.join(" , ")}
+                </Text>
                 {/* )} */}
               </Flex>
             </Box>
@@ -429,7 +445,10 @@ function Profile() {
               Library
             </Text>
             <Box textAlign="left" w="100%">
-              <Publications userPosts={user.posts} deletePostHandler={deletePostHandler}/>
+              <Publications
+                userPosts={user.posts}
+                deletePostHandler={deletePostHandler}
+              />
             </Box>
             <Divider h="1px" bg="#333" />
             <Box textAlign="left" w="100%">
@@ -439,10 +458,10 @@ function Profile() {
         </Box>
         <Flex w="100%" justifyContent="flex-end">
           <Button
-            mr='2'
-            my='2'
+            mr="2"
+            my="2"
             leftIcon={<MdLogout />}
-            bg='#fff'
+            bg="#fff"
             onClick={handleLogout}
           >
             Logout

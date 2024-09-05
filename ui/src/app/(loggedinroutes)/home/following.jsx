@@ -127,7 +127,7 @@ const sortFn = (view) => {
     case options.ByGenre:
       return (a, b) => +(a?.genre > b?.genre);
     case options.Recent:
-      return (a, b) => new Date(b?.createdAt) - new Date(a?.createdAt);
+      return (a, b) => new Date(a?.createdAt) - new Date(b?.createdAt);
     case options.AZ:
       return (a, b) => a?.channelName.localeCompare(b?.channelName);
   }
@@ -247,6 +247,7 @@ const Following = ({ followings, user,fetchfollowChannelList }) => {
                   </Text>
                 </Link>
                 <Text fontSize="sm">
+                {console.log(following.userId)}
                   {Array.isArray(following.userId?.genre) &&
                     following.userId?.genre?.join(" - ")}
                 </Text>

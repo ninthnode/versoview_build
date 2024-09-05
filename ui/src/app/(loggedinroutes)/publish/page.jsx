@@ -42,7 +42,7 @@ const PublishPost = () => {
 
   const toast = useToast();
 
-  const postLoading = useSelector((s) => s.post.loading);
+  const postLoading = useSelector((s) => s.post.loadingModify);
   const isEditPost = useSelector((s) => s.post.isEditPost);
   const editPostId = useSelector((s) => s.post.editPostId);
   const singlePostEditContent = useSelector(
@@ -256,7 +256,7 @@ const PublishPost = () => {
             {/* Form Section */}
             <Stack spacing={4}>
               <Box>
-                <Flex justifyContent="space-between" alignItems="center">
+                <Flex justifyContent="space-between" alignItems="center" px='2'>
                   <Text fontSize="sm">MAIN IMAGE</Text>
                   <div>
                     <Input
@@ -266,8 +266,19 @@ const PublishPost = () => {
                       accept="image/*"
                       size="sm"
                       mt={2}
-                      w={"6.8rem"}
+                      w={"10px"}
                       onChange={handleFileSelect}
+                    />
+                    <Input
+                      visibility="hidden"
+                      id="cameras"
+                      type="file"
+                      accept="image/*"
+                      size="sm"
+                      mt={2}
+                      w={"10px"}
+                      onChange={handleFileSelect}
+                      capture="environment"
                     />
                     <label for="files" class="btn">
                       UPLOAD IMAGE

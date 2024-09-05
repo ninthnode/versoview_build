@@ -160,9 +160,9 @@ function PostPreview({
               </Flex>
               <Divider />
               <div>
-                <Text mt="2" w="fit-content" p="1">
+                {/* <Text mt="2" w="fit-content" p="1">
                   By {userChannel.channelName}
-                </Text>
+                </Text> */}
                 {post.credits&&<Text mt="2" w="fit-content" p="1" fontSize='sm'>
                   Credits {post.credits}
                 </Text>}

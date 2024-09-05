@@ -7,6 +7,7 @@ const RichTextEditor = ({handleTextBodyChange,bodyRichText}) => {
         readonly: false,
         placeholder: 'Start typing...',
         minHeight: '300px',
+        overflow: 'auto',
         askBeforePasteFromWord: false,
               askBeforePasteHTML: false
     };

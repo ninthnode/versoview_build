@@ -19,12 +19,12 @@ function RightSidebar({userDetails,authVerified,user,fetchUser, followings, fetc
   const SiderbarRoutes = ["/home"];
   const ShowSidebarIf = SiderbarRoutes.find((route) => path.startsWith(route)) && deviceType=='desktop';
     useEffect(() => {
-        if(authVerified &&ShowSidebarIf){
+        if(authVerified &&ShowSidebarIf &&user){
             fetchfollowChannelList(); 
              fetchUser(user.id);
         }
       }, [authVerified,ShowSidebarIf]);
-  return ShowSidebarIf && (
+  return user&&ShowSidebarIf && (
       <Box px={4} mt='4.4rem' w='100%'>
       <Heading as='h4' fontSize='lg' fontWeight='bold' mb='2'>Following</Heading>
       <Divider/>

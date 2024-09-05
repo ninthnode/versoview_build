@@ -28,7 +28,7 @@ import {
   replayToPostComment,
 } from "../../../../redux/comments/commentAction";
 import { formatDateTime } from "@/app/utils/DateUtils";
-import getExcerpt from "@/app/utils/GetExcerpt";
+import {getExcerptText} from "@/app/utils/GetExcerpt";
 import { addRemoveBookmarks } from "@/redux/bookmarks/bookmarkAction";
 function SingleComment({
   comment,
@@ -145,7 +145,7 @@ function SingleComment({
                     {commentUsername}
                   </Text>
                   <Text fontSize="md" color="gray.500">
-                    {getExcerpt(commentHead, 34)}
+                    {getExcerptText(commentHead, 34)}
                   </Text>
                 </VStack>
               </HStack>

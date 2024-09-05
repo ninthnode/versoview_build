@@ -10,12 +10,16 @@ import {
   Button,
   Heading,
   Avatar,
+  Tooltip,
 } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
+import {getExcerptText} from "@/app/utils/GetExcerpt";
+import useDeviceType from "@/components/useDeviceType";
 
 const NavbarTitle = ({ navtitle, navicon }) => {
   const pathname = usePathname();
   const router = useRouter();
+  const deviceType = useDeviceType();
 
   const getRouteName = (path) => {
     for (const route of RoutesList) {
@@ -32,15 +36,15 @@ const NavbarTitle = ({ navtitle, navicon }) => {
   return (
     <nav>
       {getRouteName(pathname) ? (
-        <Flex>
-          <Image src={"/assets/logo.svg"} alt="logo" mr={2} />
+        <Flex alignItems='center'>
+          <Image src={"/assets/logo.svg"} alt="logo" mr={2} h='1.6rem'/>
           <Heading as="h5" fontSize="xl" fontWeight='extrabold'>
-            {getRouteName(pathname)}
+           {getRouteName(pathname)}
           </Heading>
         </Flex>
       ) : (
         <Flex alignItems="center" mb={2}>
-          <Button pl="0" variant="ghost" onClick={() => router.back()}>
+          <Button ml='-10px' pr='2' pl="0" variant="ghost" onClick={() => router.back()}>
             <Image m="0" src={"/assets/back.svg"} />
           </Button>
           {!pathname.startsWith("/post") && (
@@ -52,9 +56,11 @@ const NavbarTitle = ({ navtitle, navicon }) => {
                   src={navicon}
                 />
               )}
-              <Heading ml={2} as="h5" fontSize="23px">
-                {navtitle}
-              </Heading>
+              {navtitle&&<Heading ml={2} as="h5" fontSize="22px" w={{base:'215px',sm:'100%'}}>
+              <Tooltip label={navtitle} aria-label='A tooltip'>
+              {deviceType=='phone'?getExcerptText(navtitle, 35):navtitle}
+              </Tooltip>
+              </Heading>}
             </>
           )}
         </Flex>

@@ -1,4 +1,4 @@
-const getExcerpt = (html, length) => {
+export const getExcerptHtml = (html, length) => {
   let text = stripHtml(html)
   if (!text || !length) return;
   if (text.length <= length) return text;
@@ -9,4 +9,9 @@ const stripHtml = (html) => {
   return doc.body.textContent || "";
 };
 
-export default getExcerpt;
+
+export const getExcerptText = (text, length) => {
+  console.log(text)
+  if (text.length <= length) return text;
+  return `${text.substring(0, length)}...`;
+};

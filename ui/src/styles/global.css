@@ -10,3 +10,9 @@ input[type="color"]::-webkit-color-swatch-wrapper {
     width: 100% !important;
     height: 100% !important;
   } */
+  .jodit-container:not(.jodit_inline) .jodit-wysiwyg{
+    padding: 10px 25px !important;
+  }
+  .jodit-container:not(.jodit_inline) .jodit-workplace{
+    max-height: 800px !important;
+  }

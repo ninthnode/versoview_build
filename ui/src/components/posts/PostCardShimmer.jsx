@@ -4,7 +4,7 @@ const PostCardShimmer = () => {
   return (
     <>
     {[...Array(3)].map((_, i) => (
-    <Box py={4} maxWidth="2xl">
+    <Box key={i} py={4} maxWidth="2xl">
       <Skeleton height="30px" mb={2} />
       <Skeleton height="300px" mb={4} />
       <Stack spacing={3}>

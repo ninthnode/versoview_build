@@ -290,6 +290,7 @@ module.exports.getUser = asyncHandler(async (req, res) => {
     const userObj = userData.toObject();
 
     userObj.posts = posts;
+    userObj.channelId = channelData._id;
     userObj.totalPosts = totalPosts;
     userObj.channelFollowings = channelFollowings;
     userObj.channelFollowers = channelFollowers;

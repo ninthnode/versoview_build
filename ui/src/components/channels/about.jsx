@@ -118,7 +118,7 @@ const About = ({
       <Box flex="1">
         <Flex justifyContent="space-between" alignItems="flex-start" mb={2}>
           <Flex flexDirection="column">
-            <Text fontSize={"lg"} fontWeight="bold">
+            <Text fontSize={"lg"} fontWeight="bold" lineHeight='2rem'>
               {channelName}
             </Text>
             <Text fontWeight="semibold" mt={-1}>

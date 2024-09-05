@@ -12,15 +12,18 @@ import {
   IconButton,
   Image,
   Text,
-  Skeleton
+  Skeleton,
+  Tooltip,
 } from "@chakra-ui/react";
 import Link from "next/link";
 import { CiSearch, CiBookmark, CiUser } from "react-icons/ci";
 import { FaBookmark as BookmarkFilled } from "react-icons/fa6";
 import { formatDate } from "../../utils/DateUtils";
 import PostMenu from "@/components/posts/PostMenu";
-import getExcerpt from "@/app/utils/GetExcerpt";
+import { getExcerptHtml, getExcerptText } from "@/app/utils/GetExcerpt";
 import DOMPurify from "dompurify";
+import useDeviceType from "@/components/useDeviceType";
+
 const PostCard = ({
   post,
   small = false,
@@ -28,68 +31,81 @@ const PostCard = ({
   submitBookmark,
   isbookmarkScreenCard = false,
 }) => {
+  const deviceType = useDeviceType();
   return (
     <Card maxW="2xl" mb={4} boxShadow="none">
-      <CardHeader p={1} border="0">
-        <Flex spacing="4">
-          <Flex flex="1" gap="2" alignItems="center" flexWrap="wrap">
+      <CardHeader p={1}>
+        <Flex
+          spacing="4"
+          w="100%"
+          justifyContent="space-between"
+          alignItems="center"
+        >
+          <Flex alignItems="center" w={{ base: "220px", sm: "100%" }}>
             <Link href={`/channel/${post.channelId._id}`}>
               <Avatar
                 size="sm"
-                p="0"
                 borderRadius={10}
-                src={post.channelId?.channelIconImageUrl}
+                src={post.channelId.channelIconImageUrl}
               />
             </Link>
-            <Box>
-              <Link href={`/channel/${post.channelId._id}`}>
-                <Text fontWeight="bold" fontSize="md">
-                  {post.channelId?.channelName}
-                </Text>
-              </Link>
-            </Box>
+            <Link href={`/channel/${post.channelId._id}`}>
+              <Text ml="2" fontWeight="semibold" fontSize="md">
+                <Tooltip
+                  label={post.channelId?.channelName}
+                  aria-label="A tooltip"
+                >
+                  {getExcerptText(post.channelId?.channelName,deviceType=='phone'? 30:50)}
+                </Tooltip>
+              </Text>
+            </Link>
           </Flex>
-          {!small && (
-            <PostMenu
-              url={`${process.env.NEXT_PUBLIC_FRONTEND_URL}/post/${post._id}`}
-              title={post.header}
-            />
-          )}
-          {showBookmarkButton && (
-            <IconButton
-              variant="nostyle"
-              color={
-                post.isBookmarked || isbookmarkScreenCard ? "green.500" : "gray"
-              }
-              aria-label="See menu"
-              fontSize="lg"
-              textAlign="right"
-              justifyContent="flex-end"
-              p="0"
-              icon={
-                post.isBookmarked || isbookmarkScreenCard ? (
-                  <BookmarkFilled style={{ margin: -6 }} />
-                ) : (
-                  <CiBookmark style={{ margin: -6 }} />
-                )
-              }
-              onClick={() => submitBookmark("post", post._id)}
-            />
-          )}
+          <Flex>
+            {!small && (
+              <PostMenu
+                url={`${process.env.NEXT_PUBLIC_FRONTEND_URL}/post/${post._id}`}
+                title={post.header}
+              />
+            )}
+            {showBookmarkButton && (
+              <IconButton
+                variant="nostyle"
+                color={
+                  post.isBookmarked || isbookmarkScreenCard
+                    ? "green.500"
+                    : "gray"
+                }
+                aria-label="See menu"
+                fontSize="lg"
+                textAlign="right"
+                justifyContent="flex-end"
+                p="0"
+                icon={
+                  post.isBookmarked || isbookmarkScreenCard ? (
+                    <BookmarkFilled style={{ margin: -6 }} />
+                  ) : (
+                    <CiBookmark style={{ margin: -6 }} />
+                  )
+                }
+                onClick={() => submitBookmark("post", post._id)}
+              />
+            )}
+          </Flex>
         </Flex>
       </CardHeader>
-      {!small && (
-        post.mainImageURL?
-        <Image
-          border="1px solid lightgray"
-          borderRadius="md"
-          objectFit="cover"
-          // h="300px"
-          src={post.mainImageURL}
-          alt={post.header}
-        />:
-        <Skeleton height="300px" mb={4} />
-      )}
+      {!small &&
+        (post.mainImageURL ? (
+          <Image
+            border="1px solid lightgray"
+            borderRadius="md"
+            objectFit="cover"
+            // h="300px"
+            src={post.mainImageURL}
+            alt={post.header}
+          />
+        ) : (
+          <Skeleton height="300px" mb={4} />
+        ))}
       <CardBody ml="1" p="0" border="0">
         <Text
           fontSize="sm"
@@ -133,7 +149,7 @@ const PostCard = ({
           fontSize="md"
           textAlign="justify"
           dangerouslySetInnerHTML={{
-            __html: getExcerpt(DOMPurify.sanitize(post.bodyRichText), 150),
+            __html: getExcerptHtml(DOMPurify.sanitize(post.bodyRichText), 150),
           }}
         />
       </CardBody>

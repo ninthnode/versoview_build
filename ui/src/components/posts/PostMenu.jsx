@@ -6,7 +6,7 @@ const ShareMenu = ({ disabled = false, url, title }) => {
 
   return (
     <Menu closeOnSelect={false}>
-    <MenuButton as={Button} variant="nostyle" isDisabled={disabled}> 
+    <MenuButton p='0' as={Button} variant="nostyle" isDisabled={disabled}> 
       <IconButton
         variant="nostyle"
         aria-label="See menu"

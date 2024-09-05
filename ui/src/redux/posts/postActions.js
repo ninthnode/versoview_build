@@ -2,7 +2,8 @@ import { GET_POSTS_REQUEST, GET_POSTS_SUCCESS, GET_POSTS_FAILURE,
   GET_SINGLE_POST_SUCCESS,
   GET_RECENT_POSTS_SUCCESS,
   SET_POST_EDIT,
-  GET_SINGLE_POST_EDITDATA_SUCCESS } from './postType';
+  GET_SINGLE_POST_EDITDATA_SUCCESS,POST_ADD_SUCCESS,
+  POST_EDIT_SUCCESS,MODIFY_POSTS_REQUEST } from './postType';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -234,7 +235,9 @@ const extractImageUrl = (url) => {
 };
 export const createNewPost = (key,content_type,image,formData) => {
   return async (dispatch) => {
-    dispatch(getPostsRequest());
+    await dispatch({
+      type: MODIFY_POSTS_REQUEST
+    });
     try {
       if (image) {
         const signedUrlResponse = await getSignedUrl({ key, content_type });
@@ -263,6 +266,9 @@ export const createNewPost = (key,content_type,image,formData) => {
           },
         }
       );
+      await dispatch({
+        type: POST_ADD_SUCCESS
+      });
       window.location.href = "/home";
 
     } catch (error) {
@@ -272,7 +278,9 @@ export const createNewPost = (key,content_type,image,formData) => {
 };
 export const editPost = (key,content_type,image,formData,editPostId) => {
   return async (dispatch,getState) => {
-    dispatch(getPostsRequest());
+    await dispatch({
+      type: MODIFY_POSTS_REQUEST
+    });
     try {
       const isEditPost = getState((s) => s.post.isEditPost);
       if(isEditPost){
@@ -304,6 +312,10 @@ export const editPost = (key,content_type,image,formData,editPostId) => {
           },
         }
       );
+      
+      await dispatch({
+        type: POST_EDIT_SUCCESS
+      });
       window.location.href = "/home";
 
     } catch (error) {

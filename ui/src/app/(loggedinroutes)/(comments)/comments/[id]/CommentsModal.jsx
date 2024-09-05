@@ -11,6 +11,9 @@ import {
   Heading,
   Slide,
   Divider,
+  Textarea,
+  Spinner,
+  Tooltip
 } from "@chakra-ui/react";
 import { PiArrowFatDownLight, PiArrowFatUpLight } from "react-icons/pi";
 import { BsChat } from "react-icons/bs";
@@ -18,9 +21,9 @@ import { FaBookmark as BookmarkFilled } from "react-icons/fa6";
 import { CiBookmark } from "react-icons/ci";
 import SingleComment from "../../single-comment/page";
 import { IoClose } from "react-icons/io5";
-import getExcerpt from "@/app/utils/GetExcerpt";
 import { formatDateTime } from "@/app/utils/DateUtils";
-import { FiMoreHorizontal } from 'react-icons/fi';
+import { FiMoreHorizontal } from "react-icons/fi";
+import {getExcerptText} from "@/app/utils/GetExcerpt";
 
 const Comment = ({
   _id,
@@ -36,106 +39,122 @@ const Comment = ({
   downvoteComment,
   setshowReply,
   showReply,
-  postId
+  postId,
 }) => {
   const [replayCount, setReplayCount] = useState(0);
 
-  return(
-  <Box w="100%" mb={4} bg="#fff">
-    <HStack align="start" spacing={4} position="relative" px={4} pt={6}>
-      <Avatar size='md' name={userId.channelName} src={userId.profileImageUrl} />
-      <VStack align="start" spacing={1}>
-        <Text fontSize='md' fontWeight="bold">{userId.channelName}</Text>
-        <Text fontSize="sm" color="gray.500">
-          {formatDateTime(createdAt)}
-        </Text>
-        {excerpt && (
-          <Box borderWidth="1px" borderRadius="md" boxShadow="lg" p="2">
-            <Text>
-              {'"'}
-              {excerpt}
-              {'"'}
-            </Text>
-          </Box>
-        )}
-      </VStack>
-      <Box position="absolute" top={4} right="0">
-      <IconButton
-        variant="ghost"
-        color="gray.400"
-        aria-label="See menu"
-        fontSize='25px'
-        icon={<FiMoreHorizontal/>}
-      />
-        <IconButton
-          variant="ghost"
-          color={!isBookmarked ? "gray" : "green.500"}
-          aria-label="See menu"
-          fontSize="lg"
-          icon={!isBookmarked ? <CiBookmark /> : <BookmarkFilled />}
-          onClick={() => submitBookmark("comment", _id)}
+  return (
+    <Box w="100%" mb={4} bg="#fff">
+      <HStack align="start" spacing={4} position="relative" px={4} pt={6}>
+        <Avatar
+          size="md"
+          name={userId.channelName}
+          src={userId.profileImageUrl}
         />
-      </Box>
-    </HStack>
-    <HStack spacing={2} px={4} py={2}>
-      <Text mt="3" fontSize='md'>{commentText}</Text>
-    </HStack>
+        <VStack align="start" spacing={1}>
+          <Text fontWeight="bold" fontSize="md">
+            <Tooltip label={userId.channelName} aria-label="A tooltip">
+              {getExcerptText(userId.channelName, 20)}
+            </Tooltip>
+          </Text>
+          <Text fontSize="sm" color="gray.500">
+            {formatDateTime(createdAt)}
+          </Text>
+          {excerpt && (
+            <Box borderWidth="1px" borderRadius="md" boxShadow="lg" p="2">
+              <Text>
+                {'"'}
+                {excerpt}
+                {'"'}
+              </Text>
+            </Box>
+          )}
+        </VStack>
+        <Box position="absolute" top={4} right="0">
+          <IconButton
+            variant="ghost"
+            color="gray.400"
+            aria-label="See menu"
+            fontSize="25px"
+            icon={<FiMoreHorizontal />}
+          />
+          <IconButton
+            variant="ghost"
+            color={!isBookmarked ? "gray" : "green.500"}
+            aria-label="See menu"
+            fontSize="lg"
+            icon={!isBookmarked ? <CiBookmark /> : <BookmarkFilled />}
+            onClick={() => submitBookmark("comment", _id)}
+          />
+        </Box>
+      </HStack>
+      <HStack spacing={2} px={4} py={2}>
+        <Text mt="3" fontSize="md">
+          {commentText}
+        </Text>
+      </HStack>
 
-    <HStack justifyContent="space-between" spacing={2} px={4} pb={4}>
-      <Box>
-        <Button
-          size="sm"
-          mt="4"
-          p='0'
-          variant="ghost"
-          onClick={() =>
-            showReply == _id ? setshowReply("") : setshowReply(_id)
-          }
-        >
-          {showReply == _id ? "Hide Replies" : "View Replies"}
-        </Button>
-      </Box>
-      <Flex gap={2} w='240px' alignItems='center'>
-        <Button
-          size="sm"
-          variant="ghost"
-          leftIcon={
-            <PiArrowFatUpLight colorScheme="textlight" fontSize="28px" />
-          }
-          aria-label="Upvote"
-          onClick={() => upvoteComment(_id)}
-        >
-          <Text color={"green.500"}>{trueCount}</Text>
-        </Button>
-        <Button
-          size="sm"
-          variant="ghost"
-          leftIcon={
-            <PiArrowFatDownLight colorScheme="textlight" fontSize="28px" />
-          }
-          aria-label="Upvote"
-          onClick={() => downvoteComment(_id)}
-        >
-          <Text color={"red"}>{falseCount}</Text>
-        </Button>
-        <Button
-          variant="ghost"
-          fontWeight="regular"
-          color="textlight"
-          onClick={() =>
-            showReply == _id ? setshowReply("") : setshowReply(_id)
-          }
-        >
-        <BsChat colorScheme="#333" fontSize="28px" />
-          <Text ml={2}>{replayCount}</Text>
-        </Button>
-      </Flex>
-    </HStack>
-    {showReply == _id && <SingleComment id={_id} commentHead={commentText} commentUsername={userId.channelName} setReplayCount={setReplayCount}
-      postId={postId}
-    />}
-  </Box>
-)
+      <HStack justifyContent="space-between" spacing={2} px={4} pb={4}>
+        <Box>
+          <Button
+            size="sm"
+            mt="4"
+            p="0"
+            variant="ghost"
+            onClick={() =>
+              showReply == _id ? setshowReply("") : setshowReply(_id)
+            }
+          >
+            {showReply == _id ? "Hide Replies" : "View Replies"}
+          </Button>
+        </Box>
+        <Flex gap={2} w="240px" alignItems="center">
+          <Button
+            size="sm"
+            variant="ghost"
+            leftIcon={
+              <PiArrowFatUpLight colorScheme="textlight" fontSize="28px" />
+            }
+            aria-label="Upvote"
+            onClick={() => upvoteComment(_id)}
+          >
+            <Text color={"green.500"}>{trueCount}</Text>
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            leftIcon={
+              <PiArrowFatDownLight colorScheme="textlight" fontSize="28px" />
+            }
+            aria-label="Upvote"
+            onClick={() => downvoteComment(_id)}
+          >
+            <Text color={"red"}>{falseCount}</Text>
+          </Button>
+          <Button
+            variant="ghost"
+            fontWeight="regular"
+            color="textlight"
+            onClick={() =>
+              showReply == _id ? setshowReply("") : setshowReply(_id)
+            }
+          >
+            <BsChat colorScheme="#333" fontSize="28px" />
+            <Text ml={2}>{replayCount}</Text>
+          </Button>
+        </Flex>
+      </HStack>
+      {showReply == _id && (
+        <SingleComment
+          id={_id}
+          commentHead={commentText}
+          commentUsername={userId.channelName}
+          setReplayCount={setReplayCount}
+          postId={postId}
+        />
+      )}
+    </Box>
+  );
 };
 
 const CommentsModal = ({
@@ -146,7 +165,12 @@ const CommentsModal = ({
   isOpenCommentModal,
   onToggleCommentModal,
   postTitle,
-  postId
+  postId,
+  handleChangeComment,
+  submitCommentByText,
+  isAuthenticated,
+  commentText,
+  loading
 }) => {
   const [showReply, setshowReply] = useState("");
   return (
@@ -177,14 +201,38 @@ const CommentsModal = ({
                   <Text mb="2" fontWeight="bold" fontSize="md">
                     Comments:
                   </Text>
-                  <Text fontSize="md">{getExcerpt(postTitle, 50)}</Text>
+                  <Text fontSize="md">{getExcerptText(postTitle, 50)}</Text>
                 </Box>
                 <Button variant="ghost" onClick={onToggleCommentModal}>
                   <IoClose fontSize="22px" />
                 </Button>
               </Flex>
+              <Flex p="4" textAlign='right' gap='4'>
+              <Textarea
+                type="comment"
+                placeholder="Enter Comment..."
+                name="commenttext"
+                value={commentText}
+                onChange={(e) => handleChangeComment(e.target.value)}
+                border="1px solid #000"
+                rows="3"
+              />
+              <Button
+                onClick={()=>submitCommentByText(false)}
+                size="md"
+                colorScheme="green"
+                isDisabled={!isAuthenticated}
+              >
+                Post{" "}
+                {commentText !== "" && loading ? (
+                  <Spinner size="sm" color="white" />
+                ) : (
+                  ""
+                )}
+              </Button>
+              </Flex>
               <Divider />
-              <Box h="90vh" overflowY="scroll" pb="60px" overflowX='hidden'>
+              <Box h="90vh" overflowY="scroll" pb="60px" overflowX="hidden">
                 <VStack spacing={4} pb={4} mb={4} bg="lightgray">
                   {commentList.length ? (
                     commentList.map((comment) => (

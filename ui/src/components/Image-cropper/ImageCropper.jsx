@@ -3,8 +3,8 @@ import Cropper from "react-easy-crop";
 import { getCroppedImg } from "./cropImage";
 import { FaCheck, FaTimes } from "react-icons/fa";
 import { MdModeEdit } from "react-icons/md";
-import { Image, Text,Flex } from "@chakra-ui/react";
-import { FaCamera } from "react-icons/fa";
+import { Image, Text,Flex, Tooltip } from "@chakra-ui/react";
+import { FaUpload,FaCamera } from "react-icons/fa";
 
 const ImageCropper = ({ onCropComplete, uploadedImage, croppedImage,imageSizeError,setCroppedImage,setUploadedImage }) => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
@@ -121,9 +121,18 @@ const ImageCropper = ({ onCropComplete, uploadedImage, croppedImage,imageSizeErr
         <Flex flexDirection={
           "column"
         } alignItems="center">
+          <Flex gap='4' pos="relative">
+          <Tooltip label="Upload Image">
           <label for="files" class="btn">
-            <FaCamera fontSize="3rem" />
+            <FaUpload fontSize="3rem" style={{backgroundColor:"#cccc", padding:'10px',cursor:'pointer'}} />
           </label>
+          </Tooltip>
+          <Tooltip label="Take Photo">
+          <label for="cameras" class="btn">
+            <FaCamera fontSize="3rem" style={{backgroundColor:"#cccc", padding:'10px',cursor:'pointer'}}/>
+          </label>
+          </Tooltip>
+          </Flex>
           <Text>{imageSizeError}</Text>
         </Flex>
       )}

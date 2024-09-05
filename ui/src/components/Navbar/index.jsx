@@ -29,7 +29,7 @@ const Navbar = ({ children }) => {
   const [index, setIndex] = React.useState(routeIndex);
 
   return (
-    <Flex minH="100vh" bg="light">
+    <Flex minH="100vh" bg="light" w="100%">
       <SidebarContent
         onClose={onClose}
         display={{ base: "none", md: "block" }}
@@ -38,6 +38,7 @@ const Navbar = ({ children }) => {
         alignItems="center"
         justifyContent="space-between"
         direction="column"
+        w="100%"
       >
         <Box w="100%">
           <Box ml={{ base: 0, md: "16rem" }}>

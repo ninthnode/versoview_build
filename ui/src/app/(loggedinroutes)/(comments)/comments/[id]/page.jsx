@@ -67,9 +67,9 @@ const Comments = ({
     getCommentByPostId(postId);
   };
 
-  const submitCommentByText = async () => {
+  const submitCommentByText = async (istoggle=true) => {
     await submitComment();
-    onToggleCommentModal()
+    if(istoggle)onToggleCommentModal()
   };
 
   return (
@@ -103,6 +103,11 @@ const Comments = ({
           submitBookmark={submitBookmark}
           isOpenCommentModal={isOpenCommentModal}
           onToggleCommentModal={onToggleCommentModal}
+          handleChangeComment={handleChangeComment}
+          submitCommentByText={submitCommentByText}
+          isAuthenticated={isAuthenticated}
+          commentText={commentText}
+          loading={loading}
         />
       )}
     </Box>

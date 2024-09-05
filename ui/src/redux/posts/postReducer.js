@@ -7,10 +7,14 @@ import {
   GET_RECENT_POSTS_SUCCESS,
   SET_POST_EDIT,
   GET_SINGLE_POST_EDITDATA_SUCCESS,
+  POST_ADD_SUCCESS,
+  POST_EDIT_SUCCESS,
+  MODIFY_POSTS_REQUEST
 } from "./postType";
 
 const initialState = {
   loading: true,
+  loadingModify: false,
   posts: [],
   error: "",
   singlePost: {},
@@ -27,6 +31,11 @@ const postsReducer = (state = initialState, action) => {
       return {
         ...state,
         loading: true,
+      };
+    case MODIFY_POSTS_REQUEST:
+      return {
+        ...state,
+        loadingModify: true,
       };
     case GET_POSTS_SUCCESS:
       return {
@@ -73,6 +82,12 @@ const postsReducer = (state = initialState, action) => {
         ...state,
         isEditPost: action.payload.isEditPost,
         editPostId: action.payload.postId,
+      };
+    case POST_ADD_SUCCESS:
+    case POST_EDIT_SUCCESS:
+      return {
+        ...state,
+        loadingModify: false,
       };
     default:
       return state;
