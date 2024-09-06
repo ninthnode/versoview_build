@@ -49,7 +49,7 @@ import { formatDate } from "@/app/utils/DateUtils";
 import RelatedArticleList from "./RelatedArticleList";
 import DOMPurify from "dompurify";
 import {getExcerptText} from "@/app/utils/GetExcerpt";
-
+import HighlighterTag from '@/components/posts/HighlighterTag/core';
 function SinglePost({
   params,
   postState,
@@ -101,13 +101,28 @@ function SinglePost({
     getPostById(params.id);
   };
 
-  const handleSelection = () => {
-    const text = window.getSelection().toString().trim();
+  const handleSelection = (text) => {
     if (text) {
       setSelectedText(text);
       onOpen();
     }
   };
+  useEffect(() => {
+    const highlighter = HighlighterTag({
+      _onOpen: (popover, text) => {
+        // console.log("Popover opened with text: ", text);
+      },
+      onClick: (selectedText) => {
+        handleSelection(selectedText)
+        // console.log("You clicked on: ", selectedText);
+      },
+      onClose: () => {
+        console.log("Popover closed");
+      }
+    });
+    highlighter.init();
+  }, [])
+  
 
   return (
     <Box maxW="2xl">
@@ -258,16 +273,18 @@ function SinglePost({
               </Flex>
               <Divider />
               <div
-                onMouseUp={handleSelection}
-                onTouchEnd={handleSelection}
-                onClick={() => handleSelection}
+                // onMouseUp={handleSelection}
+                // onTouchStart={handleSelection}
+                // onTouchEnd={handleSelection}
+                // id="selection-div"
+                // onClick={() => handleSelection}
               >
                 {/* <Text mt="2" w="fit-content" p="1" fontSize="sm">
                   By {postState.user.channelName}
                 </Text> */}
                 {postState.post.credits && (
                   <Text mt="2" w="fit-content" p="1" fontSize="sm">
-                    Credits: {postState.post.credits}
+                    By: {postState.post.credits}
                   </Text>
                 )}
                 {/* <Heading fontSize="2xl" as="h5" mb="2">

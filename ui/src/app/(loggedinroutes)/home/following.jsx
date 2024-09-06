@@ -247,9 +247,10 @@ const Following = ({ followings, user,fetchfollowChannelList }) => {
                   </Text>
                 </Link>
                 <Text fontSize="sm">
-                {console.log(following.userId)}
                   {Array.isArray(following.userId?.genre) &&
-                    following.userId?.genre?.join(" - ")}
+                    <>{following.userId?.genre[0] }
+                    <br/><b>more...</b></>
+                    }
                 </Text>
               </Box>
             </Flex>
