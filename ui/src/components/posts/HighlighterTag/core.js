@@ -82,7 +82,10 @@ export default (opts) => {
             setTimeout(() => {
                 if (_window) {
                     const range = getConstrainedRange();
-                    if (range) drawPopover(range);
+                    if (range) 
+                        setTimeout(() => {
+                            drawPopover(range);
+                        }, 200);
                     else setTimeout(() => {
                         killPopover();
                     }, 200);

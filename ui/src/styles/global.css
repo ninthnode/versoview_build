@@ -16,3 +16,7 @@ input[type="color"]::-webkit-color-swatch-wrapper {
   .jodit-container:not(.jodit_inline) .jodit-workplace{
     max-height: 800px !important;
   }
+  .share-this-popover{
+    height: 30px !important;
+    width: 30px !important;
+  }
