@@ -32,11 +32,11 @@ const SingleEdition = ({params}) => {
     dispatch(getEditionById(params.id))
   }, [])
   const editPostHandler = async (id,editionId) => {
-    if(editionId)
-      push("/publish/post/edit/"+ id + '/'+editionId);
-    else
-      push("/publish/post/edit/"+id);
-    };
+  if(editionId)
+    push("/publish/post/edit/"+ id + '/'+editionId);
+  else
+    push("/publish/post/edit/"+id);
+  };
   
   return singleEdition&&(
     <Box mt='4'>

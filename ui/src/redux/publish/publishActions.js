@@ -41,7 +41,7 @@ import {
         });
       }
   
-      if (uploadProgress > 99) {
+      if (uploadProgress) {
         toast.update(uploadToastId, {
           position: "bottom-right",
           render: "Edition Created Sucessfully!",
@@ -93,19 +93,12 @@ import {
           },
         }
       );
-      if (uploadToastId) 
-        toast.update(uploadToastId, {
-          position: "bottom-right",
-          render: "Edition Created Sucessfully!",
-          progress: 100,
-          type: 'success',
-          autoClose: 5000,
-        });
+
       dispatch({
         type: CREATE_EDITION_SUCCESS,
-        payload: data,
+        payload: responsefile,
       });
-      window.location('/publish')
+      window.location.href = "/publish";
     } catch (error) {
       console.log(error)
     }
