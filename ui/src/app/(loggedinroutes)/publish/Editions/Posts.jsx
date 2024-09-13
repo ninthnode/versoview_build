@@ -7,12 +7,16 @@ import { FaEdit } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 import { IoAddCircle } from "react-icons/io5";
 import { useRouter } from "next/navigation";
+import { deletePost } from "@/redux/posts/postActions";
+import useConfirmationDialog from "@/components/useConfirmationDialog"
 
 function Posts({setIsCreateEditPost,setSelectedEdition}) {
   const dispatch = useDispatch();
   const userPosts = useSelector((s) => s.post.posts);
   const { push } = useRouter();
-
+  const [showDialog, ConfirmationDialogComponent] = useConfirmationDialog(
+    'Are you sure you want to delete this post?'
+  );
   useEffect(() => {
     dispatch(fetchPosts());
   }, []);
@@ -23,10 +27,18 @@ function Posts({setIsCreateEditPost,setSelectedEdition}) {
     else
       push("/publish/post/edit/"+id);
     };
-
+    const deletePostHandler = async (id) => {
+      const confirmed = await showDialog();
+      if (confirmed) {
+        await dispatch(deletePost(id));
+        dispatch(fetchPosts())
+      }
+    };
+    
   return (
     <Box pl="4" borderLeftWidth="1px" borderColor="lightgray">
       <Flex alignItems='center' justifyContent='space-between'>
+      {ConfirmationDialogComponent}
       <Text fontSize="lg" mt={4} mb={4}>
         Posts 
       </Text>
@@ -73,7 +85,7 @@ function Posts({setIsCreateEditPost,setSelectedEdition}) {
                   px={3}
                   fontWeight="light"
                   color="#fff"
-                  //   onClick={() => deletePostHandler(item._id)}
+                    onClick={() => deletePostHandler(item._id)}
                 >
                   <MdDelete />
                 </Button>

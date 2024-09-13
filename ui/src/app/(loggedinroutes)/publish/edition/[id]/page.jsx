@@ -21,13 +21,17 @@ const PdfViewer = dynamic(() => import("@/components/publish/PdfViewer"), {
   ssr: false,
 });
 import { useRouter } from "next/navigation";
+import { deletePost } from "@/redux/posts/postActions";
+import useConfirmationDialog from "@/components/useConfirmationDialog"
 
 const SingleEdition = ({params}) => {
   const dispatch = useDispatch();
   const singleEdition = useSelector((state) => state.publish.singleEdition)
   const postData = useSelector((state) => state.publish.singleEditionPosts)
   const { push } = useRouter();
-
+  const [showDialog, ConfirmationDialogComponent] = useConfirmationDialog(
+    'Are you sure you want to delete this post?'
+  );
   useEffect(() => {
     dispatch(getEditionById(params.id))
   }, [])
@@ -37,10 +41,19 @@ const SingleEdition = ({params}) => {
   else
     push("/publish/post/edit/"+id);
   };
+
+  const deletePostHandler = async (id) => {
+    const confirmed = await showDialog();
+    if (confirmed) {
+      await dispatch(deletePost(id));
+      dispatch(getEditionById(params.id))
+    }
+  };
   
   return singleEdition&&(
     <Box mt='4'>
       <Flex justifyContent="space-between" alignItems="center">
+      {ConfirmationDialogComponent}
         <Flex alignItems="center">
           <Text fontSize="lg" mt={4} mb={4}>
           {singleEdition.editionText} {singleEdition.editionDate}
@@ -131,6 +144,7 @@ const SingleEdition = ({params}) => {
             </Text>
           </Box>
           <Stack spacing={0} mt="4">
+          {postData.length===0 && <Text fontSize="sm">No posts found</Text>}
           {postData &&
           postData.map((item, index) => (
             <Flex
@@ -168,7 +182,7 @@ const SingleEdition = ({params}) => {
                   px={3}
                   fontWeight="light"
                   color="#fff"
-                  //   onClick={() => deletePostHandler(item._id)}
+                    onClick={() => deletePostHandler(item._id)}
                 >
                   <MdDelete />
                 </Button>
