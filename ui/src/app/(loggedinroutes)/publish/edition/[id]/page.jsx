@@ -58,13 +58,13 @@ const SingleEdition = ({params}) => {
           <Text fontSize="lg" mt={4} mb={4}>
           {singleEdition.editionText} {singleEdition.editionDate}
           </Text>
-          <Button
+          {/* <Button
             leftIcon={<FaEdit fontSize="25px" color="green" />}
             fontSize="md"
             ml='4'
           >
             Edit
-          </Button>
+          </Button> */}
         </Flex>
         <Button
           leftIcon={<IoAddCircle fontSize="25px" color="green"/>}
