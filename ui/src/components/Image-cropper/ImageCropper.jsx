@@ -3,15 +3,17 @@ import Cropper from "react-easy-crop";
 import { getCroppedImg } from "./cropImage";
 import { FaCheck, FaTimes } from "react-icons/fa";
 import { MdModeEdit } from "react-icons/md";
-import { Image, Text,Flex, Tooltip } from "@chakra-ui/react";
+import { Image, Text,Flex, Tooltip,useDisclosure } from "@chakra-ui/react";
 import { FaUpload,FaCamera } from "react-icons/fa";
+import { MdLibraryAdd } from "react-icons/md";
+import LibraryModal from "@/components/publish/LibraryModal";
 
-const ImageCropper = ({ onCropComplete, uploadedImage, croppedImage,imageSizeError,setCroppedImage,setUploadedImage }) => {
+const ImageCropper = ({ onCropComplete, uploadedImage, croppedImage,imageSizeError,setCroppedImage,setUploadedImage,edition,handleLibraryImage }) => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
   const [isEditing, setIsEditing] = useState(true);
-
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const onCropCompleteCallback = useCallback(
     (croppedArea, croppedAreaPixels) => {
       setCroppedAreaPixels(croppedAreaPixels);
@@ -69,14 +71,18 @@ const ImageCropper = ({ onCropComplete, uploadedImage, croppedImage,imageSizeErr
           <div
             style={{
               position: "absolute",
-              top: "-5px",
-              right: "-30px",
+              bottom: "0px",
+              right: "0px",
               display: "flex",
               alignItems: "center",
               gap: "10px",
+              backgroundColor:'#fff',
+              padding:'5px',
+              borderRadius:'10px',
+              border:'2px solid #333'
             }}
           >
-          <Flex flexDirection='column' gap='2'>
+          <Flex gap='2'>
             {isEditing ? (
               <FaCheck
                 onClick={handleCrop}
@@ -104,7 +110,7 @@ const ImageCropper = ({ onCropComplete, uploadedImage, croppedImage,imageSizeErr
               />
             )}
             <FaTimes
-                onClick={()=>setUploadedImage(null)}
+                onClick={()=>{setUploadedImage(null);setCroppedImage(null)}}
                 style={{
                   borderRadius: "5px",
                   padding: "5px",
@@ -132,8 +138,15 @@ const ImageCropper = ({ onCropComplete, uploadedImage, croppedImage,imageSizeErr
             <FaCamera fontSize="3rem" style={{backgroundColor:"#cccc", padding:'10px',cursor:'pointer'}}/>
           </label>
           </Tooltip>
+          {console.log(edition)}
+          {edition&&<Tooltip label="Choose from Library">
+          <Text onClick={onOpen}>
+           <MdLibraryAdd fontSize="3rem" style={{backgroundColor:"#cccc", padding:'10px',cursor:'pointer'}}/>
+          </Text>
+          </Tooltip>}
           </Flex>
           <Text>{imageSizeError}</Text>
+          <LibraryModal isOpen={isOpen} onClose={onClose} edition={edition} handleLibraryImage={handleLibraryImage}/>
         </Flex>
       )}
     </div>

@@ -28,6 +28,8 @@ const Navbar = ({ children }) => {
   const routeIndex = SidebarRoutes.findIndex((route) => route.url === path);
   const [index, setIndex] = React.useState(routeIndex);
 
+  const FullWidthRoutes = ['/publish']
+  const IsFullWidthRoutes = FullWidthRoutes.find((route) => path.startsWith(route))?true:false
   return (
     <Flex minH="100vh" bg="light" w="100%">
       <SidebarContent
@@ -41,8 +43,8 @@ const Navbar = ({ children }) => {
         w="100%"
       >
         <Box w="100%">
-          <Box ml={{ base: 0, md: "16rem" }}>
-            <Box mb={"100px"} w={{ base: "100%", md: "2xl" }} px={4} borderRightWidth='2px' borderColor='#f5f5f5'>
+          <Box ml={{ base: 0, md: "11rem" }}>
+            <Box mb={"100px"} w={{ base: "100%", md: IsFullWidthRoutes?'100%':"2xl" }} px={4} borderRightWidth='2px' borderColor='#f5f5f5'>
               <MobileNav onOpen={onOpen} />
               <Divider />
               {children}

@@ -1,5 +1,6 @@
 import { GET_POSTS_REQUEST, GET_POSTS_SUCCESS, GET_POSTS_FAILURE,
   GET_SINGLE_POST_SUCCESS,
+  CLEAR_SINGLE_POST,
   GET_RECENT_POSTS_SUCCESS,
   SET_POST_EDIT,
   GET_SINGLE_POST_EDITDATA_SUCCESS,POST_ADD_SUCCESS,
@@ -74,6 +75,14 @@ export const fetchRecentlyViewedPosts = () => {
     }
   };
 };
+export const clearPost = () => {
+  return async (dispatch,getState) => {
+    console.log('ss')
+  dispatch({
+    type:CLEAR_SINGLE_POST
+  });
+  }
+}
 export const getPostById = (postId) => {
   return async (dispatch,getState) => {
     dispatch(getPostsRequest());

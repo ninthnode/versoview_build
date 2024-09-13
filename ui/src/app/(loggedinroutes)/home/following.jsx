@@ -248,8 +248,7 @@ const Following = ({ followings, user,fetchfollowChannelList }) => {
                 </Link>
                 <Text fontSize="sm">
                   {Array.isArray(following.userId?.genre) &&
-                    <>{following.userId?.genre[0] }
-                    <br/><b>more...</b></>
+                    following.userId?.genre[0]
                     }
                 </Text>
               </Box>

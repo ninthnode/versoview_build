@@ -44,6 +44,7 @@ module.exports.create = asyncHandler(async (req, res) => {
       credits: req.body.credits || "",
       bodyRichText: req.body.bodyRichText || "",
       status: req.body.status || "",
+      editionId: req.body.editionId || null
     };
 
     const newPost = new Post(postData);

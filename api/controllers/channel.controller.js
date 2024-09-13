@@ -363,11 +363,10 @@ module.exports.pinChannel = asyncHandler(async (req, res) => {
 	try {
 		const channelId = req.params._id;
 		const userId = req.user._id;
-
 		const updatedFollow = await Follow.findOneAndUpdate(
-			{ channelId: channelId },
+			{ channelId: channelId,userId: userId },
 			{ pinned: true },
-			{ new: true },
+			{ new: true }
 		);
 
 		if (!updatedFollow)
@@ -389,9 +388,9 @@ module.exports.unpinChannel = asyncHandler(async (req, res) => {
 		const userId = req.user._id;
 
 		const updatedFollow = await Follow.findOneAndUpdate(
-			{ channelId: channelId },
+			{ channelId: channelId,userId: userId },
 			{ pinned: false },
-			{ new: true },
+			{ new: true }
 		);
 
 		if (!updatedFollow)

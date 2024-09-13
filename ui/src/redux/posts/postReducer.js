@@ -3,6 +3,7 @@ import {
   GET_POSTS_SUCCESS,
   GET_POSTS_FAILURE,
   GET_SINGLE_POST_SUCCESS,
+  CLEAR_SINGLE_POST,
   GET_SINGLE_POST_VOTES_SUCCESS,
   GET_RECENT_POSTS_SUCCESS,
   SET_POST_EDIT,
@@ -42,6 +43,13 @@ const postsReducer = (state = initialState, action) => {
         ...state,
         loading: false,
         posts: action.payload,
+        error: "",
+      };
+    case CLEAR_SINGLE_POST:
+      return {
+        ...state,
+        loading: false,
+        singlePost: [],
         error: "",
       };
     case GET_RECENT_POSTS_SUCCESS:

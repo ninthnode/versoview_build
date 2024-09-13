@@ -12,6 +12,10 @@ const postSchema = new mongoose.Schema(
 			ref: "User",
 			require: true,
 		},
+		editionId: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "Edition"
+		},
 		readBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
 		mainImageURL: {
 			type: String,

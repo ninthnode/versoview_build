@@ -32,6 +32,7 @@ import { PiArrowFatDownLight, PiArrowFatUpLight } from "react-icons/pi";
 import { connect } from "react-redux";
 import {
   getPostById,
+  clearPost,
   updatePostUpvote,
   updatePostDownvote,
 } from "@/redux/posts/postActions";
@@ -50,10 +51,12 @@ import RelatedArticleList from "./RelatedArticleList";
 import DOMPurify from "dompurify";
 import {getExcerptText} from "@/app/utils/GetExcerpt";
 import HighlighterTag from '@/components/posts/HighlighterTag/core';
+import Loader from "@/components/Loader";
 function SinglePost({
   params,
   postState,
   getPostById,
+  clearPost,
   getCommentAndRepliesCount,
   addCommentToPost,
   updatePostUpvote,
@@ -76,6 +79,7 @@ function SinglePost({
     if (isModalCommentsOpen) onToggleCommentModal();
   }, [isModalCommentsOpen]);
   useEffect(() => {
+    clearPost();
     getPostById(params.id);
     getCommentAndRepliesCount(params.id);
   }, [getPostById, params.id]);
@@ -126,6 +130,7 @@ function SinglePost({
 
   return (
     <Box maxW="2xl">
+    {!postState.post&&<Loader/>}
       {postState.post ? (
         <>
           <Card
@@ -380,6 +385,7 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({
   getPostById: (id) => dispatch(getPostById(id)),
+  clearPost: (id) => dispatch(clearPost(id)),
   getCommentAndRepliesCount: (id) => dispatch(getCommentAndRepliesCount(id)),
   getCommentByPostId: (id) => dispatch(getCommentByPostId(id)),
   addCommentToPost: (id, comment) => dispatch(addCommentToPost(id, comment)),

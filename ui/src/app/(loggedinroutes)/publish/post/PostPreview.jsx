@@ -77,8 +77,8 @@ function PostPreview({
               border="1px solid lightgray"
               borderRadius="md"
               objectFit="cover"
-              maxH="250px"
-              src={croppedImage?croppedImage:'assets/default-post-image.svg'}
+              // maxH="250px"
+              src={croppedImage?croppedImage:uploadedImage?uploadedImage:process.env.NEXT_PUBLIC_BACKEND_URL+'/images/default-post-img.jpg'}
               alt={post.header}
             />
             <CardBody pt="2" px="0">

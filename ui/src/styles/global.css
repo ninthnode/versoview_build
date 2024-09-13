@@ -6,10 +6,9 @@ input[type="color"]::-webkit-color-swatch-wrapper {
     border-radius: 50%;
     border: none;
   }
-  /* .reactEasyCrop_CropArea{
-    width: 100% !important;
-    height: 100% !important;
-  } */
+  .react-pdf__Page__textContent,.react-pdf__Page__annotations {
+    display: none;
+  }
   .jodit-container:not(.jodit_inline) .jodit-wysiwyg{
     padding: 10px 25px !important;
   }

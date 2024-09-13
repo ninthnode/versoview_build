@@ -5,6 +5,7 @@ import commentReducer from './comments/commentReducer';
 import bookmarkReducer from './bookmarks/bookmarkReducer';
 import channelReducer from './channel/channelReducer';
 import profileReducer from './profile/reducer';
+import publishReducer from './publish/publishReducer';
 import titleReducer from './navbar/reducer';
 
 const rootReducer = combineReducers({
@@ -14,6 +15,7 @@ const rootReducer = combineReducers({
   bookmark:bookmarkReducer,
   channel:channelReducer,
   profile:profileReducer,
+  publish:publishReducer,
   navtitle:titleReducer
 });
 

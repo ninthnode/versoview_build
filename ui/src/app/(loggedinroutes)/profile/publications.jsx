@@ -13,18 +13,17 @@ import {
 } from "@chakra-ui/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useDispatch } from "react-redux";
-import { setPostEdit } from "@/redux/posts/postActions";
 import { FaEdit } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
 
 function Publications({ userPosts,deletePostHandler }) {
   const { push } = useRouter();
-  const dispatch = useDispatch();
-  const editPostHandler = async (id) => {
-    await dispatch(setPostEdit(true, id));
-    push("/publish");
-  };
+  const editPostHandler = async (id,editionId) => {
+    if(editionId)
+      push("/publish/post/edit/"+ id + '/'+editionId);
+    else
+      push("/publish/post/edit/"+id);
+    };
   return (
     <Accordion allowMultiple>
       <AccordionItem>
@@ -137,7 +136,7 @@ function Publications({ userPosts,deletePostHandler }) {
                       px={3}
                       fontWeight="light"
                       color="#fff"
-                      onClick={() => editPostHandler(item._id)}
+                      onClick={() => editPostHandler(item._id, item.editionId)}
                     >
                       <FaEdit />
                     </Button>

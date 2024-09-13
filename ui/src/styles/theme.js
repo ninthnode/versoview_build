@@ -13,8 +13,10 @@ const customTheme = extendTheme({
   },
   fontSizes: {
     xs: "0.7rem",
+    xsm: "0.75rem",
     sm: "0.865rem",
     md: "1rem",
+    mdl: "1.34rem",
     lg: "1.74rem",
     xl: "2.2rem",
     "2xl": "2rem",
