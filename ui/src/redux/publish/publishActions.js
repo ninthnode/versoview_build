@@ -41,7 +41,7 @@ import {
         });
       }
   
-      if (uploadProgress) {
+      if (uploadProgress > 99) {
         toast.update(uploadToastId, {
           position: "bottom-right",
           render: "Edition Created Sucessfully!",
@@ -93,7 +93,14 @@ import {
           },
         }
       );
-
+      if (uploadToastId) 
+        toast.update(uploadToastId, {
+          position: "bottom-right",
+          render: "Edition Created Sucessfully!",
+          progress: 100,
+          type: 'success',
+          autoClose: 5000,
+        });
       dispatch({
         type: CREATE_EDITION_SUCCESS,
         payload: responsefile,
