@@ -7,6 +7,7 @@ const { Post } = require("../models/post.model");
 const { Channel } = require("../models/channel.model");
 const { User } = require("../models/user.model");
 const { Bookmark } = require("../models/bookmark.model");
+const { Edition } = require("../models/edition.model");
 const { Favorite } = require("../models/favorite.model");
 const { PostComment } = require("../models/postcomment.model");
 const { RecentlyViewedPosts } = require("../models/recentlyViewedPosts.model");
@@ -118,6 +119,7 @@ module.exports.getAllPost = asyncHandler(async (req, res) => {
     // 2. User's post
     // 3. Genre 
     // 4. Find Unique Posts
+    // 4. Edition Pdf Url
 
     const userId = req.user._id;
     const page = Number.parseInt(req.query.page) || 1;
@@ -125,7 +127,7 @@ module.exports.getAllPost = asyncHandler(async (req, res) => {
     const skip = (page - 1) * limit;
     const userData = await User.findOne({ _id: userId });
 
-    const userPosts = await Post.find({userId: userData._id}).populate("channelId");
+    const userPosts = await Post.find({userId: userData._id}).populate("channelId").populate("editionId");
 
     const genres = userData.genre;
 

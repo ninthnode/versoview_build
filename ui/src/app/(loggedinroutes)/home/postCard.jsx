@@ -23,7 +23,10 @@ import PostMenu from "@/components/posts/PostMenu";
 import { getExcerptHtml, getExcerptText } from "@/app/utils/GetExcerpt";
 import DOMPurify from "dompurify";
 import useDeviceType from "@/components/useDeviceType";
-
+import dynamic from "next/dynamic";
+const PdfFlipBookModal = dynamic(() => import("@/components/posts/PdfFlipBookModal"), {
+  ssr: false,
+});
 const PostCard = ({
   post,
   small = false,
@@ -117,10 +120,7 @@ const PostCard = ({
         >
           {post.section} - {post.subSection} • {formatDate(post.createdAt)} •{" "}
           {post.readingTime} read •{" "}
-          <Flex cursor="pointer">
-            <Image src="../assets/chat-icon.png" h="1.2rem" w="1.4rem" />
-            <Text ml="1">0</Text>
-          </Flex>
+          {post.editionId?.pdfUrl&&<PdfFlipBookModal pdfFile={post.editionId.pdfUrl}/>}
           {/* <Button
             variant="ghost"
             colorScheme="gray"

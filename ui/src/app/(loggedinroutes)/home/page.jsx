@@ -24,7 +24,6 @@ import Following from "./following";
 import { fetchUser } from "@/redux/profile/actions";
 import PostCardShimmer from "../../../components/posts/PostCardShimmer";
 import useDeviceType from "@/components/useDeviceType";
-
 const Home = ({
   postsState,
   loading,
@@ -92,7 +91,6 @@ const Home = ({
           {deviceType!='desktop'&&
           <Tab pl="1" isDisabled={!user}>Following</Tab>}
         </TabList>
-
         <TabPanels p="0">
           <TabPanel p="0">
             <Box mt='2'>
