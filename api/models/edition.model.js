@@ -23,6 +23,14 @@ const editionSchema = new mongoose.Schema(
     editionDescription: {
 			type: String,
 		},
+    genre: {
+			type: [String],
+			default: ["array"],
+		},
+		subGenre: {
+			type: [String],
+			default: ["array"],
+		},
     editionDate: {
 			type: String,
 		},

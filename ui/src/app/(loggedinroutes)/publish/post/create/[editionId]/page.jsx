@@ -241,14 +241,15 @@ const PublishPdfPost = ({ params }) => {
           w="60%"
           border="1px solid black"
           display={{ base: "none", md: "block" }}
+          height='fit-content'
+          pos='sticky'
+          top='0'
         >
           <Heading fontSize="md" textAlign="center" my={4}>
             PDF PREVIEW
           </Heading>
           <Box border="1px solid #e2e8f0" h="100vh">
             <Flex direction="column" align="center" justify="center" h="full">
-              {/* <Box bg="gray.100" w="100%" h="45%" mb={2} />
-                <Box bg="gray.100" w="100%" h="45%" /> */}
               <iframe
                 src={editionDetails.pdfUrl}
                 title="title"

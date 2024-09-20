@@ -9,16 +9,20 @@ import {
   Textarea,
   FormControl,
   FormLabel,
+  useToast
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 const PdfViewer = dynamic(() => import("@/components/publish/PdfViewer"), {
   ssr: false,
 });
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { createEdition } from "@/redux/publish/publishActions";
-import 'react-pdf/dist/Page/AnnotationLayer.css';
-import 'react-pdf/dist/Page/TextLayer.css';
+import "react-pdf/dist/Page/AnnotationLayer.css";
+import "react-pdf/dist/Page/TextLayer.css";
+import { fetchUser } from "@/redux/profile/actions";
+import MultiSelectDropdown from "@/components/MultiSelectDropdown";
+import genres from "@/static-data/genres";
 
 const CreateEdition = () => {
   const [pdfImage, setPdfImage] = useState("");
@@ -26,7 +30,30 @@ const CreateEdition = () => {
   const [edition, setEdition] = useState("");
   const [date, setDate] = useState("");
   const dispatch = useDispatch();
+  const [channelName, setChannelName] = useState();
+  const [userGenres, setUserGenres] = useState([]);
+  const [genre, setGenre] = useState([]);
+  const [subGenre, setSubGenre] = useState([]);
+  const profileState = useSelector((state) => state.profile);
+  const { user } = profileState;
+  const authState = useSelector((state) => state.auth?.user?.user);
+  const toast = useToast();
 
+  useEffect(() => {
+    if (user) {
+      let tempUserGenres = [];
+      user.genre.forEach(selectedGenre => {
+        const genreObj = genres.find(g => g.genre === selectedGenre);
+  
+        if (genreObj) {
+          tempUserGenres = [...tempUserGenres, {genre: selectedGenre, subGenres: genreObj.subGenres}];
+        }
+      });
+      setUserGenres(tempUserGenres);
+      setGenre(user.genre);
+      setChannelName(user.channelName);
+    }
+  }, [user]);
   const handlePdfSelect = (event) => {
     const file = event.target.files[0];
     if (file && file.type === "application/pdf") {
@@ -49,6 +76,16 @@ const CreateEdition = () => {
   }
 
   const handleSave = async () => {
+    if (!pdfImage || !about || !date|| !genre) {
+      toast({
+        title: "Incomplete Form",
+        description: "Please fill in all mandatory * fields.",
+        status: "warning",
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
     if (pdfImage) {
       const defaultFileName = `pdf-${Date.now()}.pdf`;
       const fileName = defaultFileName;
@@ -56,13 +93,29 @@ const CreateEdition = () => {
       let file = await blobToFile(pdfImage, fileName);
       let content_type = file.type;
       let key = `test/pdf/${file.name}`;
-      let data = { about, edition, date };
+      let data = { about, edition, date,genre,subGenre };
 
-    await dispatch(createEdition(key,
-         content_type, file, data));
+      await dispatch(createEdition(key, content_type, file, data));
     }
   };
 
+  useEffect(() => {
+    if (authState) dispatch(fetchUser(authState.id));
+  }, [authState]);
+  useEffect(() => {
+    let newSubgenres = [];
+
+    genre.forEach(selectedGenre => {
+      const genreObj = userGenres.find(g => g.genre === selectedGenre);
+
+      if (genreObj) {
+        newSubgenres = [...newSubgenres, ...genreObj.subGenres];
+      }
+    });
+
+    newSubgenres = [...new Set(newSubgenres)]
+    setSubGenre(newSubgenres);
+  }, [genre]); 
   return (
     <Box p={2}>
       <Flex mt={4} justifyContent="space-between" alignItems="center" w="65%">
@@ -71,9 +124,6 @@ const CreateEdition = () => {
             Create Edition
           </Text>
         </Flex>
-        <Button fontSize="md" colorScheme="red" onClick={handleSave}>
-          Save
-        </Button>
       </Flex>
       <SimpleGrid columns={{ base: 1, md: 3 }} gap="4">
         <Box overflow="hidden">
@@ -83,7 +133,7 @@ const CreateEdition = () => {
             borderColor="gray.300"
           >
             <Text fontSize="mdl" fontWeight="bold" mt={3} mb={3}>
-              PDF
+              PDF*
             </Text>
           </Box>
           <Box borderBottomWidth="2px" borderColor="gray.300">
@@ -97,7 +147,7 @@ const CreateEdition = () => {
                   justifyContent: "center",
                 }}
               >
-              <PdfViewer pdfUrl={pdfImage} />
+                <PdfViewer pdfUrl={pdfImage} />
               </div>
             )}
             {/* PDF Selection Input */}
@@ -112,7 +162,7 @@ const CreateEdition = () => {
 
           <Box px="2" py="4">
             <Text textTransform="uppercase" fontSize="mdl" fontWeight="bold">
-              About This Edition
+              About This Edition*
             </Text>
             <Box mt="4">
               <Textarea
@@ -120,9 +170,76 @@ const CreateEdition = () => {
                 onChange={(e) => setAbout(e.target.value)}
                 placeholder="Enter details about this edition..."
                 size="sm"
+                minH="xs"
               />
             </Box>
             <br />
+          </Box>
+        </Box>
+        <Box overflow="hidden" minH="500px">
+          <Box
+            borderTopWidth="2px"
+            borderBottomWidth="2px"
+            borderColor="gray.300"
+          >
+            <Text fontSize="mdl" fontWeight="bold" mt={3} mb={3}>
+              PUBLICATION DETAILS
+            </Text>
+          </Box>
+
+          <Box textAlign="left" w="100%">
+            <FormControl mt="4">
+              <FormLabel
+                textTransform="uppercase"
+                fontSize="md"
+                fontWeight="bold"
+                py="2"
+              >
+                Publication
+              </FormLabel>
+              <Input
+                value={channelName}
+                isDisabled
+                size="sm"
+              />
+            </FormControl>
+            <Box mt="4">
+              <FormControl mt="4">
+                <FormLabel
+                  textTransform="uppercase"
+                  fontSize="md"
+                  fontWeight="bold"
+                  py="2"
+                  w="100%"
+                >
+                  Genre*
+                </FormLabel>
+              </FormControl>
+                <MultiSelectDropdown
+                  selectedOptions={genre}
+                  setGenre={setGenre}
+                  options={userGenres}
+                  placeholder={"Select genres"}
+                />
+            </Box>
+            <Box mt="4">
+              <FormControl mt="4">
+                <FormLabel
+                  textTransform="uppercase"
+                  fontSize="md"
+                  fontWeight="bold"
+                  py="2"
+                >
+                  Subgenre
+                </FormLabel>
+                <Textarea
+                value={subGenre?.join(" , ")}
+                size="sm"
+                isDisabled
+                rows='4'
+              />
+              </FormControl>
+            </Box>
           </Box>
         </Box>
         <Box overflow="hidden">
@@ -144,7 +261,7 @@ const CreateEdition = () => {
                 fontWeight="bold"
                 py="2"
               >
-                Edition
+                Edition*
               </FormLabel>
               <Input
                 value={edition}
@@ -160,7 +277,7 @@ const CreateEdition = () => {
                 fontWeight="bold"
                 py="2"
               >
-                Date
+                Date*
               </FormLabel>
               <Input
                 type="date"
@@ -170,6 +287,9 @@ const CreateEdition = () => {
               />
             </FormControl>
           </Box>
+          <Button mt='8' w='full' fontSize="md" colorScheme="red" onClick={handleSave}>
+          Save
+        </Button>
         </Box>
       </SimpleGrid>
     </Box>

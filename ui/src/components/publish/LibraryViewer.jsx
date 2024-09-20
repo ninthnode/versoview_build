@@ -48,52 +48,58 @@ const LibraryViewer = ({ file,handleLibraryImage,onClose }) => {
   const renderPages = () => {
     const pages = [];
     let i = 1;
-
-    while (i <= numPages) {
-        const onePageNumber = i;
+  
+    // Render the first page alone
+    if (i <= numPages) {
       pages.push(
         <Flex
           key={i}
           border="1px solid #333"
           w="fit-content"
-          onClick={() => handlePageClick(onePageNumber, false)}
+          onClick={() => handlePageClick(i, false)}
           cursor="pointer"
+          _hover={{ boxShadow:'lg' }}
         >
-          <Page pageNumber={onePageNumber} />
+          <Page pageNumber={i} />
         </Flex>
       );
       i++;
-
-      if (i <= numPages) {
-        const firstPageNumber = i;
-        const secondPageNumber = i + 1 <= numPages ? i + 1 : null;
-
-        pages.push(
-          <Flex
-            key={firstPageNumber}
-            gap="0"
-            border="1px solid #333"
-            w="fit-content"
-            onClick={() =>
-              handlePageClick(firstPageNumber, secondPageNumber !== null)
-            }
-            cursor="pointer"
-          >
-            <Page pageNumber={firstPageNumber} />
-            {secondPageNumber && <Page pageNumber={secondPageNumber} />}
-          </Flex>
-        );
-        i += 2;
-      }
     }
-
+  
+    // Render the rest in pairs
+    while (i <= numPages) {
+      const firstPageNumber = i;
+      const secondPageNumber = i + 1 <= numPages ? i + 1 : null;
+  
+      pages.push(
+        <Flex
+          key={firstPageNumber}
+          gap="0"
+          border="1px solid #333"
+          w="fit-content"
+          onClick={() =>
+            handlePageClick(firstPageNumber, secondPageNumber !== null)
+          }
+          cursor="pointer"
+          _hover={{ boxShadow:'lg' }}
+        >
+          <Page pageNumber={firstPageNumber} />
+          {secondPageNumber && <Page pageNumber={secondPageNumber} />}
+        </Flex>
+      );
+  
+      // If there was a second page in the pair, increment by 2; otherwise, just increment by 1
+      i += secondPageNumber ? 2 : 1;
+    }
+  
     return pages;
   };
+  
 
   return (
     <>
       <Document file={file} onLoadSuccess={onDocumentLoadSuccess}>
-        <Flex gap="4">{renderPages()}</Flex>
+        <Flex gap="4" wrap="wrap" justify='center' mb='4'>{renderPages()}</Flex>
       </Document>
 
       {/* Display captured images below */}

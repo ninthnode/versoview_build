@@ -23,10 +23,8 @@ import { MdLogout } from "react-icons/md";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchUser, updateUser } from "@/redux/profile/actions";
 import { deletePost } from "@/redux/posts/postActions";
-import dynamic from "next/dynamic";
 import UploadImage from "@/app/(loggedinroutes)/profile/UploadImage";
 import ChannelName from "./channel-name";
-import ShareChannel from "./share-channel";
 import Publications from "./publications";
 import RewardsList from "./rewardsList";
 import genres from "@/static-data/genres";
@@ -147,26 +145,19 @@ function Profile() {
   };
   
   useEffect(() => {
-    // Initialize a new array for subgenres
     let newSubgenres = [];
 
-    // Iterate over the selected genres
     genre.forEach(selectedGenre => {
-      // Find the genre in the genres array
       const genreObj = genres.find(g => g.genre === selectedGenre);
 
-      // If the genre is found, add its subgenres to the newSubgenres array
       if (genreObj) {
         newSubgenres = [...newSubgenres, ...genreObj.subGenres];
       }
     });
 
-    // Remove duplicates from newSubgenres array
     newSubgenres = [...new Set(newSubgenres)]
-    // Set the new subgenre array
     setSubGenre(newSubgenres);
   }, [genre]); 
-  
   return (
     user && (
       <Box bg="#F5F5F5" ml={{ base: "0", sm: "4" }} mb="60px" maxW="xl">

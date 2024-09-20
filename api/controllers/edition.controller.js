@@ -11,6 +11,8 @@ module.exports.createEdition = asyncHandler(async (req, res) => {
         editionDescription: data.about,
         editionDate: data.date,
         pdfUrl: data.pdfUrl,
+        genre: data.genre,
+        subGenre: data.subGenre,
       };
       const newEdition = new Edition(editionData);
       await newEdition.save();

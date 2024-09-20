@@ -206,7 +206,7 @@ module.exports.getPostById = asyncHandler(async (req, res) => {
     const mainuserId = req.user._id;
     await addRecentlyViewedPost(mainuserId, postId);
     // Fetch post data
-    const postData = await Post.findOne({ _id: postId });
+    const postData = await Post.findOne({ _id: postId }).populate("editionId");
     if (!postData) {
       console.log(`Post not found for ID: ${postId}`);
       return res.status(404).json({ message: "Post not found" });

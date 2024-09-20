@@ -52,6 +52,10 @@ import DOMPurify from "dompurify";
 import {getExcerptText} from "@/app/utils/GetExcerpt";
 import HighlighterTag from '@/components/posts/HighlighterTag/core';
 import Loader from "@/components/Loader";
+import dynamic from "next/dynamic";
+const PdfFlipBookModal = dynamic(() => import("@/components/posts/PdfFlipBookModal"), {
+  ssr: false,
+});
 function SinglePost({
   params,
   postState,
@@ -130,7 +134,7 @@ function SinglePost({
 
   return (
     <Box maxW="2xl">
-    {!postState.post&&<Loader/>}
+      {!postState.post && <Loader />}
       {postState.post ? (
         <>
           <Card
@@ -140,8 +144,8 @@ function SinglePost({
             style={{ "--card-shadow": "transparent" }}
           >
             <CardHeader py={2} px="0">
-                <Flex w="100%" justifyContent="space-between" alignItems="center">
-                  <Flex alignItems='center' w={{base:'220px',sm:'100%'}}>
+              <Flex w="100%" justifyContent="space-between" alignItems="center">
+                <Flex alignItems="center" w={{ base: "220px", sm: "100%" }}>
                   <Link href={`/channel/${postState.channel._id}`}>
                     <Avatar
                       size="sm"
@@ -149,39 +153,41 @@ function SinglePost({
                       src={postState.channel.channelIconImageUrl}
                     />
                   </Link>
-                    <Link href={`/channel/${postState.channel._id}`}>
-                      <Text ml='2' fontWeight="semibold" fontSize="md">
-                        <Tooltip
-                          label={postState.channel.channelName}
-                          aria-label="A tooltip"
-                        >
-                          {getExcerptText(postState.channel.channelName, 45)}
-                        </Tooltip>
-                      </Text>
-                    </Link>
-                  </Flex>
-                  <Flex>
-                  <PostMenu
-                  url={`${process.env.NEXT_PUBLIC_FRONTEND_URL}/post/${postState.post._id}`}
-                  title={postState.post.header}
-                />
-                <IconButton
-                  variant="nostyle"
-                  aria-label="See menu"
-                  fontSize="lg"
-                  justifyContent="flex-end"
-                  isDisabled={!isAuthenticated}
-                  icon={
-                    !postState.isBookmarked ? (
-                      <CiBookmark style={{ margin: -5 }} />
-                    ) : (
-                      <BookmarkFilled color="green" style={{ margin: -5 }} />
-                    )
-                  }
-                  onClick={() => submitBookmarkPost("post", postState.post._id)}
-                />
-                  </Flex>
+                  <Link href={`/channel/${postState.channel._id}`}>
+                    <Text ml="2" fontWeight="semibold" fontSize="md">
+                      <Tooltip
+                        label={postState.channel.channelName}
+                        aria-label="A tooltip"
+                      >
+                        {getExcerptText(postState.channel.channelName, 45)}
+                      </Tooltip>
+                    </Text>
+                  </Link>
                 </Flex>
+                <Flex>
+                  <PostMenu
+                    url={`${process.env.NEXT_PUBLIC_FRONTEND_URL}/post/${postState.post._id}`}
+                    title={postState.post.header}
+                  />
+                  <IconButton
+                    variant="nostyle"
+                    aria-label="See menu"
+                    fontSize="lg"
+                    justifyContent="flex-end"
+                    isDisabled={!isAuthenticated}
+                    icon={
+                      !postState.isBookmarked ? (
+                        <CiBookmark style={{ margin: -5 }} />
+                      ) : (
+                        <BookmarkFilled color="green" style={{ margin: -5 }} />
+                      )
+                    }
+                    onClick={() =>
+                      submitBookmarkPost("post", postState.post._id)
+                    }
+                  />
+                </Flex>
+              </Flex>
             </CardHeader>
             <Image
               border="1px solid lightgray"
@@ -192,22 +198,44 @@ function SinglePost({
               alt={postState.post.header}
             />
             <CardBody pt="0" px="0">
-              <Text
-                fontSize="sm"
-                py="2"
-                display="flex"
-                gap="10px"
-                alignItems="center"
-                color="textlight"
-              >
-                {postState.post.section} - {postState.post.subSection} •{" "}
-                {formatDate(postState.post.createdAt)} • {postState.readingTime}{" "}
-                read •{" "}
-                <Flex cursor="pointer">
-                  <Image src="../assets/chat-icon.png" h="1.2rem" w="1.4rem" />
-                  <Text ml="1">0</Text>
+              <Flex py="2" w="100%" justify="space-between">
+                <Flex
+                  w="100%"
+                  justify="flex-start"
+                  alignItems="flex-start"
+                  flexWrap="nowrap"
+                >
+                  <Text
+                    color="textlight"
+                    fontSize="sm"
+                    overflow="hidden"
+                    textOverflow="ellipsis"
+                    flexShrink={1}
+                  >
+                    {postState.post.section} &bull; {postState.post.subSection}{" "}
+                    &bull; {formatDate(postState.post.createdAt)} &bull;{" "}
+                    {postState.readingTime} read
+                  </Text>
+                  <Flex alignItems="center" mx="2" flexShrink={0}>
+                    <Image
+                      src="../assets/chat-icon.png"
+                      h="1.2rem"
+                      w="1.4rem"
+                    />
+                    <Text color="textlight" fontSize="sm" ml="1">
+                      0
+                    </Text>
+                  </Flex>
                 </Flex>
-              </Text>
+
+                <Box>
+                  {postState.post.editionId?.pdfUrl && (
+                    <PdfFlipBookModal
+                      pdfFile={postState.post.editionId.pdfUrl}
+                    />
+                  )}
+                </Box>
+              </Flex>
 
               <Divider />
               <Flex py="1" gap={1}>
@@ -278,11 +306,11 @@ function SinglePost({
               </Flex>
               <Divider />
               <div
-                // onMouseUp={handleSelection}
-                // onTouchStart={handleSelection}
-                // onTouchEnd={handleSelection}
-                // id="selection-div"
-                // onClick={() => handleSelection}
+              // onMouseUp={handleSelection}
+              // onTouchStart={handleSelection}
+              // onTouchEnd={handleSelection}
+              // id="selection-div"
+              // onClick={() => handleSelection}
               >
                 {/* <Text mt="2" w="fit-content" p="1" fontSize="sm">
                   By {postState.user.channelName}

@@ -30,8 +30,7 @@ const PdfFlipBookModal = ({ pdfFile }) => {
     <>
       {/* <Button onClick={onOpen}>Open PDF</Button> */}
       <Flex cursor="pointer" onClick={onOpen}>
-            <Image src="../assets/chat-icon.png" h="1.2rem" w="1.4rem" />
-            <Text ml="1">0</Text>
+            <Image src="../assets/book.svg" h="1.2rem" w="1.4rem" />
           </Flex>
       <Modal isOpen={isOpen} onClose={onClose} size="6xl" height="100%">
         <ModalOverlay />

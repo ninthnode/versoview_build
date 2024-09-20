@@ -48,7 +48,7 @@ const PdfCards = ({ setIsCreateEditPost,setSelectedEdition, editions, getAllEdit
             boxShadow="md"
             pos="relative"
           >
-            <Flex overflow="hidden" p={2} maxW="sm" minH="200px">
+            <Flex gap='2' overflow="hidden" p={2} maxW="sm" minH="200px">
             <div
                 className="pdf-container"
                 style={{

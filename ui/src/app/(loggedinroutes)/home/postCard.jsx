@@ -58,7 +58,10 @@ const PostCard = ({
                   label={post.channelId?.channelName}
                   aria-label="A tooltip"
                 >
-                  {getExcerptText(post.channelId?.channelName,deviceType=='phone'? 30:50)}
+                  {getExcerptText(
+                    post.channelId?.channelName,
+                    deviceType == "phone" ? 30 : 50
+                  )}
                 </Tooltip>
               </Text>
             </Link>
@@ -118,9 +121,29 @@ const PostCard = ({
           alignItems="center"
           color="textlight"
         >
-          {post.section} - {post.subSection} • {formatDate(post.createdAt)} •{" "}
-          {post.readingTime} read •{" "}
-          {post.editionId?.pdfUrl&&<PdfFlipBookModal pdfFile={post.editionId.pdfUrl}/>}
+          <Flex w="100%" justify="space-between">
+            <Flex
+              w="100%"
+              justify="flex-start"
+              alignItems="flex-start"
+              flexWrap="nowrap"
+            >
+              <Text overflow="hidden" textOverflow="ellipsis" flexShrink={1}>
+                {post.section} &bull; {post.subSection} &bull;{" "}
+                {formatDate(post.createdAt)} &bull; {post.readingTime} read
+              </Text>
+              <Flex alignItems="center" mx="2" flexShrink={0}>
+                <Image src="../assets/chat-icon.png" h="1.2rem" w="1.4rem" />
+                <Text ml="1">0</Text>
+              </Flex>
+            </Flex>
+
+            <Box>
+              {post.editionId?.pdfUrl && (
+                <PdfFlipBookModal pdfFile={post.editionId.pdfUrl} />
+              )}
+            </Box>
+          </Flex>
           {/* <Button
             variant="ghost"
             colorScheme="gray"

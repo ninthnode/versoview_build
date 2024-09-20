@@ -207,7 +207,7 @@ const PublishPost = () => {
     if (!header || !selectedSection || !selectedSubSection) {
       toast({
         title: "Incomplete Form",
-        description: "Please fill in all mendatory * fields.",
+        description: "Please fill in all mandatory * fields.",
         status: "warning",
         duration: 5000,
         isClosable: true,
