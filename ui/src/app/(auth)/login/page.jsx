@@ -76,9 +76,9 @@ function Login({ loginUser, error }) {
                   </Button>
                 </>
               )}
-              <Flex alignItems="center" mb={4} mt={4}>
-                <Image src={"/assets/logo.svg"} alt="logo" mr={2} />
-                <Heading size="lg" as="h6" fontWeight="bold" textAlign="left">
+              <Flex alignItems="flex-start" mb={4} mt={4}>
+                <Image src={"/assets/logo.svg"} alt="logo" mr={2} mt={2} h='1.6rem'/>
+                <Heading size="md" as="h4" fontWeight="bold" textAlign="left">
                   {showForm?"Login with Email":"Login"}
                 </Heading>
               </Flex>

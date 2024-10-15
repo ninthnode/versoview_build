@@ -4,7 +4,9 @@ import {
     GET_EDITIONS_REQUEST,
     GET_EDITIONS_SUCCESS,
     GET_SINGLE_EDITION_REQUEST,
-    GET_SINGLE_EDITION_SUCCESS
+    GET_SINGLE_EDITION_SUCCESS,
+    GET_USER_EDITION_REQUEST,
+    GET_USER_EDITION_SUCCESS
   } from './publishTypes';
   
   const initialState = {
@@ -14,6 +16,7 @@ import {
     loading: false,
     error: null,
     success: false,
+    userEditions: {},
   };
   
  const publishReducer = (state = initialState, action) => {
@@ -21,6 +24,7 @@ import {
       case CREATE_EDITION_REQUEST:
       case GET_EDITIONS_REQUEST:
       case GET_SINGLE_EDITION_REQUEST:
+      case  GET_USER_EDITION_REQUEST:
         return {
           ...state,
           loading: true,
@@ -54,6 +58,12 @@ import {
           success: true,
           singleEdition: action.payload.editionData,
           singleEditionPosts: action.payload.postData,
+        };
+      case GET_USER_EDITION_SUCCESS:
+        return {
+          ...state,
+          loading: false,
+          userEditions: action.payload,
         };
       default:
         return state;

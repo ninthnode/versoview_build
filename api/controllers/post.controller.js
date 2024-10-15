@@ -50,7 +50,17 @@ module.exports.create = asyncHandler(async (req, res) => {
 
     const newPost = new Post(postData);
     newPost.readBy.push(userId);
-    await newPost.save();
+    const savedPost =await newPost.save();
+
+    if (req.body.editionId) {
+      const edition = await Edition.findById(req.body.editionId);
+      
+      if (edition) {
+        edition.postId.push(savedPost._id);
+        await edition.save();
+        console.log('Post ID added to edition:', edition);
+      }
+    }
 
     // Update userType to 'publisher'
     await User.findByIdAndUpdate(userId, { userType: "publisher" });

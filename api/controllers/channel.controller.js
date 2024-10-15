@@ -3,6 +3,7 @@ const { Channel } = require("../models/channel.model");
 const { Post } = require("../models/post.model");
 const { Follow } = require("../models/follow.model");
 const { User } = require("../models/user.model");
+const { Edition } = require("../models/edition.model");
 
 // Create Channel
 module.exports.create = asyncHandler(async (req, res) => {
@@ -112,7 +113,10 @@ module.exports.getAllChannelLoggedoutUser = asyncHandler(async (req, res) => {
 module.exports.getChannelById = asyncHandler(async (req, res) => {
 	try {
 		const channelId = req.params._id;
-		const channelData = await Channel.findOne({ _id: channelId });
+		const channelData = await Channel.findOne({ _id: channelId }).populate({
+			path: 'userId',
+			select: 'genre'
+		  });
 
 		res.status(200);
 		res.json({ message: "Success", data: channelData });
@@ -404,3 +408,24 @@ module.exports.unpinChannel = asyncHandler(async (req, res) => {
 		res.status(500).json({ error: "Internal Server Error" });
 	}
 });
+
+
+module.exports.getChannelByEditionId = asyncHandler(async (req, res) => {
+    try {
+      const editionId = req.params._id;
+      const editionData = await Edition.findOne({ _id: editionId });
+      const channelData = await Channel.findOne({ userId: editionData.userId }).populate({
+		path: 'userId',
+		select: 'genre'
+	  });
+      if (!editionData) {
+        console.log(`edition not found for ID: ${editionId}`);
+        return res.status(404).json({ message: "edition not found" });
+      }
+  
+      res.status(200).json({ message: "Success", data: {channelData,editionData} });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  });

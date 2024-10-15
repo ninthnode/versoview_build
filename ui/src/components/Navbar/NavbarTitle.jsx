@@ -23,15 +23,11 @@ const NavbarTitle = ({ navtitle, navicon }) => {
 
   const getRouteName = (path) => {
     for (const route of RoutesList) {
-      // Check If Includes Path In Routes
-      // if (route.url === path || path.startsWith(route.url)) {
-      //   return route.name;
-      // }
-      if (route.url === path) {
+      if(!route.showTitle) return null;
+      if (route.url === path || path.startsWith(route.url)) {
         return route.name;
       }
     }
-    return null;
   };
   return (
     <nav>

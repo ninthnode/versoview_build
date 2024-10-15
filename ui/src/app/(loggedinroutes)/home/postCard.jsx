@@ -29,6 +29,7 @@ const PdfFlipBookModal = dynamic(() => import("@/components/posts/PdfFlipBookMod
 });
 const PostCard = ({
   post,
+  title,
   small = false,
   showBookmarkButton = true,
   submitBookmark,
@@ -133,14 +134,14 @@ const PostCard = ({
                 {formatDate(post.createdAt)} &bull; {post.readingTime} read
               </Text>
               <Flex alignItems="center" mx="2" flexShrink={0}>
-                <Image src="../assets/chat-icon.png" h="1.2rem" w="1.4rem" />
+                <Image src="/assets/chat-icon.png" h="1.2rem" w="1.4rem" />
                 <Text ml="1">0</Text>
               </Flex>
             </Flex>
 
             <Box>
               {post.editionId?.pdfUrl && (
-                <PdfFlipBookModal pdfFile={post.editionId.pdfUrl} />
+                <PdfFlipBookModal title={post.editionId?.editionText+" " +post.editionId?.editionDate } pdfFile={post.editionId.pdfUrl} />
               )}
             </Box>
           </Flex>
@@ -167,6 +168,15 @@ const PostCard = ({
           >
             {post.header}
           </Heading>
+          {post.standFirst&&<Heading
+            py="1"
+            mb="1"
+            fontWeight="bold"
+            fontSize="1.4rem"
+            lineHeight="1.5rem"
+          >
+            {post.standFirst}
+          </Heading>}
         </Link>
         <Text
           fontSize="md"

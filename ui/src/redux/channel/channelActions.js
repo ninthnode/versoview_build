@@ -40,6 +40,25 @@ export const fetchChannel = (id) => async (dispatch) => {
   }
 };
 
+export const fetchChannelByEditionId = (id) => async (dispatch) => {
+  dispatch({ type: FETCH_CHANNEL_REQUEST });
+  try {
+    const response = await axios.get(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/channel/getChannelByEditionId/${id}`,
+      {
+        headers: {
+          authorization: `Bearer ${localStorage
+            .getItem("token")
+            .replace(/"/g, "")}`,
+        },
+      }
+    );
+    dispatch({ type: FETCH_CHANNEL_SUCCESS, payload: response.data.data });
+  } catch (error) {
+    dispatch({ type: FETCH_CHANNEL_FAILURE, error });
+  }
+};
+
 export const fetchPosts = (channelId) => async (dispatch) => {
   dispatch({ type: FETCH_POSTS_REQUEST });
   try {

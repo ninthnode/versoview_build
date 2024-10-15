@@ -1,6 +1,6 @@
 /* styles.css */
 .react-pdf__Page__canvas {
-  width: 100% !important; /* Set desired width */
-  height: 200px !important; /* Set desired height */
+  width: 100% !important;
+  height: 200px !important;
   object-fit: contain;
 }

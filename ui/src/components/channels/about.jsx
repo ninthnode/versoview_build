@@ -115,7 +115,7 @@ const About = ({
         </Flex>
       </Flex>
 
-      <Box flex="1">
+      <Flex flexDir='column' justifyContent='space-between'>
         <Flex justifyContent="space-between" alignItems="flex-start" mb={2}>
           <Flex flexDirection="column">
             <Text fontSize={"lg"} fontWeight="bold" lineHeight='2rem'>
@@ -156,7 +156,7 @@ const About = ({
           </Flex>
           <Flex fontSize="sm" flexDirection="column" alignItems="left">
             <Text fontWeight="bold" lineHeight={1}>
-              0
+              7
             </Text>
             <Text fontSize="12px">Editions</Text>
           </Flex>
@@ -173,7 +173,7 @@ const About = ({
             <Text fontSize="12px">Followers</Text>
           </Flex>
         </Flex>
-      </Box>
+      </Flex>
       </>
     }
      

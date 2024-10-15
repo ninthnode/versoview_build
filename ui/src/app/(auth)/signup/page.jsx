@@ -43,16 +43,16 @@ function Signup({ signupUser,error }) {
 
   return (
     <Box bg="white" w="100%">
-      <Flex align="center" justify="center">
+      <Flex align="center" justifyContent="center">
         <Box
-          minW={{ base: "380px", lg: "380px" }}
+          w={{ base: "380px", lg: "380px" }}
           minH="700px"
           p={{ base: 4, md: 8 }}
           bg="white"
         >
           <Flex alignItems="center" mb={4} mt={4}>
-            <Image src={"/assets/logo.svg"} alt="logo" mr={2} />
-            <Heading size='lg' as="h6" fontWeight="bold" textAlign="left">
+            <Image src={"/assets/logo.svg"} alt="logo"  mr={2} mt={2} h='1.6rem'/>
+            <Heading size='md' as="h6" fontWeight="bold" textAlign="left">
               Create Account
             </Heading>
           </Flex>

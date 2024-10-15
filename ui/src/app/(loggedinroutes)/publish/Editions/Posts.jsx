@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import { deletePost } from "@/redux/posts/postActions";
 import useConfirmationDialog from "@/components/useConfirmationDialog"
 
-function Posts({setIsCreateEditPost,setSelectedEdition}) {
+function Posts() {
   const dispatch = useDispatch();
   const userPosts = useSelector((s) => s.post.posts);
   const { push } = useRouter();

@@ -17,6 +17,7 @@ const {
 	followersList,
 	followingList,
 	doesChannelExist,
+	getChannelByEditionId
 } = require("../../controllers/channel.controller");
 const { protectUser } = require("../../middlewares/authMiddleware");
 const { upload } = require("../../config/multerUpload");
@@ -31,6 +32,7 @@ router.get("/getChannelByName", protectUser, getChannelByName);
 router.get("/doesChannelExist/:channelName", doesChannelExist);
 
 router.get("/getChannel/:_id",protectUser, getChannelById);
+router.get("/getChannelByEditionId/:_id",protectUser, getChannelByEditionId);
 router.get("/getChannelByUserId",protectUser, getChannelByUserId);
 router.put("/updateChannel/:_id", protectUser, updateChannel);
 router.delete("/deleteChannel/:_id", protectUser, deleteChannel);

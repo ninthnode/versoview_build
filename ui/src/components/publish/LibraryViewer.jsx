@@ -51,12 +51,13 @@ const LibraryViewer = ({ file,handleLibraryImage,onClose }) => {
   
     // Render the first page alone
     if (i <= numPages) {
+      const PageNumber = i;
       pages.push(
         <Flex
           key={i}
           border="1px solid #333"
           w="fit-content"
-          onClick={() => handlePageClick(i, false)}
+          onClick={() => handlePageClick(PageNumber, false)}
           cursor="pointer"
           _hover={{ boxShadow:'lg' }}
         >

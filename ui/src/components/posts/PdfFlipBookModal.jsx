@@ -18,7 +18,7 @@ import {
 } from "@chakra-ui/react";
 import { useBreakpointValue } from "@chakra-ui/react";
 import './style.css';
-const PdfFlipBookModal = ({ pdfFile }) => {
+const PdfFlipBookModal = ({ pdfFile,title }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [numPages, setNumPages] = useState(null);
 
@@ -35,7 +35,7 @@ const PdfFlipBookModal = ({ pdfFile }) => {
       <Modal isOpen={isOpen} onClose={onClose} size="6xl" height="100%">
         <ModalOverlay />
         <ModalContent height="fit-content" m='0'>
-          <ModalHeader mt='2'>PDF Edition</ModalHeader>
+          <ModalHeader mt='2'>{title}</ModalHeader>
           <ModalCloseButton />
           <ModalBody height="100%">
             <Document file={pdfFile} onLoadSuccess={onDocumentLoadSuccess}>

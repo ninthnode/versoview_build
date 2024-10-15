@@ -9,6 +9,9 @@ import {
   fetchFollowers,
   fetchFollowings,
 } from "@/redux/channel/channelActions";
+import {
+  getEditionsByUserID
+} from "@/redux/publish/publishActions";
 import { setNavTitle } from "@/redux/navbar/action";
 import { addRemoveBookmarks } from "@/redux/bookmarks/bookmarkAction";
 
@@ -27,28 +30,40 @@ const Page = ({
   setNavTitle,
   user,
   isPostLoading,
-  isChannelLoading
+  isChannelLoading,
+  getEditionsByUserID,
+  userEditions
 }) => {
   const { id } = params;
 
   const [postList, setPostList] = useState([]);
 
+  const options = {
+    posts: "Posts",
+    editions: "Editions",
+  };
+  
+  const [view, setView] = useState(options.posts);
+
   useEffect(() => {
     if(user){
       fetchChannel(id);
-      fetchPosts(id);
     }
   }, [id,user]);
   useEffect(() => {
-    if (channelData) {
-      fetchFollowings(channelData.userId);
+    if (channelData&& user) {
+      fetchFollowings(channelData.userId._id);
       fetchFollowers(id);
       setNavTitle(
         channelData.channelName,
         channelData.channelIconImageUrl 
       );
+      if(view==options.posts)
+        fetchPosts(id);
+      if(view==options.editions)
+        getEditionsByUserID(channelData.userId._id);
     }
-  }, [channelData]);
+  }, [channelData,user,view]);
 
   const submitBookmarkPost = async (type, postId) => {
     const res = await addRemoveBookmarks(type, postId);
@@ -63,6 +78,8 @@ const Page = ({
   useEffect(() => {
     if (posts && posts.data) setPostList(posts.data);
   }, [posts]);
+
+
   return (
     <Box>
         <Channel
@@ -75,6 +92,10 @@ const Page = ({
           channelId={id}
           isPostLoading={isPostLoading}
           isChannelLoading={isChannelLoading}
+          options={options}
+          view={view}
+          setView={setView}
+          userEditions={userEditions}
         />
     </Box>
   );
@@ -88,6 +109,7 @@ const mapStateToProps = (state) => ({
   isChannelLoading: state.channel.isChannelLoading,
   isPostLoading: state.channel.isPostLoading,
   user: state.auth.user?.user,
+  userEditions: state.publish.userEditions
 });
 
 const mapDispatchToProps = {
@@ -97,6 +119,7 @@ const mapDispatchToProps = {
   fetchFollowings,
   addRemoveBookmarks,
   setNavTitle,
+  getEditionsByUserID
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Page);

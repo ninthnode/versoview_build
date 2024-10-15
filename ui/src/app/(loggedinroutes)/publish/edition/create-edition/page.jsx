@@ -152,12 +152,15 @@ const CreateEdition = () => {
             )}
             {/* PDF Selection Input */}
             <Input
-              p={2}
               type="file"
+              display="none"
+              id="file-upload"
               accept="application/pdf"
               onChange={handlePdfSelect}
-              mt={2}
             />
+            <label htmlFor="file-upload">
+              <Button as="span">Choose New File</Button>
+            </label>
           </Box>
 
           <Box px="2" py="4">
@@ -171,6 +174,7 @@ const CreateEdition = () => {
                 placeholder="Enter details about this edition..."
                 size="sm"
                 minH="xs"
+                maxLength={700}
               />
             </Box>
             <br />
@@ -197,11 +201,7 @@ const CreateEdition = () => {
               >
                 Publication
               </FormLabel>
-              <Input
-                value={channelName}
-                isDisabled
-                size="sm"
-              />
+              <Input value={channelName} isDisabled size="sm" />
             </FormControl>
             <Box mt="4">
               <FormControl mt="4">
@@ -215,12 +215,12 @@ const CreateEdition = () => {
                   Genre*
                 </FormLabel>
               </FormControl>
-                <MultiSelectDropdown
-                  selectedOptions={genre}
-                  setGenre={setGenre}
-                  options={userGenres}
-                  placeholder={"Select genres"}
-                />
+              <MultiSelectDropdown
+                selectedOptions={genre}
+                setGenre={setGenre}
+                options={userGenres}
+                placeholder={"Select genres"}
+              />
             </Box>
             <Box mt="4">
               <FormControl mt="4">
@@ -233,11 +233,11 @@ const CreateEdition = () => {
                   Subgenre
                 </FormLabel>
                 <Textarea
-                value={subGenre?.join(" , ")}
-                size="sm"
-                isDisabled
-                rows='4'
-              />
+                  value={subGenre?.join(" , ")}
+                  size="sm"
+                  isDisabled
+                  rows="4"
+                />
               </FormControl>
             </Box>
           </Box>
@@ -268,6 +268,7 @@ const CreateEdition = () => {
                 onChange={(e) => setEdition(e.target.value)}
                 placeholder="Enter the edition name"
                 size="sm"
+                maxLength={80}
               />
             </FormControl>
             <FormControl mt={4}>
@@ -287,9 +288,15 @@ const CreateEdition = () => {
               />
             </FormControl>
           </Box>
-          <Button mt='8' w='full' fontSize="md" colorScheme="red" onClick={handleSave}>
-          Save
-        </Button>
+          <Button
+            mt="8"
+            w="full"
+            fontSize="md"
+            colorScheme="red"
+            onClick={handleSave}
+          >
+            Save
+          </Button>
         </Box>
       </SimpleGrid>
     </Box>

@@ -5,7 +5,9 @@ import {
     GET_EDITIONS_REQUEST,
     GET_EDITIONS_SUCCESS,
     GET_SINGLE_EDITION_REQUEST,
-    GET_SINGLE_EDITION_SUCCESS
+    GET_SINGLE_EDITION_SUCCESS,
+    GET_USER_EDITION_REQUEST,
+    GET_USER_EDITION_SUCCESS
   } from './publishTypes';
   import { toast } from 'react-toastify';
 
@@ -149,4 +151,35 @@ import {
       console.log(error)
     }
   };
+  export const getEditionsByUserID = (userId) => async (dispatch) => {
+    try {
+      dispatch({ type: GET_USER_EDITION_REQUEST });
+      console.log(userId)
+     const response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/editions/getEditionsByUserId/${userId}`);
+      dispatch({
+        type: GET_USER_EDITION_SUCCESS,
+        payload: response.data.data,
+      });
+    } catch (error) {
+      console.log(error)
+    }
+  };
   
+  export const deleteEdition = (editionId) => {
+    return async (dispatch) => {
+      try {
+        const token = localStorage.getItem("token").replaceAll('"', "");
+  
+        const response = await axios.delete(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/editions/deleteEdition/${editionId}`,{ 
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        toast(response.data.message,{
+          autoClose: 3000,
+          type:'success'
+        })
+      } catch (error) {
+       }
+    };
+  };
