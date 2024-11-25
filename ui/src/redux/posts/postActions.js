@@ -77,7 +77,6 @@ export const fetchRecentlyViewedPosts = () => {
 };
 export const clearPost = () => {
   return async (dispatch,getState) => {
-    console.log('ss')
   dispatch({
     type:CLEAR_SINGLE_POST
   });
@@ -119,7 +118,7 @@ export const getPostByIdEditData = (postId) => {
       let response
       if (auth.isAuthenticated){
         const token = localStorage.getItem("token").replaceAll('"', "");
-       response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/getPost/${postId}`, { 
+       response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/getPostById/${postId}`, { 
         headers: {
         Authorization: `Bearer ${token}`,
         }

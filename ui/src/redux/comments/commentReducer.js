@@ -6,6 +6,8 @@ import {
   GET_COMMENT_AND_REPLIES_COUNT,
   OPEN_COMMENTS_MODAL,
   CLOSE_COMMENTS_MODAL,
+  NEXT_PAGE,
+  PREVIOUS_PAGE
 } from "./commentType";
 
 const initialState = {
@@ -14,7 +16,11 @@ const initialState = {
   error: "",
   postTotalComments: 0,
   singleCommentReplies: {},
-  isModalCommentsOpen:false
+  pageNumber: 0,
+  pagesData:{},
+  commentStateUpdateCount:0,
+  isModalCommentsOpen:false,
+  modalComment:{},
 };
 
 const commentsReducer = (state = initialState, action) => {
@@ -41,7 +47,8 @@ const commentsReducer = (state = initialState, action) => {
     case GET_COMMENT_REPLIES_SUCCESS:
       return {
         ...state,
-        singleCommentReplies: action.payload,
+        comments: action.payload,
+        commentStateUpdateCount:state.commentStateUpdateCount+1
       };
     case GET_COMMENT_AND_REPLIES_COUNT:
       return {
@@ -52,11 +59,25 @@ const commentsReducer = (state = initialState, action) => {
       return {
         ...state,
         isModalCommentsOpen: true,
+        comments:[action.payload]
       };
     case CLOSE_COMMENTS_MODAL:
       return {
         ...state,
         isModalCommentsOpen: false,
+        comments:[]
+      };
+    case NEXT_PAGE:
+      return {
+        ...state,
+        pagesData: action.payload.arr,
+        pageNumber:action.payload.page
+      };
+    case PREVIOUS_PAGE:
+      return {
+        ...state,
+        // pagesData: action.payload,
+        pageNumber:state.pageNumber-1
       };
     default:
       return state;

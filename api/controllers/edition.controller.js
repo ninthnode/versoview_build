@@ -2,6 +2,7 @@ const asyncHandler = require("express-async-handler");
 const { Post } = require("../models/post.model");
 const { Edition } = require("../models/edition.model");
 const { Channel } = require("../models/channel.model");
+const { Bookmark } = require("../models/bookmark.model");
 
 module.exports.createEdition = asyncHandler(async (req, res) => {
     try {
@@ -48,7 +49,8 @@ module.exports.getEditionById = asyncHandler(async (req, res) => {
   try {
     const editionId = req.params._id;
     const editionData = await Edition.findOne({ _id: editionId });
-    
+    const userId = req.user._id;
+
     if (!editionData) {
       console.log(`Edition not found for ID: ${editionId}`);
       return res.status(404).json({ message: "Edition not found" });
@@ -59,9 +61,17 @@ module.exports.getEditionById = asyncHandler(async (req, res) => {
 
     editionData._doc.channelData = channelData;
 
+    const bookmark = await Bookmark.findOne({
+      userId: userId,
+      editionId: editionId,
+    });
+    let newData = {
+      ...editionData.toObject(),
+      isBookmarked: !!bookmark
+    };
     res.status(200).json({
       message: "Success",
-      data: { editionData, postData }
+      data: { editionData:newData, postData }
     });
   } catch (error) {
     console.error(error);
@@ -73,12 +83,24 @@ module.exports.getEditionsByUserId = asyncHandler(async (req, res) => {
 	try {
 	  const userId = req.params._id;
 	  const editionData = await Edition.find({ userId: userId })
+
+
+
+    const editionWithBookmarkStatus = await Promise.all(
+      editionData.map(async (edition) => {
+        const bookmark = await Bookmark.findOne({ userId, editionId: edition._id });
+        return {
+          ...edition.toObject(),
+          isBookmarked: !!bookmark,
+        };
+      })
+    );
 	  if (!editionData)
 		return res
 		  .status(400)
 		  .json({ message: `No Edition Found` });
   
-	  res.status(200).json({ message: "Success", data: editionData });
+	  res.status(200).json({ message: "Success", data: editionWithBookmarkStatus });
 	} catch (error) {
 	  console.error(error);
 	  res.status(500).json({ error: "Internal Server Error" });

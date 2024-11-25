@@ -20,6 +20,10 @@ const bookmarkSchema = new mongoose.Schema(
 			type: mongoose.Schema.Types.ObjectId,
 			ref: "PostComment",
 		},
+		editionId: {
+			type: mongoose.Schema.Types.ObjectId,
+			ref: "PostComment",
+		},
 	},
 	{
 		timestamps: true,

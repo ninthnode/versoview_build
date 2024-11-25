@@ -15,6 +15,11 @@ const commentSchema = new mongoose.Schema(
 		excerpt: {
 			type: String,
 		},
+		parentId: { type: mongoose.Schema.Types.ObjectId, ref: 'PostComment', default: null },
+		replies: [{
+			type: mongoose.Schema.Types.ObjectId,
+			ref: 'PostComment'
+		}],
 		commentText: {
 			type: String,
 			required: true,

@@ -21,11 +21,11 @@ import {
   FETCH_USER_CHANNEL
 } from "./channelTypes";
 
-export const fetchChannel = (id) => async (dispatch) => {
+export const fetchChannel = (username) => async (dispatch) => {
   dispatch({ type: FETCH_CHANNEL_REQUEST });
   try {
     const response = await axios.get(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/channel/getChannel/${id}`,
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/channel/getChannel/${username}`,
       {
         headers: {
           authorization: `Bearer ${localStorage

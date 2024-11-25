@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use } from "react";
 import {
   Box,
   Button,
@@ -56,6 +56,10 @@ import dynamic from "next/dynamic";
 const PdfFlipBookModal = dynamic(() => import("@/components/posts/PdfFlipBookModal"), {
   ssr: false,
 });
+
+import {
+  fetchPosts as fetchChannelPosts,
+} from "@/redux/channel/channelActions";
 function SinglePost({
   params,
   postState,
@@ -71,7 +75,9 @@ function SinglePost({
   isAuthenticated,
   commentState,
   getCommentByPostId,
-  postTotalComments
+  postTotalComments,
+  fetchChannelPosts,
+  channelPosts
 }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedText, setSelectedText] = useState("");
@@ -132,6 +138,12 @@ function SinglePost({
   }, [])
   
 
+  useEffect(() => {
+    if (postState.post) {
+      fetchChannelPosts(postState.post.channelId);
+    }
+  }, [postState.post]);
+
   return (
     <Box maxW="2xl">
       {!postState.post && <Loader />}
@@ -146,14 +158,14 @@ function SinglePost({
             <CardHeader py={2} px="0">
               <Flex w="100%" justifyContent="space-between" alignItems="center">
                 <Flex alignItems="center" w={{ base: "220px", sm: "100%" }}>
-                  <Link href={`/channel/${postState.channel._id}`}>
+                  <Link href={`/channel/${postState.channel.username}`}>
                     <Avatar
                       size="sm"
                       borderRadius={10}
                       src={postState.channel.channelIconImageUrl}
                     />
                   </Link>
-                  <Link href={`/channel/${postState.channel._id}`}>
+                  <Link href={`/channel/${postState.channel.username}`}>
                     <Text ml="2" fontWeight="semibold" fontSize="md">
                       <Tooltip
                         label={postState.channel.channelName}
@@ -355,14 +367,16 @@ function SinglePost({
                 postTitle={postState.post.header}
                 id={params.id}
                 isOpenCommentModal={isOpenCommentModal}
+                isModalCommentsOpen={isModalCommentsOpen}
                 onToggleCommentModal={onToggleCommentModal}
                 commentText={commentText}
                 handleChangeComment={handleChangeComment}
                 submitComment={submitComment}
                 isAuthenticated={isAuthenticated}
                 getCommentByPostId={getCommentByPostId}
+                postSlug={postState.post.slug}
               />
-              <RelatedArticleList />
+             { channelPosts&&channelPosts.length>0&&<RelatedArticleList channelPosts={channelPosts}/>}
             </CardBody>
           </Card>
 
@@ -409,10 +423,12 @@ const mapStateToProps = (state) => ({
   isModalCommentsOpen: state.comment.isModalCommentsOpen,
   commentState: state.comment.comments,
   postTotalComments: state.comment.postTotalComments,
+  channelPosts: state.channel.posts.data,
 });
 
 const mapDispatchToProps = (dispatch) => ({
   getPostById: (id) => dispatch(getPostById(id)),
+  fetchChannelPosts: (id) => dispatch(fetchChannelPosts(id)),
   clearPost: (id) => dispatch(clearPost(id)),
   getCommentAndRepliesCount: (id) => dispatch(getCommentAndRepliesCount(id)),
   getCommentByPostId: (id) => dispatch(getCommentByPostId(id)),

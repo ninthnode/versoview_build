@@ -10,6 +10,7 @@ import {
     Divider
   } from "@chakra-ui/react";
 import Following from "@/app/(loggedinroutes)/home/following";
+import Chats from "@/app/(loggedinroutes)/Chats/index";
 import { usePathname } from "next/navigation";
 import useDeviceType from "@/components/useDeviceType";
 
@@ -25,8 +26,12 @@ function RightSidebar({userDetails,authVerified,user,fetchUser, followings, fetc
         }
       }, [authVerified,ShowSidebarIf]);
   return user&&ShowSidebarIf && (
-      <Box px={4} mt='4.4rem' w='100%'>
-      <Heading as='h4' fontSize='lg' fontWeight='bold' mb='2'>Following</Heading>
+    <Box px={4} mt='4.4rem' w='100%'>
+      <Heading as='h4' fontSize='lg' fontWeight='bold' mb='2'>Chats</Heading>
+      <Divider/>
+      <Chats/>
+
+      <Heading as='h4' fontSize='lg' fontWeight='bold' mt='4' mb='2'>Following</Heading>
       <Divider/>
       {!userDetails && !followings?.data&&(
         <Spinner color="#333" mt='2'/>

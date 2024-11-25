@@ -8,26 +8,29 @@ const { Follow } = require("../models/follow.model");
 const bcrypt = require("bcryptjs");
 const { sendMail } = require("../config/nodemailer");
 
-const { generateToken,generateRefreshToken } = require("../utils/generateToken");
+const {
+  generateToken,
+  generateRefreshToken,
+} = require("../utils/generateToken");
 
 const v = require("valibot");
 
 const signUpSchema = v.object({
   channelName: v.pipe(
-  v.string(),
-  v.maxLength(32, 'Must be less that 32 characters.')
+    v.string(),
+    v.maxLength(32, "Must be less that 32 characters.")
   ),
   username: v.pipe(
     v.string(),
-    v.maxLength(15, 'Must be less that 15 characters.'),
+    v.maxLength(15, "Must be less that 15 characters."),
     v.regex(/^[a-z0-9]*$/, "Must contain only lowercase letters and no spaces")
-    ),
+  ),
   email: v.pipe(v.string(), v.email()),
   password: v.pipe(
     v.string(),
-    v.minLength(8, 'Must be atleast 8 characters.'),
+    v.minLength(8, "Must be atleast 8 characters."),
     v.regex(/[A-Z]+/, "Must contain upper case characters"),
-    v.regex(/[a-z]+/, "Must contain lowercase letter"),
+    v.regex(/[a-z]+/, "Must contain lowercase letter")
   ),
   genre: v.any(),
 });
@@ -46,7 +49,10 @@ module.exports.signUp = asyncHandler(async (req, res) => {
   if (!parsed.success) {
     return res.status(400).json({
       status: 400,
-      message: parsed.issues.map((i) => ({text:i.message,type:i.path[0].key})),
+      message: parsed.issues.map((i) => ({
+        text: i.message,
+        type: i.path[0].key,
+      })),
     });
   }
   const { channelName, username, email, password, genre } = parsed.output;
@@ -57,13 +63,19 @@ module.exports.signUp = asyncHandler(async (req, res) => {
   if (isUserExist) {
     return res
       .status(403)
-      .json({ status: 403, message: {text:"User Email already exists",type:'email'} });
+      .json({
+        status: 403,
+        message: { text: "User Email already exists", type: "email" },
+      });
   }
 
   if (isChannelExist) {
     return res
       .status(403)
-      .json({ status: 403, message: {text:"Channel @username already exists",type:'username'}});
+      .json({
+        status: 403,
+        message: { text: "Channel @username already exists", type: "username" },
+      });
   }
 
   // Hash password
@@ -80,7 +92,9 @@ module.exports.signUp = asyncHandler(async (req, res) => {
     password: hashedPassword,
     genre: req.body.genre || [],
     subGenre: [],
-    profileImageUrl:`${req.protocol}://${req.get('host')}/images/default-icon.svg`
+    profileImageUrl: `${req.protocol}://${req.get(
+      "host"
+    )}/images/default-icon.svg`,
   });
 
   // create new channel
@@ -98,7 +112,9 @@ module.exports.signUp = asyncHandler(async (req, res) => {
     phone: req.body.phone || "",
     location: req.body.location || "",
     backgroundColor: req.body.backgroundColor || "",
-    channelIconImageUrl: req.body.location || `${req.protocol}://${req.get('host')}/images/default-icon.svg`,
+    channelIconImageUrl:
+      req.body.location ||
+      `${req.protocol}://${req.get("host")}/images/default-icon.svg`,
     status: req.body.status,
   };
 
@@ -109,7 +125,7 @@ module.exports.signUp = asyncHandler(async (req, res) => {
   const refreshtoken = await generateRefreshToken(user._id, user.username);
   res.status(201).json({
     status: 200,
-    data: { user, token,refreshtoken },
+    data: { user, token, refreshtoken },
     message: "User signed up successfully",
   });
 });
@@ -122,13 +138,13 @@ module.exports.login = asyncHandler(async (req, res) => {
 
   if (!user) {
     res.status(403);
-    res.json({ message: {text:"Incorrect email",type:'email'} });
+    res.json({ message: { text: "Incorrect email", type: "email" } });
   } else {
     const isValidLogin = await bcrypt.compare(password, user.password);
 
     if (!isValidLogin) {
       res.status(403);
-      res.json({ message: {text:"Incorrect password",type:'password'} });
+      res.json({ message: { text: "Incorrect password", type: "password" } });
     } else if (isValidLogin) {
       if (user.userType === "publisher") {
         const data = {
@@ -194,20 +210,20 @@ module.exports.refreshTokenApi = asyncHandler(async (req, res) => {
   const { refreshToken } = req.body;
 
   if (!refreshToken) return res.sendStatus(401);
-  
-  
+
   const cert = filesys.readFileSync(path.join(__dirname, "../jwtRS256.pem"));
-  jwt.verify(refreshToken, cert, { algorithms: ["RS256"] },async (err, user) => {
-    if (err) return res.sendStatus(403);
-    const accessToken = await generateToken(user.id, user.username)
-    // console.log(accessToken)
-    res.json({accessToken });
-  });
-
+  jwt.verify(
+    refreshToken,
+    cert,
+    { algorithms: ["RS256"] },
+    async (err, user) => {
+      if (err) return res.sendStatus(403);
+      const accessToken = await generateToken(user.id, user.username);
+      // console.log(accessToken)
+      res.json({ accessToken });
+    }
+  );
 });
-
-
-
 
 // Reset Password
 module.exports.resetPassword = asyncHandler(async (req, res) => {
@@ -247,10 +263,14 @@ module.exports.updateUser = asyncHandler(async (req, res) => {
   const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
     new: true,
   });
-  const updatedChannelImage = await Channel.findOneAndUpdate({userId:userId}, {channelIconImageUrl: updateData.profileImageUrl}, {
-    new: true,
-  });
-  
+  const updatedChannelImage = await Channel.findOneAndUpdate(
+    { userId: userId },
+    { channelIconImageUrl: updateData.profileImageUrl },
+    {
+      new: true,
+    }
+  );
+
   if (!updatedChannelImage) {
     return res.status(404).json({ status: 404, message: "channel not found" });
   }
@@ -347,5 +367,36 @@ module.exports.verifyUser = asyncHandler(async (req, res) => {
       message: error.message,
       isAuthenticated: false,
     });
+  }
+});
+module.exports.getAllUsers = asyncHandler(async (req, res) => {
+  try {
+    const users = await User.find();
+    res.status(200).json(users);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server Error" });
+  }
+});
+module.exports.getChatUsers = asyncHandler(async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const query = req.params.query;
+    const searchedUsers = await User.find({
+      $and: [
+        { _id: { $ne: userId } },
+        {
+          $or: [
+            { username: { $regex: new RegExp(query, "i") } },
+          ],
+        },
+      ],
+    });
+    
+
+    res.status(200).json(searchedUsers);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server Error" });
   }
 });

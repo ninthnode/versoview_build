@@ -94,7 +94,7 @@ const Search = () => {
               <Divider/>
               </>
             ) : (
-              <Link href={`/channel/${result.channelId}`} key={result.id}>
+              <Link href={`/channel/${result.username}`} key={result.id}>
               <Flex key={result.id} py={4} px={2} my={1} rounded="md" shadow="md" bg={result.profileBgColor}>
                 <Image
                   src={result.profileImageUrl || "/assets/default-post-image.svg"}

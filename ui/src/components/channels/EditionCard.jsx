@@ -16,6 +16,7 @@ import { IoAddCircle } from "react-icons/io5";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { CiBookmark } from "react-icons/ci";
+import { FaBookmark as BookmarkFilled } from "react-icons/fa6";
 import Link from "next/link";
 const PdfViewer = dynamic(() => import("@/components/publish/PdfViewer"), {
   ssr: false,
@@ -23,7 +24,7 @@ const PdfViewer = dynamic(() => import("@/components/publish/PdfViewer"), {
 import { getExcerptHtml, getExcerptText } from "@/app/utils/GetExcerpt";
 import DOMPurify from "dompurify";
 
-const EditionCard = ({ edition, key, channel }) => {
+const EditionCard = ({ edition, key, channel,submitBookmarkEdition }) => {
   const { push } = useRouter();
 
   return (
@@ -36,14 +37,14 @@ const EditionCard = ({ edition, key, channel }) => {
           alignItems="center"
         >
           <Flex alignItems="center" w={{ base: "220px", sm: "100%" }}>
-            <Link href={`/channel/${channel._id}`}>
+            <Link href={`/channel/${channel.username}`}>
               <Avatar
                 size="sm"
                 borderRadius={10}
                 src={channel.channelIconImageUrl}
               />
             </Link>
-            <Link href={`/channel/${channel._id}`}>
+            <Link href={`/channel/${channel.username}`}>
               <Text ml="2" fontWeight="semibold" fontSize="md">
                 <Tooltip label={channel?.channelName} aria-label="A tooltip">
                   {getExcerptText(channel?.channelName)}
@@ -59,16 +60,26 @@ const EditionCard = ({ edition, key, channel }) => {
             />
           )} */}
             {true && (
-              <IconButton
+               <IconButton
                 variant="nostyle"
-                color={"gray"}
+                color={
+                  edition.isBookmarked
+                    ? "green.500"
+                    : "gray"
+                }
                 aria-label="See menu"
                 fontSize="lg"
                 textAlign="right"
                 justifyContent="flex-end"
                 p="0"
-                icon={<CiBookmark style={{ margin: -6 }} />}
-                // onClick={() => submitBookmark("post", post._id)}
+                icon={
+                  edition.isBookmarked ? (
+                    <BookmarkFilled style={{ margin: -6 }} />
+                  ) : (
+                    <CiBookmark style={{ margin: -6 }} />
+                  )
+                }
+                onClick={() => submitBookmarkEdition("edition", edition._id)}
               />
             )}
           </Flex>

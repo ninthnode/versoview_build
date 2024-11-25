@@ -44,7 +44,7 @@ const Navbar = ({ children }) => {
       >
         <Box w="100%">
           <Box ml={{ base: 0, md: "11rem" }}>
-            <Box mb={"100px"} w={{ base: "100%", md: IsFullWidthRoutes?'100%':"2xl",xl: IsFullWidthRoutes?'100%':"4xl" }} px={4} borderRightWidth='2px' borderColor='#f5f5f5'>
+            <Box w={{ base: "100%", md: IsFullWidthRoutes?'100%':"2xl",xl: IsFullWidthRoutes?'100%':"4xl" }} px={4} borderRightWidth='2px' borderColor='#f5f5f5'>
               <MobileNav onOpen={onOpen} />
               <Divider />
               {children}

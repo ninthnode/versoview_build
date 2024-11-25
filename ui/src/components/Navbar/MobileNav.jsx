@@ -11,10 +11,11 @@ import { FiMenu, FiBell, FiChevronDown, FiSearch } from "react-icons/fi";
 import { useSelector, useDispatch } from "react-redux";
 import { loginOut } from "@/redux/auth/authActions";
 import NavbarTitle from "./NavbarTitle";
+import Link from "next/link";
+import ChatNotification from "./ChatNotification";
 
 const MobileNav = ({ onOpen, ...rest }) => {
-  const user = useSelector((state) => state.auth.user);
-
+  const authState = useSelector((s) => s.auth.user?.user);
   const dispatch = useDispatch();
   const LogoutHandler = () => {
     dispatch(loginOut());
@@ -40,7 +41,10 @@ const MobileNav = ({ onOpen, ...rest }) => {
           <NavbarTitle/>
         </Heading>
         <Box>
-        <Image src={"/assets/group-icon.png"} h='40px' w='40px'/>
+        <Link href='/messages'>
+        {/* <Image src={"/assets/group-icon.png"} h='40px' w='40px'/> */}
+        {authState&&<ChatNotification userId={authState.id}/>}
+        </Link>
         </Box>
       </Flex>
       

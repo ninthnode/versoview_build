@@ -7,12 +7,17 @@ import {
   GET_COMMENT_AND_REPLIES_COUNT,
   OPEN_COMMENTS_MODAL,
   CLOSE_COMMENTS_MODAL,
+  NEXT_PAGE,
+  PREVIOUS_PAGE
 } from "./commentType";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { Code } from "@chakra-ui/react";
+import { compose } from "redux";
 
-export const openCommentModal = () =>({
+export const openCommentModal = (comment) => ({
   type: OPEN_COMMENTS_MODAL,
+  payload: comment,
 });
 export const closeCommentModal = () => ({
   type: CLOSE_COMMENTS_MODAL,
@@ -66,7 +71,7 @@ export const addCommentToPost = (postId, commentObj) => {
           },
         }
       );
-      
+
       dispatch(getCommentAndRepliesCount(postId));
       toast(response.data.statusText, {
         autoClose: 3000,
@@ -81,10 +86,58 @@ export const addCommentToPost = (postId, commentObj) => {
     }
   };
 };
-export const getCommentRepliesByCommentId = (commentId,postId) => {
-  return async (dispatch) => {
+const addRepliesToNestedComments = (comments, commentId, newReplies) => {
+  return comments.map((comment) => {
+    // If this comment matches the commentId, add the new replies
+    if (comment._id === commentId) {
+      const existingReplies = comment.replies || [];
+
+      const filteredNewReplies = newReplies.filter(
+        (newReply) =>
+          !existingReplies.some(
+            (existingReply) => existingReply._id === newReply._id
+          )
+      );
+
+      return {
+        ...comment,
+        replies: [...existingReplies, ...filteredNewReplies].filter(item => typeof item === 'object' && item !== null),
+      };
+    }
+
+    if (comment.replies && comment.replies.length > 0) {
+      return {
+        ...comment,
+        replies: addRepliesToNestedComments(
+          comment.replies,
+          commentId,
+          newReplies
+        ),
+      };
+    }
+
+    return comment;
+  });
+};
+
+export const getCommentRepliesByCommentId = (commentId, postId,level,lastComment) => {
+  return async (dispatch, getState) => {
     try {
       const token = localStorage.getItem("token").replaceAll('"', "");
+      const { comment } = getState();
+
+
+      if(level>1){
+
+        const tempPagesData = {
+          ...comment.pagesData,
+          [comment.pageNumber]: comment.comments
+        };
+        dispatch({
+          type: NEXT_PAGE,
+          payload: {arr:tempPagesData,page:comment.pageNumber+1},
+        });
+      }
 
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/getAllCommentReplies/${commentId}`,
@@ -94,13 +147,40 @@ export const getCommentRepliesByCommentId = (commentId,postId) => {
           },
         }
       );
-      
       dispatch(getCommentAndRepliesCount(postId));
-      const data = await response.data;
+      let getCommentReplies= await addRepliesToNestedComments(
+        comment.comments,
+        commentId,
+        response.data.replies
+      )
+
+      let newArr=[]
+      if(level>1){
+        newArr = [ {...lastComment,
+          opened: true,
+          replies: response.data.replies
+        }]
+      }
       dispatch({
         type: GET_COMMENT_REPLIES_SUCCESS,
-        payload: data,
+        payload: newArr.length>0?newArr:getCommentReplies
       });
+    } catch (error) {}
+  };
+};
+export const getPreviousPage = () => {
+  return async (dispatch, getState) => {
+    try {
+      const { comment } = getState();
+      const { [comment.pageNumber]: _, ...tempPagesData } = comment.pagesData;
+        dispatch({
+          type: PREVIOUS_PAGE,
+          payload: tempPagesData
+        });
+        dispatch({
+          type: GET_COMMENT_REPLIES_SUCCESS,
+          payload: comment.pagesData[comment.pageNumber-1]
+        });
     } catch (error) {}
   };
 };
@@ -126,8 +206,44 @@ export const getCommentAndRepliesCount = (postId) => {
   };
 };
 
+
+const updateCommentVote = async (comments, commentId,voteType, response) => {
+  for (let i = 0; i < comments.length; i++) {
+    const comment = comments[i];
+    if (comment._id === commentId) {
+      if(response.status===200){
+        if(response.data.voteType){
+          comment.trueCount = comment.trueCount+1;
+          if(comment.falseCount>0)
+          comment.falseCount = comment.falseCount-1;
+        }
+        else{
+          if(comment.trueCount>0)
+          comment.trueCount = comment.trueCount-1;
+          comment.falseCount = comment.falseCount+1;
+        }
+      }
+      else if(response.status===400){
+        if(response.data.voteType==true){
+          comment.trueCount = comment.trueCount-1;
+        }
+        if(response.data.voteType==false){
+          comment.falseCount = comment.falseCount-1;
+        }
+      }
+      return comments;
+    }
+
+    // If it has replies, continue searching in the nested replies
+    if (Array.isArray(comment.replies) && comment.replies.length > 0) {
+      const updatedReplies = await updateCommentVote(comment.replies, commentId,voteType, response);
+      if (updatedReplies) return comments;
+    }
+  }
+  return null;
+};
 export const updateCommentUpvote = (commentId) => {
-  return async (dispatch) => {
+  return async (dispatch,getState) => {
     try {
       const token = localStorage.getItem("token").replaceAll('"', "");
       const response = await axios.post(
@@ -139,6 +255,15 @@ export const updateCommentUpvote = (commentId) => {
           },
         }
       );
+      const { comment } = getState();
+      const updatedComments=  await updateCommentVote(comment.comments,commentId,true,response.data) 
+        if(comment.pageNumber>0){
+          const updatedComments2=  await updateCommentVote(comment.pagesData[comment.pageNumber-1],commentId,true,response.data) 
+        }
+        dispatch({
+         type: GET_COMMENT_REPLIES_SUCCESS,
+         payload: updatedComments
+       });
       toast("Comment " + response.data.message, {
         autoClose: 3000,
         type: "success",
@@ -147,7 +272,7 @@ export const updateCommentUpvote = (commentId) => {
   };
 };
 export const updateCommentDownvote = (commentId) => {
-  return async (dispatch) => {
+  return async (dispatch,getState) => {
     try {
       const token = localStorage.getItem("token").replaceAll('"', "");
       const response = await axios.put(
@@ -159,6 +284,15 @@ export const updateCommentDownvote = (commentId) => {
           },
         }
       );
+      const { comment } = getState();
+      const updatedComments=  await updateCommentVote(comment.comments,commentId,false,response.data) 
+      if(comment.pageNumber>0){
+        const updatedComments2=  await updateCommentVote(comment.pagesData[comment.pageNumber-1],commentId,false,response.data) 
+      }
+      dispatch({
+       type: GET_COMMENT_REPLIES_SUCCESS,
+       payload: updatedComments
+     });
       toast("Comment " + response.data.message, {
         autoClose: 3000,
         type: "success",
@@ -167,12 +301,12 @@ export const updateCommentDownvote = (commentId) => {
   };
 };
 
-export const updateCommentReplayUpvote = (commentId, replayId) => {
+export const updateCommentReplyUpvote = (commentId, replyId) => {
   return async (dispatch) => {
     try {
       const token = localStorage.getItem("token").replaceAll('"', "");
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/upvoteComment/${replayId}`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/upvoteComment/${replyId}`,
         {},
         {
           headers: {
@@ -181,7 +315,7 @@ export const updateCommentReplayUpvote = (commentId, replayId) => {
         }
       );
       dispatch(getCommentRepliesByCommentId(commentId));
-      toast("Comment Replay " + response.data.message, {
+      toast("Comment Reply " + response.data.message, {
         autoClose: 3000,
         type: "success",
       });
@@ -189,12 +323,12 @@ export const updateCommentReplayUpvote = (commentId, replayId) => {
   };
 };
 
-export const updateCommentReplayDownvote = (commentId, replayId) => {
+export const updateCommentReplyDownvote = (commentId, replyId) => {
   return async (dispatch) => {
     try {
       const token = localStorage.getItem("token").replaceAll('"', "");
       const response = await axios.put(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/downvoteComment/${replayId}`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/downvoteComment/${replyId}`,
         {},
         {
           headers: {
@@ -203,37 +337,69 @@ export const updateCommentReplayDownvote = (commentId, replayId) => {
         }
       );
       dispatch(getCommentRepliesByCommentId(commentId));
-      toast("Comment Replay " + response.data.message, {
+      toast("Comment Reply " + response.data.message, {
         autoClose: 3000,
         type: "success",
       });
     } catch (error) {}
   };
 };
-export const replayToPostComment = (commentId, commentReply,postId) => {
-  return async (dispatch) => {
+export const replyToPostComment = (commentId, commentReply, postId,level,lastComment) => {
+  return async (dispatch, getState) => {
     try {
+      const { comment } = getState();
+
       const token = localStorage.getItem("token").replaceAll('"', "");
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/postCommentReply/${commentId}`,
-        { commentReply: commentReply },
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/postComment/${postId}`,
+        { commentReply: commentReply, parentId: commentId },
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
-      dispatch(getCommentRepliesByCommentId(commentId));
-      dispatch(getCommentAndRepliesCount(postId));
+
+      
+      let getCommentReplies= await addRepliesToNestedComments(
+        comment.comments,
+        commentId,
+        response.data.data
+      )
+      let newArr=[]
+      if(level>1){
+
+        const tempPagesData = {
+          ...comment.pagesData,
+          [comment.pageNumber]: getCommentReplies
+        };
+        dispatch({
+          type: NEXT_PAGE,
+          payload: {arr:tempPagesData,page:comment.pageNumber+1},
+        });
+
+
+
+
+        newArr = [ {...lastComment,
+          opened: true,
+          replies: response.data.data
+        }]
+      }
+      dispatch({
+        type: GET_COMMENT_REPLIES_SUCCESS,
+        payload: newArr.length>0?newArr:getCommentReplies
+      });
       toast(response.data.statusText, {
         autoClose: 3000,
         type: "success",
       });
     } catch (error) {
-      toast("Error Adding Comment Replay", {
-        autoClose: 3000,
-        type: "error",
-      });
+      console.log(error)
+      // toast("Error Adding Comment Reply", {
+      //   autoClose: 3000,
+      //   type: "error",
+      // });
     }
   };
 };

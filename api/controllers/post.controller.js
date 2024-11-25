@@ -27,13 +27,32 @@ function getAllImageFiles(folder) {
   });
 }
 
+async function generateUniqueSlug(title) {
+  let baseSlug = title
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "") // Remove special characters
+    .replace(/\s+/g, "-") // Replace spaces with hyphens
+    .slice(0, 25); // Limit to 25 characters
+
+  let uniqueSlug = baseSlug;
+  let counter = 1;
+
+  // Loop until a unique slug is found
+  while (await Post.exists({ slug: uniqueSlug })) {
+    uniqueSlug = `${baseSlug}-${counter}`.slice(0, 30); // Append counter to baseSlug and ensure it doesn't exceed 30 characters
+    counter++;
+  }
+
+  return uniqueSlug;
+}
+
 // Create post
 module.exports.create = asyncHandler(async (req, res) => {
   try {
     const userId = req.user._id;
     const channelData = await Channel.findOne({ userId });
     const channelId = channelData._id;
-
+    const slug = await generateUniqueSlug(req.body.header);
     const postData = {
       channelId: channelId,
       userId: userId,
@@ -45,20 +64,21 @@ module.exports.create = asyncHandler(async (req, res) => {
       credits: req.body.credits || "",
       bodyRichText: req.body.bodyRichText || "",
       status: req.body.status || "",
-      editionId: req.body.editionId || null
+      editionId: req.body.editionId || null,
+      slug: slug,
     };
 
     const newPost = new Post(postData);
     newPost.readBy.push(userId);
-    const savedPost =await newPost.save();
+    const savedPost = await newPost.save();
 
     if (req.body.editionId) {
       const edition = await Edition.findById(req.body.editionId);
-      
+
       if (edition) {
         edition.postId.push(savedPost._id);
         await edition.save();
-        console.log('Post ID added to edition:', edition);
+        console.log("Post ID added to edition:", edition);
       }
     }
 
@@ -106,19 +126,17 @@ function calculateReadingTime(text, time = 250) {
   let words = text.trim().match(/\S+/g) || [];
   let wordCount = words.length;
   let totalMinutes = wordCount / time;
-  
+
   totalMinutes = Math.ceil(totalMinutes);
-  
+
   let hours = Math.floor(totalMinutes / 60);
   let minutes = totalMinutes % 60;
 
   if (hours > 0) {
-      return `${hours}.${minutes < 10 ? '0' : ''}${minutes}hrs`;
+    return `${hours}.${minutes < 10 ? "0" : ""}${minutes}hrs`;
   } else {
-    if(minutes<1)
-      return `${minutes} mins`;
-    else
-      return `${minutes} min`;
+    if (minutes < 1) return `${minutes} mins`;
+    else return `${minutes} min`;
   }
 }
 
@@ -127,7 +145,7 @@ module.exports.getAllPost = asyncHandler(async (req, res) => {
     // LOGIC
     // 1. Followed channel post
     // 2. User's post
-    // 3. Genre 
+    // 3. Genre
     // 4. Find Unique Posts
     // 4. Edition Pdf Url
 
@@ -137,7 +155,9 @@ module.exports.getAllPost = asyncHandler(async (req, res) => {
     const skip = (page - 1) * limit;
     const userData = await User.findOne({ _id: userId });
 
-    const userPosts = await Post.find({userId: userData._id}).populate("channelId").populate("editionId");
+    const userPosts = await Post.find({ userId: userData._id })
+      .populate("channelId")
+      .populate("editionId");
 
     const genres = userData.genre;
 
@@ -151,7 +171,11 @@ module.exports.getAllPost = asyncHandler(async (req, res) => {
       channelId: { $in: followedChannelIds },
     }).populate("channelId");
 
-    let combinedPosts = [...postDataGenre,...userPosts, ...postFollowedchannel];
+    let combinedPosts = [
+      ...postDataGenre,
+      ...userPosts,
+      ...postFollowedchannel,
+    ];
 
     const uniquePosts = Array.from(
       new Map(combinedPosts.map((post) => [post._id.toString(), post])).values()
@@ -193,12 +217,12 @@ module.exports.getPostIfUserNotLoggedIn = asyncHandler(async (req, res) => {
     const postData = await Post.find({ userId: postId })
       .populate("channelId")
       .sort({ createdAt: -1 });
-      let newpostData = postData.map((p)=>{
-        return {
-          ...p.toObject(),
-          readingTime: calculateReadingTime(p.bodyRichText),
-        }
-      })
+    let newpostData = postData.map((p) => {
+      return {
+        ...p.toObject(),
+        readingTime: calculateReadingTime(p.bodyRichText),
+      };
+    });
 
     res.status(200).json({
       message: "Success",
@@ -210,13 +234,14 @@ module.exports.getPostIfUserNotLoggedIn = asyncHandler(async (req, res) => {
   }
 });
 
-module.exports.getPostById = asyncHandler(async (req, res) => {
+module.exports.getPostBySlug = asyncHandler(async (req, res) => {
   try {
-    const postId = req.params._id;
+    const slug = req.params.slug;
     const mainuserId = req.user._id;
+    const postData = await Post.findOne({ slug: slug }).populate("editionId");
+    const postId = postData._id;
     await addRecentlyViewedPost(mainuserId, postId);
     // Fetch post data
-    const postData = await Post.findOne({ _id: postId }).populate("editionId");
     if (!postData) {
       console.log(`Post not found for ID: ${postId}`);
       return res.status(404).json({ message: "Post not found" });
@@ -366,6 +391,93 @@ module.exports.getPostByIdLoggedOut = asyncHandler(async (req, res) => {
   }
 });
 
+module.exports.getPostById = asyncHandler(async (req, res) => {
+  try {
+    const mainuserId = req.user._id;
+    const postId = req.params._id;
+    await addRecentlyViewedPost(mainuserId, postId);
+    const postData = await Post.findOne({ _id: postId }).populate("editionId");
+
+    // Fetch post data
+    if (!postData) {
+      console.log(`Post not found for ID: ${postId}`);
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    // Fetch channel data
+    const channelId = postData.channelId;
+    if (!channelId) {
+      console.log(`Channel ID not found in post data: ${postData}`);
+      return res
+        .status(404)
+        .json({ message: "Channel ID not found in post data" });
+    }
+
+    const channelData = await Channel.findOne({ _id: channelId });
+    if (!channelData) {
+      console.log(`Channel not found for ID: ${channelId}`);
+      return res.status(404).json({ message: "Channel not found" });
+    }
+
+    // Fetch user data
+    const userId = channelData.userId;
+    if (!userId) {
+      console.log(`User ID not found in channel data: ${channelData}`);
+      return res
+        .status(404)
+        .json({ message: "User ID not found in channel data" });
+    }
+
+    const userData = await User.findOne({ _id: userId });
+    if (!userData) {
+      console.log(`User not found for ID: ${userId}`);
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const votes = await Vote.find({ postId: postId });
+    const voteCounts = votes.reduce(
+      (counts, vote) => {
+        if (vote.voteType === true) {
+          counts.trueCount++;
+        } else if (vote.voteType === false) {
+          counts.falseCount++;
+        }
+        return counts;
+      },
+      { trueCount: 0, falseCount: 0 }
+    );
+    const bookmark = await Bookmark.findOne({
+      userId: mainuserId,
+      postId: postId,
+    });
+
+    // Combine all the data
+    const combinedData = {
+      post: postData,
+      channel: channelData,
+      user: userData,
+      votes: voteCounts,
+      isBookmarked: !!bookmark,
+      readingTime: calculateReadingTime(postData.bodyRichText),
+    };
+
+    const postIfUserAlreadyRead = await Post.findOne({
+      _id: postId,
+      readBy: mainuserId,
+    });
+    // Add the current userId to Post.readBy
+    if (!postIfUserAlreadyRead) {
+      postData.readBy.push(mainuserId);
+      await postData.save();
+    }
+
+    res.status(200).json({ message: "Success", data: combinedData });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 // Get posts by channel id
 module.exports.getPostByChannelId = asyncHandler(async (req, res) => {
   try {
@@ -402,7 +514,7 @@ module.exports.getPostByChannelId = asyncHandler(async (req, res) => {
 module.exports.updatePost = asyncHandler(async (req, res) => {
   try {
     const postId = req.params._id;
-    const isPostExist = await Post.findOne({_id:postId});
+    const isPostExist = await Post.findOne({ _id: postId });
 
     if (!isPostExist) {
       return res.status(404).json({ error: "Post not found" });
@@ -425,14 +537,14 @@ module.exports.updatePost = asyncHandler(async (req, res) => {
 module.exports.deletePost = asyncHandler(async (req, res) => {
   try {
     const postId = req.params._id;
-    console.log(postId)
-    
-    const postToDelete = await Post.find({_id:postId });
-    
+    console.log(postId);
+
+    const postToDelete = await Post.find({ _id: postId });
+
     if (!postToDelete) {
       return res.status(404).json({ error: "Post not found" });
     }
-    await Post.findOneAndDelete({_id:postId });
+    await Post.findOneAndDelete({ _id: postId });
     res
       .status(200)
       .json({ message: "Post deleted successfully", data: postToDelete });
@@ -496,9 +608,7 @@ module.exports.downvotePost = asyncHandler(async (req, res) => {
         votingUserId: userId,
         postId: postId,
       });
-      return res
-        .status(200)
-        .json({ status: 400, message: "vote removed" });
+      return res.status(200).json({ status: 400, message: "vote removed" });
     }
     if (isAlreadyVoted && isAlreadyVoted.voteType === true) {
       isAlreadyVoted.voteType = false;
@@ -549,20 +659,23 @@ module.exports.addBookmark = asyncHandler(async (req, res) => {
     const { _id } = req.params;
     const { type } = req.body;
 
-    if (type !== "post" && type !== "comment") {
-      return res
-        .status(400)
-        .json({ error: "Invalid type parameter. Must be 'post' or 'comment'" });
+    if (!["post", "comment", "edition"].includes(type)) {
+      return res.status(400).json({
+        error:
+          "Invalid type parameter. Must be 'post', 'comment', or 'edition'.",
+      });
     }
 
     const filter =
       type === "post"
         ? { userId, postId: _id }
-        : { userId, postCommentId: _id };
+        : type === "comment"
+        ? { userId, postCommentId: _id }
+        : { userId, editionId: _id };
+
     const isBookmark = await Bookmark.findOne(filter);
 
     if (isBookmark) {
-      // If the bookmark exists, remove it
       await Bookmark.deleteOne(filter);
       isBookmark.isBookmarked = false;
       return res
@@ -570,17 +683,21 @@ module.exports.addBookmark = asyncHandler(async (req, res) => {
         .json({ message: "Bookmark Removed", data: isBookmark });
     }
 
-    // If the bookmark does not exist, add it
     const bookmark =
       type === "post"
         ? { userId, postId: _id }
-        : { userId, postCommentId: _id };
+        : type === "comment"
+        ? { userId, postCommentId: _id }
+        : { userId, editionId: _id };
+
     const bookmarkPost = new Bookmark(bookmark);
     await bookmarkPost.save();
 
-    return res
-      .status(201)
-      .json({ status: 201, message: "Added to bookmark", data: bookmarkPost });
+    return res.status(201).json({
+      status: 201,
+      message: "Added to bookmark",
+      data: bookmarkPost,
+    });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Internal Server Error" });
@@ -687,6 +804,10 @@ module.exports.getAllBookmark = asyncHandler(async (req, res) => {
     const bookmarks = await Bookmark.find({ userId: userId })
       .sort({ createdAt: -1 })
       .populate({
+        path: "editionId",
+        model: "Edition",
+      })
+      .populate({
         path: "postId",
         model: "Post",
         populate: {
@@ -712,52 +833,19 @@ module.exports.getAllBookmark = asyncHandler(async (req, res) => {
           },
         ],
       })
+      .lean()
       .exec();
-
-    const populatedBookmarks = await Promise.all(
-      bookmarks.map(async (bookmark) => {
-        if (!bookmark.postCommentId) {
-          const populatedBookmark = await Bookmark.findById(bookmark._id)
-            .populate({
-              path: "postId",
-              model: "Post",
-              populate: {
-                path: "channelId",
-                model: "Channel",
-              },
-            })
-            .populate({
-              path: "postCommentId",
-              model: "PostCommentReplies",
-              populate: [
-                {
-                  path: "userId",
-                  model: "User",
-                },
-                {
-                  path: "postCommentId",
-                  model: "PostComment",
-                  populate: {
-                    path: "postId",
-                    model: "Post",
-                    populate: {
-                      path: "channelId",
-                      model: "Channel",
-                    },
-                  },
-                },
-              ],
-            })
-            .exec();
-          return populatedBookmark;
-        }
-        return bookmark;
-      })
-    );
-
+    for (const bookmark of bookmarks) {
+      if (bookmark.editionId && bookmark.editionId.userId) {
+        const channelData = await Channel.findOne({
+          userId: bookmark.editionId.userId,
+        }).lean();
+        bookmark.editionId.channelData = channelData; // Attach the `Channel` data directly to `editionId`
+      }
+    }
     return res
       .status(200)
-      .json({ status: 200, message: "Success", data: populatedBookmarks });
+      .json({ status: 200, message: "Success", data: bookmarks });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Internal Server Error" });
@@ -926,29 +1014,73 @@ module.exports.getAllPdfSlides = asyncHandler(async (req, res) => {
 module.exports.postComment = asyncHandler(async (req, res) => {
   try {
     const userId = req.user._id;
-    const postId = req.params;
-    const { excerpt, commentText } = req.body;
+    const slug = req.params;
+
+    const postData = await Post.findOne({ slug: slug });
+    const postId = postData._id;
+    const { excerpt, commentText, commentReply, parentId } = req.body;
+
+    const postExists = await Post.findById(postId);
+    if (!postExists) {
+      return res.status(404).json({ message: "Post not found" });
+    }
 
     const comment = {
       userId: userId,
       postId: postId,
       excerpt: excerpt,
-      commentText: commentText,
+      commentText: commentText || commentReply,
+      parentId: parentId || null,
     };
 
     const newComment = new PostComment(comment);
-    await newComment.save();
+    const savedComment = await newComment.save();
+
+    // Populate userId field with user information
+    await savedComment.populate("userId");
+
+    if (parentId) {
+      const parentComment = await PostComment.findById(parentId).populate("replies");
+      if (!parentComment) {
+        return res.status(404).json({ message: "Parent comment not found" });
+      }
+
+      // Add the new comment ID to the parent comment's replies
+      parentComment.replies.push(savedComment._id);
+      await parentComment.save();
+
+      // Include default properties in the replies
+      const enrichedReplies = await Promise.all(
+        parentComment.replies.map(async (replyId) => {
+          const reply = await PostComment.findById(replyId).populate("userId");
+          return {
+            ...reply.toObject(),
+            isBookmarked: false,
+            trueCount: 0,
+            falseCount: 0,
+          };
+        })
+      );
+      enrichedReplies.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      return res.status(201).json({
+        status: 201,
+        data: enrichedReplies,
+        statusText: "New Comment Added!",
+      });
+    }
 
     return res.status(201).json({
       status: 201,
-      data: newComment,
-      statusText: "New Comment Added!",
+      data: [],
+      statusText: "No parent comment found for replies",
     });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
 
 // Post Comment Replies
 module.exports.postCommentReply = asyncHandler(async (req, res) => {
@@ -981,8 +1113,10 @@ module.exports.postCommentReply = asyncHandler(async (req, res) => {
 module.exports.getAllComment = asyncHandler(async (req, res) => {
   try {
     const userId = req.user._id;
-    const postId = req.params;
-    const comments = await PostComment.find({ postId: postId })
+    const slug = req.params;
+    const postData = await Post.findOne({ slug: slug });
+    const postId = postData._id;
+    const comments = await PostComment.find({ postId: postId, parentId: null })
       .sort({ createdAt: -1 })
       .populate({
         path: "userId",
@@ -1053,11 +1187,18 @@ module.exports.getAllCommentReplies = asyncHandler(async (req, res) => {
   try {
     // Fetch the comment details with upvote and downvote counts
     const commentDetails = await PostComment.findById(commentId)
-      .sort({ createdAt: -1 })
+      .populate({
+        path: "replies",
+        populate: {
+          path: "userId",
+          model: "User",
+        },
+      })
       .populate({
         path: "userId",
         model: "User",
       })
+      .sort({ createdAt: -1 })
       .lean();
     if (!commentDetails) {
       return res.status(404).json({ message: "Comment not found" });
@@ -1067,16 +1208,11 @@ module.exports.getAllCommentReplies = asyncHandler(async (req, res) => {
     const upvoteCount = votes.filter((vote) => vote.voteType).length;
     const downvoteCount = votes.filter((vote) => !vote.voteType).length;
 
-    // Fetch replies and their upvote/downvote counts
-    const replies = await PostCommentReply.find({ postCommentId: commentId })
-      .sort({ createdAt: -1 })
-      .populate({
-        path: "userId",
-        model: "User",
-      })
-      .lean();
+    const replies = commentDetails.replies;
 
-    const replyIds = replies.map((reply) => reply._id);
+    const replyIds = replies
+      .filter((item) => typeof item === "object" && item !== null)
+      .map((reply) => reply._id);
     const replyVotes = await CommentVote.find({
       postCommentId: { $in: replyIds },
     }).lean();
@@ -1094,8 +1230,8 @@ module.exports.getAllCommentReplies = asyncHandler(async (req, res) => {
       ).length;
       return {
         ...reply,
-        upvoteCount: replyUpvoteCount,
-        downvoteCount: replyDownvoteCount,
+        trueCount: replyUpvoteCount,
+        falseCount: replyDownvoteCount,
       };
     });
 
@@ -1142,12 +1278,12 @@ module.exports.upvoteComment = asyncHandler(async (req, res) => {
         votingUserId: userId,
         postCommentId: postCommentId,
       });
-      return res.status(200).json({ status: 400, message: "vote removed" });
+      return res.status(200).json({ status: 400,data: {voteType: isAlreadyVoted.voteType}, message: "vote removed" });
     }
     if (isAlreadyVoted && isAlreadyVoted.voteType === false) {
       isAlreadyVoted.voteType = true;
       await isAlreadyVoted.save();
-      return res.status(200).json({ status: 200, message: "upvoted" });
+      return res.status(200).json({ status: 200,data: {voteType: isAlreadyVoted.voteType}, message: "upvoted" });
     }
     const newVote = new CommentVote({
       votingUserId: userId,
@@ -1158,7 +1294,7 @@ module.exports.upvoteComment = asyncHandler(async (req, res) => {
     await newVote.save();
     return res
       .status(200)
-      .json({ status: 201, message: "upvoted", data: newVote });
+      .json({ status: 200, message: "upvoted", data: newVote });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Internal Server Error" });
@@ -1180,14 +1316,12 @@ module.exports.downvoteComment = asyncHandler(async (req, res) => {
         votingUserId: userId,
         postCommentId: postCommentId,
       });
-      return res
-        .status(200)
-        .json({ status: 400, message: "vote removed" });
+      return res.status(200).json({ status: 400,data: {voteType: isAlreadyVoted.voteType}, message: "vote removed" });
     }
     if (isAlreadyVoted && isAlreadyVoted.voteType === true) {
       isAlreadyVoted.voteType = false;
       await isAlreadyVoted.save();
-      return res.status(200).json({ status: 200, message: "downvoted" });
+      return res.status(200).json({ status: 200,data: {voteType: isAlreadyVoted.voteType}, message: "downvoted" });
     }
     const newVote = new CommentVote({
       votingUserId: userId,
@@ -1198,7 +1332,7 @@ module.exports.downvoteComment = asyncHandler(async (req, res) => {
     await newVote.save();
     return res
       .status(201)
-      .json({ status: 201, message: "downvoted", data: newVote });
+      .json({ status: 200, message: "downvoted", data: newVote });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Internal Server Error" });
@@ -1262,15 +1396,21 @@ module.exports.getCommentReplies = asyncHandler(async (req, res) => {
 });
 
 module.exports.getCommentAndRepliesCount = asyncHandler(async (req, res) => {
-  const postId = req.params._id;
+  const slug = req.params._id;
   try {
+    const postData = await Post.findOne({ slug: slug });
+    const postId = postData._id;
     const comments = await PostComment.find({ postId: postId });
     let totalRepliesCount = 0;
     for (const comment of comments) {
-      const repliesCount = await PostCommentReply.countDocuments({ postCommentId: comment._id });
+      const repliesCount = await PostCommentReply.countDocuments({
+        postCommentId: comment._id,
+      });
       totalRepliesCount += repliesCount;
     }
-    return res.status(200).json({ commentCount: comments.length, repliesCount: totalRepliesCount });
+    return res
+      .status(200)
+      .json({ commentCount: comments.length, repliesCount: totalRepliesCount });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: "Internal Server Error" });
@@ -1438,3 +1578,185 @@ module.exports.getRecentlyViewedPosts = async (req, res) => {
     throw new Error("Unable to fetch recently viewed posts");
   }
 };
+// module.exports.getUserComments = asyncHandler(async (req, res) => {
+//   try {
+//     const userId = req.user._id;
+//     const comments = await PostComment.find({
+//       userId,
+//       replies: { $exists: true, $not: { $size: 0 } },
+//     })
+//       .populate({
+//         path: "userId",
+//         model: "User",
+//       })
+//       .populate({
+//         path: "postId",
+//         model: "Post",
+//       })
+//       .populate({
+//         path: "replies",
+//         populate: [
+//           {
+//             path: "userId",
+//             model: "User",
+//           },
+//           {
+//             path: "postId",
+//             model: "Post",
+//           },
+//         ],
+//       })
+//       .sort({ createdAt: -1 })
+//       .exec();
+
+//     // Process each comment to include upvote, downvote counts, and bookmark status for replies
+//     const processedComments = await Promise.all(
+//       comments.map(async (comment) => {
+//         // Sort replies by createdAt or any other field in ascending or descending order
+//         const sortedReplies = comment.replies
+//           .filter((reply) => typeof reply === "object" && reply !== null)
+//           .sort((a, b) => b.createdAt - a.createdAt);
+//         const replyIds = sortedReplies.map((reply) => reply._id);
+
+//         const replyVotes = await CommentVote.find({
+//           postCommentId: { $in: replyIds },
+//         }).lean();
+
+//         const repliesWithVotes = sortedReplies.map((reply) => {
+//           const replyUpvoteCount = replyVotes.filter(
+//             (vote) =>
+//               vote.postCommentId.toString() === reply._id.toString() &&
+//               vote.voteType
+//           ).length;
+//           const replyDownvoteCount = replyVotes.filter(
+//             (vote) =>
+//               vote.postCommentId.toString() === reply._id.toString() &&
+//               !vote.voteType
+//           ).length;
+//           return {
+//             ...reply.toObject(),
+//             trueCount: replyUpvoteCount,
+//             falseCount: replyDownvoteCount,
+//           };
+//         });
+
+//         const repliesWithBookmarkStatus = await Promise.all(
+//           repliesWithVotes.map(async (reply) => {
+//             const bookmark = await Bookmark.findOne({
+//               userId,
+//               postCommentId: reply._id,
+//             });
+//             return {
+//               ...reply,
+//               isBookmarked: !!bookmark,
+//             };
+//           })
+//         );
+
+//         return {
+//           ...comment.toObject(),
+//           replies: repliesWithBookmarkStatus,
+//         };
+//       })
+//     );
+
+//     res.status(200).json(processedComments);
+//   } catch (error) {
+//     console.error(error);
+//     res
+//       .status(500)
+//       .json({ error: "Server error fetching comments and replies." });
+//   }
+// });
+
+module.exports.getUserComments = asyncHandler(async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+  // Fetch all comments with their populated replies
+  const comments = await PostComment.find({
+    userId,
+    replies: { $exists: true, $not: { $size: 0 } },
+  })
+  .populate({
+    path: "userId",
+    model: "User",
+  })
+  .populate({
+    path: "postId",
+    model: "Post",
+  })
+  .populate({
+    path: "replies",
+    populate: [
+      {
+        path: "userId",
+        model: "User",
+      },
+      {
+        path: "postId",
+        model: "Post",
+      },
+    ],
+  })
+  .sort({ createdAt: -1 })
+  .exec();
+
+    // Collect all replies across all comments and add the parent comment reference
+    const allReplies = comments.flatMap((comment) =>
+      comment.replies.map((reply) => ({
+        ...reply.toObject(),
+        parentComment: comment, // Add the parent comment reference to each reply
+      }))
+    );
+
+    // Sort all replies by createdAt (newest first)
+    const sortedReplies = allReplies
+      .filter((reply) => typeof reply === 'object' && reply !== null)
+      .sort((a, b) => b.createdAt - a.createdAt); // Sort replies in descending order
+
+    // Fetch votes for all replies
+    const replyIds = sortedReplies.map((reply) => reply._id);
+    const replyVotes = await CommentVote.find({
+      postCommentId: { $in: replyIds },
+    }).lean();
+
+    // Add upvote and downvote counts to each reply
+    const repliesWithVotes = sortedReplies.map((reply) => {
+      const replyUpvoteCount = replyVotes.filter(
+        (vote) =>
+          vote.postCommentId.toString() === reply._id.toString() &&
+          vote.voteType
+      ).length;
+      const replyDownvoteCount = replyVotes.filter(
+        (vote) =>
+          vote.postCommentId.toString() === reply._id.toString() &&
+          !vote.voteType
+      ).length;
+      return {
+        ...reply,
+        trueCount: replyUpvoteCount,
+        falseCount: replyDownvoteCount,
+      };
+    });
+
+    // Add bookmark status to each reply
+    const repliesWithBookmarkStatus = await Promise.all(
+      repliesWithVotes.map(async (reply) => {
+        const bookmark = await Bookmark.findOne({
+          userId,
+          postCommentId: reply._id,
+        });
+        return {
+          ...reply,
+          isBookmarked: !!bookmark,
+        };
+      })
+    );
+
+    res.status(200).json(repliesWithBookmarkStatus); // Return the flat sorted replies with all additional data
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error fetching comments and replies.' });
+  }
+});

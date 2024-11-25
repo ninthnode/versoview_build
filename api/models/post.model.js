@@ -41,6 +41,9 @@ const postSchema = new mongoose.Schema(
 		status: {
 			type: String,
 		},
+		slug: {
+			type: String,
+		},
 	},
 	{
 		timestamps: true,

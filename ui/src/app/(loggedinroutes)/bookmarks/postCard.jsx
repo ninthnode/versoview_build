@@ -86,7 +86,7 @@ const PostCard = ({ post, small = false, submitBookmark, showBookmark }) => {
           </Button>
         </Text>
 
-        <Link href={`post/${post._id}`}>
+        <Link href={`post/${post.slug}`}>
           <Heading mb="1" size="md" as="h6">
             {post.header}
           </Heading>

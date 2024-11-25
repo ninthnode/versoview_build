@@ -86,6 +86,16 @@ io.on("connection", (socket) => {
 			}
 
 			await conversation.save();
+
+			const unreadCount = await getUnreadMessageCount(receiverId);
+			const receiverSocketId = users[receiverId];
+			if (receiverSocketId) {
+				io.to(receiverSocketId).emit("unreadCount", unreadCount); // Emit unread count
+				console.log("Emitting unreadCount to:", receiverId, "Count:", unreadCount);
+			} else {
+				console.log("Receiver is not connected:", receiverId);
+			}
+
 			console.log("Message saved to database");
 		} catch (error) {
 			console.error("Error saving message to database:", error);
@@ -95,7 +105,10 @@ io.on("connection", (socket) => {
 			io.to(receiverSocketId).emit("dm", { senderId, receiverId, message });
 		}
 	});
-
+	socket.on("getUnreadCount", async (userId) => {
+		const count = await getUnreadMessageCount(userId);
+        socket.emit("unreadCount", count);
+	});
 	socket.on("disconnect", () => {
 		for (const userId in users) {
 			if (users[userId] === socket.id) {
@@ -107,7 +120,21 @@ io.on("connection", (socket) => {
 	});
 });
 
-// console.log(users)
+const getUnreadMessageCount = async (userId) => {
+    const conversations = await Message.aggregate([
+        { $match: { participants: userId } },
+        { $unwind: "$messages" }, // Deconstruct messages array
+        {
+            $match: {
+                "messages.read": false,
+                "messages.senderId": { $ne: userId }, // Exclude the user's own messages
+            },
+        },
+        { $group: { _id: null, count: { $sum: 1 } } },
+    ]);
+
+    return conversations[0]?.count || 0;
+};
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

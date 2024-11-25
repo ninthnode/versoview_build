@@ -11,6 +11,9 @@ import {
   addCommentToPost,
   updateCommentUpvote,
   updateCommentDownvote,
+  getCommentRepliesByCommentId,
+  replyToPostComment,
+  getPreviousPage,getCommentByPostId,closeCommentModal
 } from "@/redux/comments/commentAction";
 import { connect } from "react-redux";
 import { addRemoveBookmarks } from "@/redux/bookmarks/bookmarkAction";
@@ -20,6 +23,7 @@ const Comments = ({
   id,
   isOpenCommentModal,
   onToggleCommentModal,
+  isModalCommentsOpen,
   commentState,
   loading,
   getCommentByPostId,
@@ -30,47 +34,55 @@ const Comments = ({
   postTitle,
   commentText,
   handleChangeComment,
-  submitComment,isAuthenticated
+  submitComment,isAuthenticated,
+  getCommentRepliesByCommentId,
+  replyToPostComment,
+  getPreviousPage,
+  pageNumber,
+  commentStateUpdateCount,
+  modalComment,
+  closeCommentModal,
+  postSlug
 }) => {
 
   const postId = id;
   const [commentList, setCommentList] = useState([]);
   useEffect(() => {
-    getCommentByPostId(postId);
+    if(!isModalCommentsOpen){
+      getCommentByPostId(postId);
+    }
   }, [getCommentByPostId, postId]);
 
   useEffect(() => {
     if (commentState&&commentState.length > 0) {
       setCommentList(commentState);
     }
-  }, [commentState]);
+  }, [commentState,commentStateUpdateCount,isModalCommentsOpen]);
 
-  const submitBookmark = async (type, commentId) => {
-    const response = await addRemoveBookmarks(type, commentId);
-    const updatedData = { isBookmarked: response.data.isBookmarked };
-    setCommentList((prevItems) =>
-      prevItems.map((item) =>
-        item._id === response.data.postCommentId
-          ? { ...item, ...updatedData }
-          : item
-      )
-    );
+  const submitBookmark = async (type, commentId,bool) => {
+    const response = await addRemoveBookmarks(type, commentId,bool);
   };
 
   const upvoteComment = async (changeCommentId) => {
     await updateCommentUpvote(changeCommentId);
-    getCommentByPostId(postId);
   };
 
   const downvoteComment = async (changeCommentId) => {
     await updateCommentDownvote(changeCommentId);
-    getCommentByPostId(postId);
   };
 
   const submitCommentByText = async (istoggle=true) => {
     await submitComment();
     if(istoggle)onToggleCommentModal()
   };
+  const updateCommentArray =(id,postId,level,lastComment)=>{
+    // console.log(id,postId)
+    getCommentRepliesByCommentId(id,postId,level,lastComment);
+  }
+  const backToAllComments=()=>{
+    getCommentByPostId(postId);
+    closeCommentModal();
+  }
 
   return (
     <Box py={4}>
@@ -95,19 +107,26 @@ const Comments = ({
       </Flex>
       {commentList && (
         <CommentsModal
-        postTitle={postTitle}
-        postId={postId}
+          postTitle={postTitle}
+          postId={postId}
           commentList={commentList}
           upvoteComment={upvoteComment}
           downvoteComment={downvoteComment}
           submitBookmark={submitBookmark}
           isOpenCommentModal={isOpenCommentModal}
+          isModalCommentsOpen={isModalCommentsOpen}
           onToggleCommentModal={onToggleCommentModal}
           handleChangeComment={handleChangeComment}
           submitCommentByText={submitCommentByText}
           isAuthenticated={isAuthenticated}
           commentText={commentText}
           loading={loading}
+          updateCommentArray={updateCommentArray}
+          replyToPostComment={replyToPostComment}
+          getPreviousPage={getPreviousPage}
+          pageNumber={pageNumber}
+          modalComment={modalComment}
+          backToAllComments={backToAllComments}
         />
       )}
     </Box>
@@ -116,6 +135,9 @@ const Comments = ({
 
 const mapStateToProps = (state) => ({
   commentState: state.comment.comments,
+  commentStateUpdateCount: state.comment.commentStateUpdateCount,
+  modalComment: state.comment.modalComment,
+  pageNumber: state.comment.pageNumber,
   loading: state.comment.loading,
 });
 
@@ -124,6 +146,11 @@ const mapDispatchToProps = {
   updateCommentUpvote,
   updateCommentDownvote,
   addRemoveBookmarks,
+  getCommentRepliesByCommentId,
+  getCommentByPostId,
+  replyToPostComment,
+  getPreviousPage,
+  closeCommentModal
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Comments);

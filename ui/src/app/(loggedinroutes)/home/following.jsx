@@ -241,7 +241,7 @@ const Following = ({ followings, user,fetchfollowChannelList }) => {
                 alt={user.channelName}
               />
               <Box ml={3}>
-                <Link href={`/channel/${following._id}`}>
+                <Link href={`/channel/${following.username}`}>
                   <Text fontSize="md" fontWeight="bold">
                     {following?.channelName}
                   </Text>

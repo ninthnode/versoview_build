@@ -1,38 +1,7 @@
 import { Box, Flex, Text, Image, Divider } from "@chakra-ui/react";
+import { formatDate } from "@/app/utils/DateUtils";
 
-const articles = [
-  {
-    title: "Adventurine",
-    category: "Travel – Style",
-    date: "Oct 21",
-    readTime: "1 min read",
-    imageUrl: "https://via.placeholder.com/150",
-  },
-  {
-    title: "Pretty in Pink",
-    category: "Travel – Style",
-    date: "Oct 21",
-    readTime: "1 min read",
-    imageUrl: "https://via.placeholder.com/150",
-  },
-  {
-    title: "Travel – Inspire",
-    category: "Travel – Inspire",
-    date: "Oct 20",
-    readTime: "4 min read",
-    imageUrl: "https://via.placeholder.com/150",
-  },
-  {
-    title: "Where the stars kiss the ocean",
-    category: "Travel – Maldives",
-    date: "Aug 21",
-    readTime: "6 min read",
-    imageUrl: "https://via.placeholder.com/150",
-    comments: 68,
-  },
-];
-
-function RelatedArticleList() {
+function RelatedArticleList({channelPosts}) {
   return (
     <Box>
     <Divider mb={4}/>
@@ -40,17 +9,18 @@ function RelatedArticleList() {
         MORE FROM THIS PUBLICATION
       </Text>
       <Divider mb={4}/>
-      {articles.map((article, index) => (
+      {channelPosts.map((article, index) => (
         <Flex key={index} justifyContent='space-between' borderBottom="1px solid #e2e8f0" py={3}>
           <Flex flexDir='column' justifyContent='space-between'>
             <Text fontSize="1.2rem" fontWeight="semibold">
-              {article.title}
+              {article.header}
             </Text>
             <Text fontSize="sm" color="gray.600">
-              {article.category} • {article.date} • {article.readTime}
-            </Text>
+            {article.section} &bull; {article.subSection} &bull;{" "}
+            {formatDate(article.createdAt)} &bull; {article.readingTime} read
+                        </Text>
           </Flex>
-          <Image src={article.imageUrl} alt={article.title} boxSize="80px" objectFit="cover" ml={4} />
+          <Image src={article.mainImageURL} alt={article.header} height='80px' w='250px' objectFit="cover" ml={4} />
         </Flex>
       ))}
     </Box>

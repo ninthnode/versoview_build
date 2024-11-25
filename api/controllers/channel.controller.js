@@ -113,7 +113,7 @@ module.exports.getAllChannelLoggedoutUser = asyncHandler(async (req, res) => {
 module.exports.getChannelById = asyncHandler(async (req, res) => {
 	try {
 		const channelId = req.params._id;
-		const channelData = await Channel.findOne({ _id: channelId }).populate({
+		const channelData = await Channel.findOne({ username: channelId }).populate({
 			path: 'userId',
 			select: 'genre'
 		  });

@@ -8,6 +8,7 @@ import { connect } from "react-redux";
 import { getEditionById } from "@/redux/publish/publishActions";
 import EditionCard from "@/components/channels/EditionCard";
 import PostCard from "@/app/(loggedinroutes)/home/postCard";
+import { addRemoveBookmarks } from "@/redux/bookmarks/bookmarkAction";
 
 const Home = ({
   getEditionById,
@@ -15,13 +16,21 @@ const Home = ({
   user,
   singleEdition,
   singleEditionPosts,
+  addRemoveBookmarks
 }) => {
   const [postList, setPostList] = useState([]);
+  const [edition, setEdition] = useState({});
+
   useEffect(() => {
     if (user) {
       getEditionById(params.editionId);
     }
   }, [user]);
+  useEffect(() => {
+    if (singleEdition) {
+      setEdition(singleEdition);
+    }
+  }, [singleEdition]);
 
   useEffect(() => {
     if (singleEditionPosts.length > 0) setPostList(singleEditionPosts);
@@ -36,14 +45,20 @@ const Home = ({
       )
     );
   };
+  const submitBookmarkEdition = async (type, editionId) => {
+    const res = await addRemoveBookmarks(type, editionId);
+    const updatedData = { isBookmarked: res.data.isBookmarked };
+    setEdition({ ...edition, ...updatedData });
+  };
 
   return (
     <Box>
-      {singleEdition && singleEdition.channelData && (
+      {edition && edition.channelData && (
         <EditionCard
           key={1}
-          edition={singleEdition}
-          channel={singleEdition.channelData}
+          edition={edition}
+          channel={edition.channelData}
+          submitBookmarkEdition={submitBookmarkEdition}
         />
       )}
       {postList.map?.((post) => (
@@ -70,6 +85,7 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = {
   getEditionById,
+  addRemoveBookmarks
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Home);

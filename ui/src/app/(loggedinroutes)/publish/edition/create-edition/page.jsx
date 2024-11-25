@@ -23,7 +23,7 @@ import "react-pdf/dist/Page/TextLayer.css";
 import { fetchUser } from "@/redux/profile/actions";
 import MultiSelectDropdown from "@/components/MultiSelectDropdown";
 import genres from "@/static-data/genres";
-
+import DemographicForm from "./DemographicForm"
 const CreateEdition = () => {
   const [pdfImage, setPdfImage] = useState("");
   const [about, setAbout] = useState("");
@@ -241,7 +241,25 @@ const CreateEdition = () => {
               </FormControl>
             </Box>
           </Box>
+
+          
+        <Box overflow="hidden" mt='8'>
+          <Box
+            borderTopWidth="2px"
+            borderBottomWidth="2px"
+            borderColor="gray.300"
+          >
+            <Text fontSize="mdl" textTransform='uppercase' fontWeight="bold" mt={3} mb={3}>
+              Demographics reference
+            </Text>
+          </Box>
+
+          <Box mt="4">
+          <DemographicForm/>
+          </Box>
         </Box>
+        </Box>
+
         <Box overflow="hidden">
           <Box
             borderTopWidth="2px"

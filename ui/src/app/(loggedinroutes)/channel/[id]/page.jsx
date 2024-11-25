@@ -37,6 +37,7 @@ const Page = ({
   const { id } = params;
 
   const [postList, setPostList] = useState([]);
+  const [editionList, setEditionList] = useState([]);
 
   const options = {
     posts: "Posts",
@@ -53,13 +54,13 @@ const Page = ({
   useEffect(() => {
     if (channelData&& user) {
       fetchFollowings(channelData.userId._id);
-      fetchFollowers(id);
+      fetchFollowers(channelData._id);
       setNavTitle(
         channelData.channelName,
         channelData.channelIconImageUrl 
       );
       if(view==options.posts)
-        fetchPosts(id);
+        fetchPosts(channelData._id);
       if(view==options.editions)
         getEditionsByUserID(channelData.userId._id);
     }
@@ -80,6 +81,23 @@ const Page = ({
   }, [posts]);
 
 
+
+  const submitBookmarkEdition = async (type, editionId) => {
+    const res = await addRemoveBookmarks(type, editionId);
+    const updatedData = { isBookmarked: res.data.isBookmarked };
+    setEditionList((prevItems) =>
+      prevItems.map((item) =>
+        item._id === res.data.editionId ? { ...item, ...updatedData } : item
+      )
+    );
+  };
+
+
+  useEffect(() => {
+    if (userEditions) setEditionList(userEditions);
+  }, [userEditions]);
+
+
   return (
     <Box>
         <Channel
@@ -95,7 +113,8 @@ const Page = ({
           options={options}
           view={view}
           setView={setView}
-          userEditions={userEditions}
+          userEditions={editionList}
+          submitBookmarkEdition={submitBookmarkEdition}
         />
     </Box>
   );

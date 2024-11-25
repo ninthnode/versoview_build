@@ -73,6 +73,7 @@ export default function Channel({
   setView,
   options,
   userEditions,
+  submitBookmarkEdition
 }) {
   // Extract unique sections from posts
   const uniqueSections = Array.from(new Set(posts.map((post) => post.section)));
@@ -160,6 +161,7 @@ export default function Channel({
                   key={edition._id}
                   edition={edition}
                   channel={channelDetail}
+                  submitBookmarkEdition={submitBookmarkEdition}
                 />
               ))
             ) : (

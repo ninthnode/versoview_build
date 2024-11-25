@@ -26,6 +26,7 @@ import { FaBookmark as BookmarkFilled } from "react-icons/fa6";
 import Link from "next/link";
 import { CiBookmark } from "react-icons/ci";
 import PostCard from "@/app/(loggedinroutes)/home/postCard";
+import EditionCard from "@/components/channels/EditionCard";
 
 const Comment = ({
   id,
@@ -49,10 +50,10 @@ const Comment = ({
     <Box maxW="2xl" p={4} position="relative" bg="#fff" mt="0">
       <div
         onClick={() => {
-          openCommentModal();
+          openCommentModal(singleComment);
         }}
       >
-        <Link href={`post/${postId._id}`}>
+        <Link href={`post/${postId.slug}`}>
           <HStack spacing={4} alignItems='flex-start'>
             <Avatar name={singleComment.userId.username} />
             <VStack align="start" spacing={1}>
@@ -115,6 +116,12 @@ const Bookmark = ({
       fetchBookmarks();
     } catch (error) {}
   };
+  const submitBookmarkEdition = async (type, editionId) => {
+    try {
+      await addRemoveBookmarks(type, editionId);
+      fetchBookmarks();
+    } catch (error) {}
+  };
 
   return (
     <Box mb="60px">
@@ -164,6 +171,15 @@ const Bookmark = ({
                     submitBookmark={submitCommentBookmark}
                     commentText={post.postCommentId.commentText}
                     openCommentModal={openCommentModal}
+                  />
+                );
+              } else if (post.editionId) {
+                return (
+                  <EditionCard
+                    key={1}
+                    edition={post.editionId}
+                    channel={post.editionId.channelData}
+                    submitBookmarkEdition={submitBookmarkEdition}
                   />
                 );
               } else {

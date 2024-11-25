@@ -299,8 +299,8 @@ function Profile() {
               </Text>
               {user && (
                 <ShareButton
-                  url={`${process.env.NEXT_PUBLIC_FRONTEND_URL}/channel/${user.channelId}`}
-                  title={user.channelName}
+                  url={`${process.env.NEXT_PUBLIC_FRONTEND_URL}/channel/${user.username}`}
+                  title={user.username}
                   shareButton={true}
                 />
               )}

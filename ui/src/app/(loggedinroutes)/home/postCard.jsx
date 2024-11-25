@@ -46,14 +46,14 @@ const PostCard = ({
           alignItems="center"
         >
           <Flex alignItems="center" w={{ base: "220px", sm: "100%" }}>
-            <Link href={`/channel/${post.channelId._id}`}>
+            <Link href={`/channel/${post.channelId.username}`}>
               <Avatar
                 size="sm"
                 borderRadius={10}
                 src={post.channelId.channelIconImageUrl}
               />
             </Link>
-            <Link href={`/channel/${post.channelId._id}`}>
+            <Link href={`/channel/${post.channelId.username}`}>
               <Text ml="2" fontWeight="semibold" fontSize="md">
                 <Tooltip
                   label={post.channelId?.channelName}
@@ -158,7 +158,7 @@ const PostCard = ({
           </Button> */}
         </Text>
 
-        <Link href={`/post/${post._id}`}>
+        <Link href={`/post/${post.slug}`}>
           <Heading
             py="1"
             mb="1"

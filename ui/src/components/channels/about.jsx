@@ -156,7 +156,7 @@ const About = ({
           </Flex>
           <Flex fontSize="sm" flexDirection="column" alignItems="left">
             <Text fontWeight="bold" lineHeight={1}>
-              7
+              0
             </Text>
             <Text fontSize="12px">Editions</Text>
           </Flex>

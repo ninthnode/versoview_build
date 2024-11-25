@@ -7,6 +7,7 @@ const {
 	getAllPdfSlides,
 	getAllPost,
 	getPostById,
+	getPostBySlug,
 	getPostByIdLoggedOut,
 	updatePost,
 	deletePost,
@@ -39,6 +40,7 @@ const {
 	postOwner,
 	getPostIfUserNotLoggedIn,
 	getRecentlyViewedPosts,
+	getUserComments
 } = require("../../controllers/post.controller");
 const { protectUser } = require("../../middlewares/authMiddleware");
 const { upload } = require("../../config/multerUpload");
@@ -48,7 +50,8 @@ const router = express.Router();
 router.post("/createPost", protectUser, create);
 router.get("/getAllPost", protectUser, getAllPost);
 router.get("/getPostIfUserNotLoggedIn", getPostIfUserNotLoggedIn);
-router.get("/getPost/:_id", protectUser, getPostById);
+router.get("/getPost/:slug", protectUser, getPostBySlug);
+router.get("/getPostById/:_id", protectUser, getPostById);
 router.get("/getPostByIdLoggedOut/:_id", getPostByIdLoggedOut);
 router.get("/getPostByChannelId/:_id",protectUser, getPostByChannelId);
 router.put("/updatePost/:_id", protectUser, updatePost);
@@ -82,5 +85,7 @@ router.delete("/deletePostComment/:_id", protectUser, deletePostComment);
 router.delete("/deleteCommentReply/:_id", protectUser, deleteCommentReply);
 router.get("/postOwner/:_id", protectUser, postOwner);
 router.get("/getRecentlyViewedPosts/", protectUser, getRecentlyViewedPosts);
+
+router.get("/getUserComments",protectUser, getUserComments);
 
 module.exports = router;
