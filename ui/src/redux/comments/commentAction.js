@@ -8,7 +8,7 @@ import {
   OPEN_COMMENTS_MODAL,
   CLOSE_COMMENTS_MODAL,
   NEXT_PAGE,
-  PREVIOUS_PAGE
+  PREVIOUS_PAGE,
 } from "./commentType";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -101,7 +101,9 @@ const addRepliesToNestedComments = (comments, commentId, newReplies) => {
 
       return {
         ...comment,
-        replies: [...existingReplies, ...filteredNewReplies].filter(item => typeof item === 'object' && item !== null),
+        replies: [...existingReplies, ...filteredNewReplies]
+          .filter((item) => typeof item === "object" && item !== null)
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)),
       };
     }
 
@@ -120,22 +122,25 @@ const addRepliesToNestedComments = (comments, commentId, newReplies) => {
   });
 };
 
-export const getCommentRepliesByCommentId = (commentId, postId,level,lastComment) => {
+export const getCommentRepliesByCommentId = (
+  commentId,
+  postId,
+  level,
+  lastComment
+) => {
   return async (dispatch, getState) => {
     try {
       const token = localStorage.getItem("token").replaceAll('"', "");
       const { comment } = getState();
 
-
-      if(level>1){
-
+      if (level > 1) {
         const tempPagesData = {
           ...comment.pagesData,
-          [comment.pageNumber]: comment.comments
+          [comment.pageNumber]: comment.comments,
         };
         dispatch({
           type: NEXT_PAGE,
-          payload: {arr:tempPagesData,page:comment.pageNumber+1},
+          payload: { arr: tempPagesData, page: comment.pageNumber + 1 },
         });
       }
 
@@ -148,22 +153,21 @@ export const getCommentRepliesByCommentId = (commentId, postId,level,lastComment
         }
       );
       dispatch(getCommentAndRepliesCount(postId));
-      let getCommentReplies= await addRepliesToNestedComments(
+      let getCommentReplies = await addRepliesToNestedComments(
         comment.comments,
         commentId,
         response.data.replies
-      )
+      );
 
-      let newArr=[]
-      if(level>1){
-        newArr = [ {...lastComment,
-          opened: true,
-          replies: response.data.replies
-        }]
+      let newArr = [];
+      if (level > 1) {
+        newArr = [
+          { ...lastComment, opened: true, replies: response.data.replies },
+        ];
       }
       dispatch({
         type: GET_COMMENT_REPLIES_SUCCESS,
-        payload: newArr.length>0?newArr:getCommentReplies
+        payload: newArr.length > 0 ? newArr : getCommentReplies,
       });
     } catch (error) {}
   };
@@ -173,14 +177,14 @@ export const getPreviousPage = () => {
     try {
       const { comment } = getState();
       const { [comment.pageNumber]: _, ...tempPagesData } = comment.pagesData;
-        dispatch({
-          type: PREVIOUS_PAGE,
-          payload: tempPagesData
-        });
-        dispatch({
-          type: GET_COMMENT_REPLIES_SUCCESS,
-          payload: comment.pagesData[comment.pageNumber-1]
-        });
+      dispatch({
+        type: PREVIOUS_PAGE,
+        payload: tempPagesData,
+      });
+      dispatch({
+        type: GET_COMMENT_REPLIES_SUCCESS,
+        payload: comment.pagesData[comment.pageNumber - 1],
+      });
     } catch (error) {}
   };
 };
@@ -206,29 +210,25 @@ export const getCommentAndRepliesCount = (postId) => {
   };
 };
 
-
-const updateCommentVote = async (comments, commentId,voteType, response) => {
+const updateCommentVote = async (comments, commentId, voteType, response) => {
   for (let i = 0; i < comments.length; i++) {
     const comment = comments[i];
     if (comment._id === commentId) {
-      if(response.status===200){
-        if(response.data.voteType){
-          comment.trueCount = comment.trueCount+1;
-          if(comment.falseCount>0)
-          comment.falseCount = comment.falseCount-1;
+      if (response.status === 200) {
+        if (response.data.voteType) {
+          comment.trueCount = comment.trueCount + 1;
+          if (comment.falseCount > 0)
+            comment.falseCount = comment.falseCount - 1;
+        } else {
+          if (comment.trueCount > 0) comment.trueCount = comment.trueCount - 1;
+          comment.falseCount = comment.falseCount + 1;
         }
-        else{
-          if(comment.trueCount>0)
-          comment.trueCount = comment.trueCount-1;
-          comment.falseCount = comment.falseCount+1;
+      } else if (response.status === 400) {
+        if (response.data.voteType == true) {
+          comment.trueCount = comment.trueCount - 1;
         }
-      }
-      else if(response.status===400){
-        if(response.data.voteType==true){
-          comment.trueCount = comment.trueCount-1;
-        }
-        if(response.data.voteType==false){
-          comment.falseCount = comment.falseCount-1;
+        if (response.data.voteType == false) {
+          comment.falseCount = comment.falseCount - 1;
         }
       }
       return comments;
@@ -236,14 +236,19 @@ const updateCommentVote = async (comments, commentId,voteType, response) => {
 
     // If it has replies, continue searching in the nested replies
     if (Array.isArray(comment.replies) && comment.replies.length > 0) {
-      const updatedReplies = await updateCommentVote(comment.replies, commentId,voteType, response);
+      const updatedReplies = await updateCommentVote(
+        comment.replies,
+        commentId,
+        voteType,
+        response
+      );
       if (updatedReplies) return comments;
     }
   }
   return null;
 };
 export const updateCommentUpvote = (commentId) => {
-  return async (dispatch,getState) => {
+  return async (dispatch, getState) => {
     try {
       const token = localStorage.getItem("token").replaceAll('"', "");
       const response = await axios.post(
@@ -256,14 +261,24 @@ export const updateCommentUpvote = (commentId) => {
         }
       );
       const { comment } = getState();
-      const updatedComments=  await updateCommentVote(comment.comments,commentId,true,response.data) 
-        if(comment.pageNumber>0){
-          const updatedComments2=  await updateCommentVote(comment.pagesData[comment.pageNumber-1],commentId,true,response.data) 
-        }
-        dispatch({
-         type: GET_COMMENT_REPLIES_SUCCESS,
-         payload: updatedComments
-       });
+      const updatedComments = await updateCommentVote(
+        comment.comments,
+        commentId,
+        true,
+        response.data
+      );
+      if (comment.pageNumber > 0) {
+        const updatedComments2 = await updateCommentVote(
+          comment.pagesData[comment.pageNumber - 1],
+          commentId,
+          true,
+          response.data
+        );
+      }
+      dispatch({
+        type: GET_COMMENT_REPLIES_SUCCESS,
+        payload: updatedComments,
+      });
       toast("Comment " + response.data.message, {
         autoClose: 3000,
         type: "success",
@@ -272,7 +287,7 @@ export const updateCommentUpvote = (commentId) => {
   };
 };
 export const updateCommentDownvote = (commentId) => {
-  return async (dispatch,getState) => {
+  return async (dispatch, getState) => {
     try {
       const token = localStorage.getItem("token").replaceAll('"', "");
       const response = await axios.put(
@@ -285,14 +300,24 @@ export const updateCommentDownvote = (commentId) => {
         }
       );
       const { comment } = getState();
-      const updatedComments=  await updateCommentVote(comment.comments,commentId,false,response.data) 
-      if(comment.pageNumber>0){
-        const updatedComments2=  await updateCommentVote(comment.pagesData[comment.pageNumber-1],commentId,false,response.data) 
+      const updatedComments = await updateCommentVote(
+        comment.comments,
+        commentId,
+        false,
+        response.data
+      );
+      if (comment.pageNumber > 0) {
+        const updatedComments2 = await updateCommentVote(
+          comment.pagesData[comment.pageNumber - 1],
+          commentId,
+          false,
+          response.data
+        );
       }
       dispatch({
-       type: GET_COMMENT_REPLIES_SUCCESS,
-       payload: updatedComments
-     });
+        type: GET_COMMENT_REPLIES_SUCCESS,
+        payload: updatedComments,
+      });
       toast("Comment " + response.data.message, {
         autoClose: 3000,
         type: "success",
@@ -344,7 +369,13 @@ export const updateCommentReplyDownvote = (commentId, replyId) => {
     } catch (error) {}
   };
 };
-export const replyToPostComment = (commentId, commentReply, postId,level,lastComment) => {
+export const replyToPostComment = (
+  commentId,
+  commentReply,
+  postId,
+  level,
+  lastComment
+) => {
   return async (dispatch, getState) => {
     try {
       const { comment } = getState();
@@ -360,42 +391,36 @@ export const replyToPostComment = (commentId, commentReply, postId,level,lastCom
         }
       );
 
-      
-      let getCommentReplies= await addRepliesToNestedComments(
+      let getCommentReplies = await addRepliesToNestedComments(
         comment.comments,
         commentId,
         response.data.data
-      )
-      let newArr=[]
-      if(level>1){
-
+      );
+      let newArr = [];
+      if (level > 1) {
         const tempPagesData = {
           ...comment.pagesData,
-          [comment.pageNumber]: getCommentReplies
+          [comment.pageNumber]: getCommentReplies,
         };
         dispatch({
           type: NEXT_PAGE,
-          payload: {arr:tempPagesData,page:comment.pageNumber+1},
+          payload: { arr: tempPagesData, page: comment.pageNumber + 1 },
         });
 
-
-
-
-        newArr = [ {...lastComment,
-          opened: true,
-          replies: response.data.data
-        }]
+        newArr = [
+          { ...lastComment, opened: true, replies: response.data.data },
+        ];
       }
       dispatch({
         type: GET_COMMENT_REPLIES_SUCCESS,
-        payload: newArr.length>0?newArr:getCommentReplies
+        payload: newArr.length > 0 ? newArr : getCommentReplies,
       });
       toast(response.data.statusText, {
         autoClose: 3000,
         type: "success",
       });
     } catch (error) {
-      console.log(error)
+      console.log(error);
       // toast("Error Adding Comment Reply", {
       //   autoClose: 3000,
       //   type: "error",

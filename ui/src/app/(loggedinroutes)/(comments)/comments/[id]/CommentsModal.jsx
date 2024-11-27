@@ -15,6 +15,7 @@ import { IoClose } from "react-icons/io5";
 import { getExcerptText } from "@/app/utils/GetExcerpt";
 import useDeviceType from "@/components/useDeviceType";
 import Comment from "@/components/comments/comment";
+import { useRef } from "react";
 
 const CommentsModal = ({
   commentList,
@@ -37,10 +38,12 @@ const CommentsModal = ({
   pageNumber,
   modalComment,
   backToAllComments,
-  postSlug
+  postSlug,
+  pageLoading
 }) => {
   const [showReply, setshowReply] = useState("");
   const deviceType = useDeviceType();
+  const commentStartRef = useRef(null);
 
   return (
     <>
@@ -143,6 +146,7 @@ const CommentsModal = ({
                   back
                 </Button>
               )} */}
+
               <Box minH="90vh" pb="60px" overflowX="hidden">
                 <VStack spacing={4} pb={4} mb={4} bg="lightgray" h="100%">
                   <React.Fragment>
@@ -168,6 +172,7 @@ const CommentsModal = ({
                         />
                       ))
                     ) : (
+                      pageLoading? <Spinner mt='2'/>:
                       <Text>No Comments</Text>
                     )}
                   </React.Fragment>

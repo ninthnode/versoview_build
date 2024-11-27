@@ -10,7 +10,7 @@ import {
     Divider
   } from "@chakra-ui/react";
 import Following from "@/app/(loggedinroutes)/home/following";
-import Chats from "@/app/(loggedinroutes)/Chats/index";
+import Chats from "@/app/(loggedinroutes)/chats";
 import { usePathname } from "next/navigation";
 import useDeviceType from "@/components/useDeviceType";
 

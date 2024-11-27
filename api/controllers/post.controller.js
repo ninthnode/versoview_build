@@ -1073,7 +1073,7 @@ module.exports.postComment = asyncHandler(async (req, res) => {
     return res.status(201).json({
       status: 201,
       data: [],
-      statusText: "No parent comment found for replies",
+      statusText: "New Comment Added",
     });
   } catch (error) {
     console.error(error);
@@ -1160,12 +1160,9 @@ module.exports.getAllComment = asyncHandler(async (req, res) => {
     );
     const commentsWithReplyCount = await Promise.all(
       commentsWithBookmarkStatus.map(async (comment) => {
-        const repliespercomment = await PostCommentReply.find({
-          postCommentId: comment._id,
-        });
         return {
           ...comment,
-          replyCount: repliespercomment ? repliespercomment.length : 0,
+          replyCount: comment.replies.length
         };
       })
     );
@@ -1208,7 +1205,7 @@ module.exports.getAllCommentReplies = asyncHandler(async (req, res) => {
     const upvoteCount = votes.filter((vote) => vote.voteType).length;
     const downvoteCount = votes.filter((vote) => !vote.voteType).length;
 
-    const replies = commentDetails.replies;
+    const replies = commentDetails.replies.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
     const replyIds = replies
       .filter((item) => typeof item === "object" && item !== null)
@@ -1247,14 +1244,21 @@ module.exports.getAllCommentReplies = asyncHandler(async (req, res) => {
         };
       })
     );
-
+    const repliesWithReplyCount = await Promise.all(
+      repliesWithBookmarkStatus.map(async (reply) => {
+        return {
+          ...reply,
+          replyCount: reply.replies.length
+        };
+      })
+    );
     return res.status(200).json({
       comment: {
         ...commentDetails,
         upvoteCount,
         downvoteCount,
       },
-      replies: repliesWithBookmarkStatus,
+      replies: repliesWithReplyCount,
     });
 
     // return res.status(200).json({ data: replies });

@@ -47,6 +47,7 @@ const Comments = ({
 
   const postId = id;
   const [commentList, setCommentList] = useState([]);
+  const [pageLoading, setPageLoading] = useState([]);
   useEffect(() => {
     if(!isModalCommentsOpen){
       getCommentByPostId(postId);
@@ -56,6 +57,7 @@ const Comments = ({
   useEffect(() => {
     if (commentState&&commentState.length > 0) {
       setCommentList(commentState);
+      setPageLoading(false)
     }
   }, [commentState,commentStateUpdateCount,isModalCommentsOpen]);
 
@@ -76,7 +78,11 @@ const Comments = ({
     if(istoggle)onToggleCommentModal()
   };
   const updateCommentArray =(id,postId,level,lastComment)=>{
-    // console.log(id,postId)
+    // console.log(level)
+    if(level>1){
+      setCommentList([])
+      setPageLoading(true)
+    };
     getCommentRepliesByCommentId(id,postId,level,lastComment);
   }
   const backToAllComments=()=>{
@@ -127,6 +133,7 @@ const Comments = ({
           pageNumber={pageNumber}
           modalComment={modalComment}
           backToAllComments={backToAllComments}
+          pageLoading={pageLoading}
         />
       )}
     </Box>

@@ -45,6 +45,7 @@ const Comment = ({
   postSlug,
   getPreviousPage,
   pageNumber,
+  replyCount
 }) => {
   const [isOpen, setIsOpen] = useState(comment.opened || false);
   const [replyId, setReplyId] = useState(false);
@@ -59,7 +60,7 @@ const Comment = ({
 
   return (
     <Box w="100%" mb={4} bg="#fff" h={"100%"} key={_id}>
-      {/* <HStack align="start" spacing={4} position="relative" px={4} pt={6}>
+      <HStack align="start" spacing={4} position="relative" px={4} pt={6}>
         <Avatar
           size="md"
           name={userId.channelName}
@@ -101,7 +102,7 @@ const Comment = ({
             onClick={() => submitBookmark("comment", _id, !isBookmarked)}
           />
         </Box>
-      </HStack> */}
+      </HStack>
       {parentComment && (
         <>
           <HStack
@@ -172,7 +173,7 @@ const Comment = ({
                 x close thread
               </Button>
             )}
-            {comment.replies && comment.replies.length > 0 && (
+            {replyCount > 0 && (
               <Button
                 size="sm"
                 mt="4"
@@ -229,7 +230,7 @@ const Comment = ({
                 setIsOpen(!isOpen);
               }}
             >
-              {comment.replies && comment.replies.length}
+              {replyCount}
             </Button>
 
             <Button
@@ -269,36 +270,45 @@ const Comment = ({
         </Box>
       )}
       <Box>
-        {isOpen && comment.replies && comment.replies.length > 0 && (
-          <Flex
-            backgroundColor="lightgray"
-            p={4}
-            alignItems="center"
-            w="100%"
-            justifyContent="space-between"
-          >
-            <Text fontSize="md" fontWeight="bold">
-              Replies to {userId.channelName}
-            </Text>
-            {pageNumber > 0 && (
-              <Button
-                onClick={() => getPreviousPage()}
-                size="sm"
-                variant="ghost"
-                p="0"
-                color="#fff"
-                backgroundColor="gray.400"
-                _hover="gray.400"
-              >
-                X
-              </Button>
-            )}
-          </Flex>
-        )}
+
+        {isOpen&&
+          comment.replies &&
+          comment.replies.filter(
+            (item) =>
+              typeof item === "object" && item !== null && !Array.isArray(item)
+          ).length > 0 && (
+            <Flex
+              backgroundColor="lightgray"
+              p={4}
+              alignItems="center"
+              w="100%"
+              justifyContent="space-between"
+            >
+              <Text fontSize="md" fontWeight="bold">
+                Replies to {userId.channelName}
+              </Text>
+              {pageNumber > 0 && (
+                <Button
+                  onClick={() => getPreviousPage()}
+                  size="sm"
+                  variant="ghost"
+                  p="0"
+                  color="#fff"
+                  backgroundColor="gray.400"
+                  _hover="gray.400"
+                >
+                  X
+                </Button>
+              )}
+            </Flex>
+          )}
       </Box>
       {isOpen &&
         comment.replies &&
-        comment.replies.length > 0 &&
+        comment.replies.filter(
+            (item) =>
+              typeof item === "object" && item !== null && !Array.isArray(item)
+          ).length > 0 &&
         comment.replies.map((reply) => {
           return (
             typeof reply === "object" && (
