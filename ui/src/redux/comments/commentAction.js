@@ -14,6 +14,7 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Code } from "@chakra-ui/react";
 import { compose } from "redux";
+import { set } from "valibot";
 
 export const openCommentModal = (comment) => ({
   type: OPEN_COMMENTS_MODAL,
@@ -101,6 +102,7 @@ const addRepliesToNestedComments = (comments, commentId, newReplies) => {
 
       return {
         ...comment,
+        opened: true,
         replies: [...existingReplies, ...filteredNewReplies]
           .filter((item) => typeof item === "object" && item !== null)
           .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)),
@@ -126,7 +128,7 @@ export const getCommentRepliesByCommentId = (
   commentId,
   postId,
   level,
-  lastComment
+  lastComments
 ) => {
   return async (dispatch, getState) => {
     try {
@@ -161,9 +163,15 @@ export const getCommentRepliesByCommentId = (
 
       let newArr = [];
       if (level > 1) {
-        newArr = [
-          { ...lastComment, opened: true, replies: response.data.replies },
-        ];
+      lastComments.forEach((element) => {
+        if (element._id===commentId)
+          newArr.push({
+            ...element,
+            opened: true,
+            replies: response.data.replies,
+          });
+        else newArr.push(element);
+      });
       }
       dispatch({
         type: GET_COMMENT_REPLIES_SUCCESS,
@@ -172,7 +180,7 @@ export const getCommentRepliesByCommentId = (
     } catch (error) {}
   };
 };
-export const getPreviousPage = () => {
+export const getPreviousPage = (sectionRefs,id) => {
   return async (dispatch, getState) => {
     try {
       const { comment } = getState();
@@ -185,6 +193,18 @@ export const getPreviousPage = () => {
         type: GET_COMMENT_REPLIES_SUCCESS,
         payload: comment.pagesData[comment.pageNumber - 1],
       });
+      setTimeout(() => {
+        sectionRefs.current[id].scrollIntoView({ behavior: "auto",block: "center",inline: "nearest" });
+        sectionRefs.current[id].style.transition = "background-color 0.5s ease-in-out";
+        sectionRefs.current[id].style.backgroundColor = "#efefef";
+  
+        // Remove highlight after 1 second
+        setTimeout(() => {
+          sectionRefs.current[id].style.backgroundColor = "transparent";
+        }, 800);
+      },10);
+
+
     } catch (error) {}
   };
 };
@@ -369,12 +389,35 @@ export const updateCommentReplyDownvote = (commentId, replyId) => {
     } catch (error) {}
   };
 };
+
+
+
+
+const updateCommentCount = async (comments, commentId) => {
+  for (let i = 0; i < comments.length; i++) {
+    const comment = comments[i];
+    if (comment._id === commentId) {
+      comment.replyCount = comment.replyCount + 1;
+      return comments;
+    }
+
+    // If it has replies, continue searching in the nested replies
+    if (Array.isArray(comment.replies) && comment.replies.length > 0) {
+      const updatedReplies = await updateCommentCount(
+        comment.replies,
+        commentId,
+      );
+      if (updatedReplies) return comments;
+    }
+  }
+  return null;
+};
 export const replyToPostComment = (
   commentId,
   commentReply,
   postId,
   level,
-  lastComment
+  lastComments
 ) => {
   return async (dispatch, getState) => {
     try {
@@ -397,23 +440,34 @@ export const replyToPostComment = (
         response.data.data
       );
       let newArr = [];
+      
+      const updatedAllCommentCount = await updateCommentCount(getCommentReplies, commentId);
+      const updatedCurrentCommentCount = await updateCommentCount(comment.comments, commentId);
+
       if (level > 1) {
         const tempPagesData = {
           ...comment.pagesData,
-          [comment.pageNumber]: getCommentReplies,
+          [comment.pageNumber]: updatedCurrentCommentCount,
         };
         dispatch({
           type: NEXT_PAGE,
           payload: { arr: tempPagesData, page: comment.pageNumber + 1 },
         });
-
-        newArr = [
-          { ...lastComment, opened: true, replies: response.data.data },
-        ];
       }
+      if (level > 1) {
+        lastComments.forEach((element) => {
+          if (element._id===commentId)
+            newArr.push({
+              ...element,
+              opened: true,
+              replies: response.data.data,
+            });
+          else newArr.push(element);
+        });
+        }
       dispatch({
         type: GET_COMMENT_REPLIES_SUCCESS,
-        payload: newArr.length > 0 ? newArr : getCommentReplies,
+        payload: newArr.length > 0 ? newArr : updatedAllCommentCount,
       });
       toast(response.data.statusText, {
         autoClose: 3000,

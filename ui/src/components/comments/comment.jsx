@@ -45,7 +45,10 @@ const Comment = ({
   postSlug,
   getPreviousPage,
   pageNumber,
-  replyCount
+  replyCount,
+  parentSetIsOpen,
+  neighbourComments,
+  sectionRefs,
 }) => {
   const [isOpen, setIsOpen] = useState(comment.opened || false);
   const [replyId, setReplyId] = useState(false);
@@ -54,12 +57,12 @@ const Comment = ({
     setReplyText(e.target.value);
   };
   const submitReplyText = (comment, commentId, replyText) => {
-    replyToPostComment(commentId, replyText, postId, level, comment);
+    replyToPostComment(commentId, replyText, postId, level, neighbourComments);
     setReplyText("");
   };
 
   return (
-    <Box w="100%" mb={4} bg="#fff" h={"100%"} key={_id}>
+    <Box w="100%" mb={4} bg="#fff" h={"100%"} key={_id} ref={(el) => (sectionRefs.current[_id] = el)}>
       <HStack align="start" spacing={4} position="relative" px={4} pt={6}>
         <Avatar
           size="md"
@@ -161,9 +164,11 @@ const Comment = ({
       >
         {showReply && (
           <Flex gap={"4"}>
-            {pageNumber > 0 && level > 1 && (
+            {level > 1 && (
               <Button
-                onClick={() => getPreviousPage()}
+                onClick={async() => {
+                  pageNumber <= 0 ? parentSetIsOpen(false) : getPreviousPage(sectionRefs,parentComment._id)
+                }}
                 size="sm"
                 variant="ghost"
                 mt="4"
@@ -173,14 +178,14 @@ const Comment = ({
                 x close thread
               </Button>
             )}
-            {replyCount > 0 && (
+            {(replyCount > 0 || comment.replies.length > 0) && (
               <Button
                 size="sm"
                 mt="4"
                 p="0"
                 variant="ghost"
                 onClick={async () => {
-                  await updateCommentArray(comment._id, postId, level, comment);
+                  await updateCommentArray(comment._id, postId, level, neighbourComments);
                   setIsOpen(!isOpen);
                 }}
               >
@@ -226,8 +231,8 @@ const Comment = ({
               }
               aria-label="Upvote"
               onClick={async () => {
-                await updateCommentArray(comment._id, postId, level, comment);
-                setIsOpen(!isOpen);
+                await updateCommentArray(comment._id, postId, level, neighbourComments);
+                  setIsOpen(!isOpen);
               }}
             >
               {replyCount}
@@ -270,8 +275,7 @@ const Comment = ({
         </Box>
       )}
       <Box>
-
-        {isOpen&&
+        {isOpen &&
           comment.replies &&
           comment.replies.filter(
             (item) =>
@@ -289,7 +293,7 @@ const Comment = ({
               </Text>
               {pageNumber > 0 && (
                 <Button
-                  onClick={() => getPreviousPage()}
+                  onClick={async() => {await getPreviousPage(); }}
                   size="sm"
                   variant="ghost"
                   p="0"
@@ -306,13 +310,12 @@ const Comment = ({
       {isOpen &&
         comment.replies &&
         comment.replies.filter(
-            (item) =>
-              typeof item === "object" && item !== null && !Array.isArray(item)
-          ).length > 0 &&
+          (item) =>
+            typeof item === "object" && item !== null && !Array.isArray(item)
+        ).length > 0 &&
         comment.replies.map((reply) => {
           return (
             typeof reply === "object" && (
-              <Box height={"100%"}>
                 <Comment
                   key={reply._id}
                   setshowReply={setshowReply}
@@ -330,8 +333,10 @@ const Comment = ({
                   parentComment={comment}
                   getPreviousPage={getPreviousPage}
                   pageNumber={pageNumber}
+                  parentSetIsOpen ={setIsOpen}
+                  neighbourComments={comment.replies}
+                  sectionRefs={sectionRefs}
                 />
-              </Box>
             )
           );
         })}

@@ -40,6 +40,7 @@ const {
 	postOwner,
 	getPostIfUserNotLoggedIn,
 	getRecentlyViewedPosts,
+	getPreviousComments,
 	getUserComments
 } = require("../../controllers/post.controller");
 const { protectUser } = require("../../middlewares/authMiddleware");
@@ -86,6 +87,7 @@ router.delete("/deleteCommentReply/:_id", protectUser, deleteCommentReply);
 router.get("/postOwner/:_id", protectUser, postOwner);
 router.get("/getRecentlyViewedPosts/", protectUser, getRecentlyViewedPosts);
 
+router.get("/getPreviousComments/:_id",protectUser, getPreviousComments);
 router.get("/getUserComments",protectUser, getUserComments);
 
 module.exports = router;

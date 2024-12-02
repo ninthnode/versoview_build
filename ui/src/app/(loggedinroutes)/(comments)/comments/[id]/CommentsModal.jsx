@@ -43,7 +43,7 @@ const CommentsModal = ({
 }) => {
   const [showReply, setshowReply] = useState("");
   const deviceType = useDeviceType();
-  const commentStartRef = useRef(null);
+  const sectionRefs = useRef({});
 
   return (
     <>
@@ -82,7 +82,7 @@ const CommentsModal = ({
               shadow="md"
               w="100%"
               height={"100%"}
-              overflowY="scroll"
+              overflowY="auto"
             >
               <Flex p={4}>
                 <Box mt={2} justifyContent="flex-start" w="100%" mb="2">
@@ -148,7 +148,7 @@ const CommentsModal = ({
               )} */}
 
               <Box minH="90vh" pb="60px" overflowX="hidden">
-                <VStack spacing={4} pb={4} mb={4} bg="lightgray" h="100%">
+                <VStack spacing={4} pb={4} mb={4} bg="lightgray" h="100%" overflowY="auto">
                   <React.Fragment>
                     {commentList&&commentList.length > 0 ? (
                       commentList.map((comment) => (
@@ -169,6 +169,7 @@ const CommentsModal = ({
                           postSlug={postSlug}
                           getPreviousPage={getPreviousPage}
                           pageNumber={pageNumber}
+                          sectionRefs={sectionRefs}
                         />
                       ))
                     ) : (

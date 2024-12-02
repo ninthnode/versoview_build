@@ -47,7 +47,7 @@ const Comments = ({
 
   const postId = id;
   const [commentList, setCommentList] = useState([]);
-  const [pageLoading, setPageLoading] = useState([]);
+  const [pageLoading, setPageLoading] = useState(false);
   useEffect(() => {
     if(!isModalCommentsOpen){
       getCommentByPostId(postId);

@@ -52,6 +52,19 @@ function Chats() {
   const submitBookmark = async (type, commentId,bool) => {
     const response = await dispatch(addRemoveBookmarks(type, commentId,bool));
   };
+
+  const handleRedirectToPost=async(singleComment)=>{
+    dispatch(openCommentModal(singleComment))
+    // const response = await fetch(
+    //   `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/getPreviousComments/${singleComment._id}`,
+    //   {
+    //     headers: {
+    //       Authorization: `Bearer ${token}`,
+    //     },
+    //   }
+    // );
+    // console.log(response)
+  }
   return (
     <Box
       minHeight="500px"
@@ -85,7 +98,7 @@ function Chats() {
                       parentComment={comment.parentComment}
                       link={true}
                       postSlug={comment.postId.slug}
-                      handleRedirectToPost={(singleComment)=>dispatch(openCommentModal(singleComment))}
+                      handleRedirectToPost={handleRedirectToPost}
                     />
             </div>
           ))

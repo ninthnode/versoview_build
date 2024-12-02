@@ -1040,7 +1040,9 @@ module.exports.postComment = asyncHandler(async (req, res) => {
     await savedComment.populate("userId");
 
     if (parentId) {
-      const parentComment = await PostComment.findById(parentId).populate("replies");
+      const parentComment = await PostComment.findById(parentId).populate(
+        "replies"
+      );
       if (!parentComment) {
         return res.status(404).json({ message: "Parent comment not found" });
       }
@@ -1058,10 +1060,13 @@ module.exports.postComment = asyncHandler(async (req, res) => {
             isBookmarked: false,
             trueCount: 0,
             falseCount: 0,
+            replyCount:0
           };
         })
       );
-      enrichedReplies.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      enrichedReplies.sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      );
 
       return res.status(201).json({
         status: 201,
@@ -1080,7 +1085,6 @@ module.exports.postComment = asyncHandler(async (req, res) => {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
 
 // Post Comment Replies
 module.exports.postCommentReply = asyncHandler(async (req, res) => {
@@ -1162,7 +1166,7 @@ module.exports.getAllComment = asyncHandler(async (req, res) => {
       commentsWithBookmarkStatus.map(async (comment) => {
         return {
           ...comment,
-          replyCount: comment.replies.length
+          replyCount: comment.replies.length,
         };
       })
     );
@@ -1205,7 +1209,9 @@ module.exports.getAllCommentReplies = asyncHandler(async (req, res) => {
     const upvoteCount = votes.filter((vote) => vote.voteType).length;
     const downvoteCount = votes.filter((vote) => !vote.voteType).length;
 
-    const replies = commentDetails.replies.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    const replies = commentDetails.replies.sort(
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+    );
 
     const replyIds = replies
       .filter((item) => typeof item === "object" && item !== null)
@@ -1248,7 +1254,7 @@ module.exports.getAllCommentReplies = asyncHandler(async (req, res) => {
       repliesWithBookmarkStatus.map(async (reply) => {
         return {
           ...reply,
-          replyCount: reply.replies.length
+          replyCount: reply.replies.length?reply.replies.length:0,
         };
       })
     );
@@ -1282,12 +1288,20 @@ module.exports.upvoteComment = asyncHandler(async (req, res) => {
         votingUserId: userId,
         postCommentId: postCommentId,
       });
-      return res.status(200).json({ status: 400,data: {voteType: isAlreadyVoted.voteType}, message: "vote removed" });
+      return res.status(200).json({
+        status: 400,
+        data: { voteType: isAlreadyVoted.voteType },
+        message: "vote removed",
+      });
     }
     if (isAlreadyVoted && isAlreadyVoted.voteType === false) {
       isAlreadyVoted.voteType = true;
       await isAlreadyVoted.save();
-      return res.status(200).json({ status: 200,data: {voteType: isAlreadyVoted.voteType}, message: "upvoted" });
+      return res.status(200).json({
+        status: 200,
+        data: { voteType: isAlreadyVoted.voteType },
+        message: "upvoted",
+      });
     }
     const newVote = new CommentVote({
       votingUserId: userId,
@@ -1320,12 +1334,20 @@ module.exports.downvoteComment = asyncHandler(async (req, res) => {
         votingUserId: userId,
         postCommentId: postCommentId,
       });
-      return res.status(200).json({ status: 400,data: {voteType: isAlreadyVoted.voteType}, message: "vote removed" });
+      return res.status(200).json({
+        status: 400,
+        data: { voteType: isAlreadyVoted.voteType },
+        message: "vote removed",
+      });
     }
     if (isAlreadyVoted && isAlreadyVoted.voteType === true) {
       isAlreadyVoted.voteType = false;
       await isAlreadyVoted.save();
-      return res.status(200).json({ status: 200,data: {voteType: isAlreadyVoted.voteType}, message: "downvoted" });
+      return res.status(200).json({
+        status: 200,
+        data: { voteType: isAlreadyVoted.voteType },
+        message: "downvoted",
+      });
     }
     const newVote = new CommentVote({
       votingUserId: userId,
@@ -1582,129 +1604,39 @@ module.exports.getRecentlyViewedPosts = async (req, res) => {
     throw new Error("Unable to fetch recently viewed posts");
   }
 };
-// module.exports.getUserComments = asyncHandler(async (req, res) => {
-//   try {
-//     const userId = req.user._id;
-//     const comments = await PostComment.find({
-//       userId,
-//       replies: { $exists: true, $not: { $size: 0 } },
-//     })
-//       .populate({
-//         path: "userId",
-//         model: "User",
-//       })
-//       .populate({
-//         path: "postId",
-//         model: "Post",
-//       })
-//       .populate({
-//         path: "replies",
-//         populate: [
-//           {
-//             path: "userId",
-//             model: "User",
-//           },
-//           {
-//             path: "postId",
-//             model: "Post",
-//           },
-//         ],
-//       })
-//       .sort({ createdAt: -1 })
-//       .exec();
-
-//     // Process each comment to include upvote, downvote counts, and bookmark status for replies
-//     const processedComments = await Promise.all(
-//       comments.map(async (comment) => {
-//         // Sort replies by createdAt or any other field in ascending or descending order
-//         const sortedReplies = comment.replies
-//           .filter((reply) => typeof reply === "object" && reply !== null)
-//           .sort((a, b) => b.createdAt - a.createdAt);
-//         const replyIds = sortedReplies.map((reply) => reply._id);
-
-//         const replyVotes = await CommentVote.find({
-//           postCommentId: { $in: replyIds },
-//         }).lean();
-
-//         const repliesWithVotes = sortedReplies.map((reply) => {
-//           const replyUpvoteCount = replyVotes.filter(
-//             (vote) =>
-//               vote.postCommentId.toString() === reply._id.toString() &&
-//               vote.voteType
-//           ).length;
-//           const replyDownvoteCount = replyVotes.filter(
-//             (vote) =>
-//               vote.postCommentId.toString() === reply._id.toString() &&
-//               !vote.voteType
-//           ).length;
-//           return {
-//             ...reply.toObject(),
-//             trueCount: replyUpvoteCount,
-//             falseCount: replyDownvoteCount,
-//           };
-//         });
-
-//         const repliesWithBookmarkStatus = await Promise.all(
-//           repliesWithVotes.map(async (reply) => {
-//             const bookmark = await Bookmark.findOne({
-//               userId,
-//               postCommentId: reply._id,
-//             });
-//             return {
-//               ...reply,
-//               isBookmarked: !!bookmark,
-//             };
-//           })
-//         );
-
-//         return {
-//           ...comment.toObject(),
-//           replies: repliesWithBookmarkStatus,
-//         };
-//       })
-//     );
-
-//     res.status(200).json(processedComments);
-//   } catch (error) {
-//     console.error(error);
-//     res
-//       .status(500)
-//       .json({ error: "Server error fetching comments and replies." });
-//   }
-// });
 
 module.exports.getUserComments = asyncHandler(async (req, res) => {
   try {
     const userId = req.user._id;
 
-  // Fetch all comments with their populated replies
-  const comments = await PostComment.find({
-    userId,
-    replies: { $exists: true, $not: { $size: 0 } },
-  })
-  .populate({
-    path: "userId",
-    model: "User",
-  })
-  .populate({
-    path: "postId",
-    model: "Post",
-  })
-  .populate({
-    path: "replies",
-    populate: [
-      {
+    // Fetch all comments with their populated replies
+    const comments = await PostComment.find({
+      userId,
+      replies: { $exists: true, $not: { $size: 0 } },
+    })
+      .populate({
         path: "userId",
         model: "User",
-      },
-      {
+      })
+      .populate({
         path: "postId",
         model: "Post",
-      },
-    ],
-  })
-  .sort({ createdAt: -1 })
-  .exec();
+      })
+      .populate({
+        path: "replies",
+        populate: [
+          {
+            path: "userId",
+            model: "User",
+          },
+          {
+            path: "postId",
+            model: "Post",
+          },
+        ],
+      })
+      .sort({ createdAt: -1 })
+      .exec();
 
     // Collect all replies across all comments and add the parent comment reference
     const allReplies = comments.flatMap((comment) =>
@@ -1716,7 +1648,7 @@ module.exports.getUserComments = asyncHandler(async (req, res) => {
 
     // Sort all replies by createdAt (newest first)
     const sortedReplies = allReplies
-      .filter((reply) => typeof reply === 'object' && reply !== null)
+      .filter((reply) => typeof reply === "object" && reply !== null)
       .sort((a, b) => b.createdAt - a.createdAt); // Sort replies in descending order
 
     // Fetch votes for all replies
@@ -1757,10 +1689,101 @@ module.exports.getUserComments = asyncHandler(async (req, res) => {
         };
       })
     );
-
-    res.status(200).json(repliesWithBookmarkStatus); // Return the flat sorted replies with all additional data
+    const repliesWithReplyCount = await Promise.all(
+      repliesWithBookmarkStatus.map(async (reply) => {
+        return {
+          ...reply,
+          replyCount: reply.replies.length?reply.replies.length:0,
+        };
+      })
+    );
+    res.status(200).json(repliesWithReplyCount); // Return the flat sorted replies with all additional data
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Server error fetching comments and replies.' });
+    res
+      .status(500)
+      .json({ error: "Server error fetching comments and replies." });
+  }
+});
+
+// const populateParentComments = async (commentId, level = 0, maxLevel = 3) => {
+//   if (level > maxLevel) return null;
+
+//   const comment = await PostComment.findById(commentId).populate('parentId')
+
+//   if (!comment) {
+//     return null;
+//   }
+
+//   let parentComment = null;
+//   if (comment.parentId) {
+//     parentComment = await populateParentComments(comment.parentId, level + 1, maxLevel);
+//   }
+
+//   return {
+//     ...comment.toObject(),
+//     parentId: parentComment,
+//   };
+// };
+
+// module.exports.getPreviousComments = asyncHandler(async (req, res) => {
+//   const { _id } = req.params;
+//   const commentId = _id;
+
+//   try {
+//     const parentComments = await populateParentComments(commentId);
+
+//     if (!parentComments) {
+//       return res.status(404).json({ message: "Comment not found" });
+//     }
+
+//     const topLevelComments = await PostComment.find({ postId: parentComments.postId,parentId: null }).sort({ createdAt: -1 });
+
+//     const topLevelCommentId = parentComments.parentId.parentId._id
+//     let isInclude =false
+//     topLevelComments.forEach(comment => {
+//       if(comment._id.toString() === topLevelCommentId.toString()){
+//         isInclude = true
+//       }
+//     })
+
+//     if(isInclude)
+//       return res.json(topLevelComments);
+//     else
+//       return res.json(formatedObj);
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(500).json({ message: "Server error" });
+//   }
+// });
+
+module.exports.getPreviousComments = asyncHandler(async (req, res) => {
+  const { _id } = req.params;
+  const commentId = _id;
+  try {
+    const comment = await PostComment.findById(commentId).exec();
+    if (!comment) {
+      return res.status(404).send("Comment not found");
+    }
+    const getCommentHierarchy = async (comment, level = 0) => {
+      if (level >= 3) {
+        return comment;
+      }
+      comment = comment.toObject();
+      comment.replies = await PostComment.find({
+        parentId: comment._id,
+      }).exec();
+      for (let i = 0; i < comment.replies.length; i++) {
+        comment.replies[i] = await getCommentHierarchy(
+          comment.replies[i],
+          level + 1
+        );
+      }
+      return comment;
+    };
+    const formattedComment = await getCommentHierarchy(comment);
+    res.json(formattedComment);
+  } catch (err) {
+    res.status(500).send(err.message);
   }
 });
