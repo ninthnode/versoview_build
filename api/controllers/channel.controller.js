@@ -66,36 +66,44 @@ module.exports.create = asyncHandler(async (req, res) => {
 
 module.exports.getAllChannel = asyncHandler(async (req, res) => {
 	try {
-		const userId = req.user._id;
-		const userFollows = await Follow.find({ userId }).sort({ pinned: -1 }).exec();
-    	const followedChannelIds = userFollows.map((follow) => follow.channelId);
-		let channelData = await Channel.find({
-			_id: { $in: followedChannelIds },
-		});
-		channelData = followedChannelIds.map((id) => channelData.find((channel) => channel._id.equals(id)));
-		  const userChannel = await Channel.find({ userId: userId })
-		  let combinedChannel = [...userChannel,...channelData];
-		  const uniqueChannels = Array.from(
-			new Map(combinedChannel.map((channel) => [channel._id.toString(), channel])).values()
-		  );
-		  
-		// Get total post count for each channel
-		// const channelsWithPostCount = await Promise.all(
-		// 	uniqueChannels.map(async (channel) => {
-		// 		const postCount = await Post.countDocuments({ channelId: channel._id });
-		// 		return {
-		// 			channelData: channel.toObject(),
-		// 			postCount: postCount,
-		// 		};
-		// 	}),
-		// );
-
-		res.status(200).json({ message: "Success", data: uniqueChannels });
+	  const userId = req.user._id;
+	  const userFollows = await Follow.find({ userId }).sort({ pinned: -1 }).exec();
+	  let followedChannelIds = userFollows.map((follow) => follow.channelId);
+  
+	  // Add a hardcoded channel ID to the list
+	  const hardcodedChannelId = process.env.ADMIN_CHANNEL_ID; // Replace with your hardcoded ID
+	  if (!followedChannelIds.includes(hardcodedChannelId)) {
+		followedChannelIds.push(hardcodedChannelId);
+	  }
+  
+	  let channelData = await Channel.find({
+		_id: { $in: followedChannelIds },
+	  });
+	  channelData = followedChannelIds.map((id) => channelData.find((channel) => channel._id.equals(id)));
+  
+	  const userChannel = await Channel.find({ userId: userId });
+	  let combinedChannel = [...userChannel, ...channelData];
+  
+	  const uniqueChannels = Array.from(
+		new Map(combinedChannel.map((channel) => [channel._id.toString(), channel])).values()
+	  );
+  
+	  // Ensure the hardcoded channel is at the top
+	  const hardcodedChannel = uniqueChannels.find((channel) =>
+		channel._id.equals(hardcodedChannelId)
+	  );
+	  const otherChannels = uniqueChannels.filter(
+		(channel) => !channel._id.equals(hardcodedChannelId)
+	  );
+	  const sortedChannels = hardcodedChannel ? [hardcodedChannel, ...otherChannels] : uniqueChannels;
+  
+	  res.status(200).json({ message: "Success", data: sortedChannels });
 	} catch (error) {
-		console.error(error);
-		res.status(500).json({ error: "Internal Server Error" });
+	  console.error(error);
+	  res.status(500).json({ error: "Internal Server Error" });
 	}
-});
+  });
+  
 module.exports.getAllChannelLoggedoutUser = asyncHandler(async (req, res) => {
 	try {
 		const adminId = process.env.ADMIN_USER_ID;

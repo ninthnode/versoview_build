@@ -22,6 +22,7 @@ import SidebarRoutes from "../../routes/SidebarRoutes";
 import RightSidebar from "./RightSidebar";
 import { useRouter, usePathname } from "next/navigation";
 import { RightSidebarRoutes } from "@/routes";
+import useDeviceType from "@/components/useDeviceType";
 
 const Navbar = ({ children }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -29,6 +30,7 @@ const Navbar = ({ children }) => {
   const router = useRouter();
   const routeIndex = SidebarRoutes.findIndex((route) => route.url === path);
   const [index, setIndex] = React.useState(routeIndex);
+  const deviceType = useDeviceType();
 
   const FullWidthRoutes = ["/publish"];
   const IsFullWidthRoutes = FullWidthRoutes.find((route) =>
@@ -52,7 +54,7 @@ const Navbar = ({ children }) => {
         justifyContent="space-between"
         direction="column"
         w="100%"
-        maxW={IsFullWidthRoutes ? "100%" : "4xl"}
+        // maxW={IsFullWidthRoutes ? "100%" : "4xl"}
       >
         <Box w="100%">
           <Box>
@@ -104,9 +106,9 @@ const Navbar = ({ children }) => {
           </Box>
         </Box>
       </Flex>
-      <Box px={4} mt="4.4rem" w={IsFullWidthRoutes?"0":"100%"} maxW="xl">
+      {deviceType!='phone'&&<Box px={4} mt="4.4rem" w={IsFullWidthRoutes?"0":"100%"} maxW="xl">
         <RightSidebar />
-      </Box>
+      </Box>}
     </Flex>
   );
 };

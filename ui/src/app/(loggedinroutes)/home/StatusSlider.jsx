@@ -11,7 +11,6 @@ const StatusItem = ({ status }) => {
 
   const [unread, setUnread] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-
   const getUnread = () => {
     return get(`post/getAllUnreadPost/${status.id}`)
       .then((r) => r.data?.length)
@@ -28,10 +27,9 @@ const StatusItem = ({ status }) => {
       setIsLoading(false);
     }
   }, [status.id]);
-
   return (
     <Flex direction="column" alignItems="center" position="relative">
-      <Link href={`/channel/${status.id}`}>
+      <Link href={`/channel/${status.username}`}>
         <Avatar
           size="lg"
           borderRadius={10}
@@ -92,6 +90,7 @@ const getChannels = () => {
         id: c._id,
         name: c.channelName,
         avatar: c.channelIconImageUrl,
+        username:c.username,
       }))
     );
 };
