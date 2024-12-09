@@ -2,10 +2,14 @@ import React from "react";
 import { useGoogleLogin } from "@react-oauth/google";
 import { Box, Button, Flex, Text } from "@chakra-ui/react";
 import { FcGoogle } from "react-icons/fc";
+import { useDispatch } from "react-redux";
+import { googleAuth } from "@/redux/auth/authActions";
 
 function CustomGoogleButton() {
+  const dispatch = useDispatch();
+
   const gLogin = useGoogleLogin({
-    onSuccess: (tokenResponse) => console.log(tokenResponse),
+    onSuccess: async(tokenResponse) => await dispatch(googleAuth(tokenResponse.access_token))
   });
   return (
     <Button

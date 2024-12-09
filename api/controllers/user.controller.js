@@ -8,6 +8,7 @@ const { Follow } = require("../models/follow.model");
 const bcrypt = require("bcryptjs");
 const { sendMail } = require("../config/nodemailer");
 const { OAuth2Client } = require("google-auth-library");
+const axios = require("axios");
 
 const {
   generateToken,
@@ -408,13 +409,13 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 module.exports.googleAuth = asyncHandler(async (req, res) => {
   const { googleToken } = req.body;
-  let payload;
+  let ticket;
   try {
-    const ticket = await client.verifyIdToken({
-      idToken: googleToken,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
-    payload = ticket.getPayload();
+    ticket = await axios
+    .get('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: { Authorization: `Bearer ${googleToken}` },
+    })
+    .then(res => res.data);
   } catch (error) {
     return res.status(400).json({
       status: 400,
@@ -422,11 +423,10 @@ module.exports.googleAuth = asyncHandler(async (req, res) => {
     });
   }
 
-  const { sub: googleId, email, name, picture } = payload;
+  const { sub: googleId, email, name, picture } = ticket;
   // Check if user already exists
   let user = await User.findOne({ googleId });
   if (user) {
-    console.log(user);
     
   const token = await generateToken(user._id, user.username);
   const refreshtoken = await generateRefreshToken(user._id, user.username);
@@ -460,6 +460,7 @@ module.exports.googleAuth = asyncHandler(async (req, res) => {
   user = await User.create({
     googleId,
     email,
+    channelName: name || "",
     username: uniqueUsername,
     userType: "user",
     status: "active",

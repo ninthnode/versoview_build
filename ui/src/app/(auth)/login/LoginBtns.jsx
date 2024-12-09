@@ -9,12 +9,6 @@ import CustomGoogleButton from "@/components/auth/CustomGoogleButton";
 function LoginBtns() {
   const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
   const dispatch = useDispatch();
-
-  const handleGoogleSuccess = async (response) => {
-    await dispatch(googleAuth(response.credential));
-    // console.log('Google OAuth Success:', response);
-  };
-
   const handleGoogleFailure = (error) => {
     console.error("Google OAuth Failure:", error);
   };

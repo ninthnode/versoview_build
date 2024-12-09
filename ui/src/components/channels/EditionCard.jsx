@@ -55,7 +55,7 @@ const EditionCard = ({ edition, key, channel,submitBookmarkEdition }) => {
           <Flex>
             {/* {!small && (
             <PostMenu
-              url={`${process.env.NEXT_PUBLIC_FRONTEND_URL}/post/${post._id}`}
+              url={`${process.env.NEXT_PUBLIC_FRONTEND_URL}/post/${post.slug}`}
               title={post.header}
             />
           )} */}

@@ -46,7 +46,7 @@ function Publications({ userPosts,deletePostHandler }) {
           </AccordionButton>
 
         {editions.length>0&&editions.map((item, index) => (
-          <AccordionPanel p={2}>
+          <AccordionPanel p={2} key={index}>
           <Accordion defaultIndex={[0]} allowMultiple p={0}>
             <AccordionItem p={0}>
               <AccordionButton p={2}>

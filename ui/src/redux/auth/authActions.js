@@ -84,6 +84,7 @@ export const signupUser = (formData) => async (dispatch) => {
 };
 export const googleAuth = (googleToken) => async (dispatch) => {
   try {
+    
     dispatch({
       type: LOADING_START,
     });
@@ -96,11 +97,10 @@ export const googleAuth = (googleToken) => async (dispatch) => {
         autoClose: 3000,
         type:'success'
       })
-      console.log(response)
       dispatch(signupsuccess(response));
       localStorage.setItem("token", JSON.stringify(response.data.data.token));
       localStorage.setItem('refreshToken', JSON.stringify(response.data.data.refreshtoken));
-      // window.location.href = "/choose-topics";
+      window.location.href = "/choose-topics";
     }
   } catch (error) {
     dispatch({

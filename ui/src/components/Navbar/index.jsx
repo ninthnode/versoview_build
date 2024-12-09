@@ -41,7 +41,7 @@ const Navbar = ({ children }) => {
       minH="100vh"
       bg="light"
       w="100%"
-      justifyContent={!RightSidebarRoutes ? "flex-start" : "center"}
+      justifyContent={{ base: !RightSidebarRoutes ? "flex-start" : "center", md: "center" }}
     >
       <SidebarContent
         onClose={onClose}

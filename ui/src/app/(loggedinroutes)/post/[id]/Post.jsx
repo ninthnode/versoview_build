@@ -178,7 +178,7 @@ function SinglePost({
                 </Flex>
                 <Flex>
                   <PostMenu
-                    url={`${process.env.NEXT_PUBLIC_FRONTEND_URL}/post/${postState.post._id}`}
+                    url={`${process.env.NEXT_PUBLIC_FRONTEND_URL}/post/${postState.post.slug}`}
                     title={postState.post.header}
                   />
                   <IconButton
@@ -310,7 +310,7 @@ function SinglePost({
                 </Flex>
                 <Flex w="100%" justify="flex-end">
                   <ShareButton
-                    url={`${process.env.NEXT_PUBLIC_FRONTEND_URL}/post/${postState.post._id}`}
+                    url={`${process.env.NEXT_PUBLIC_FRONTEND_URL}/post/${postState.post.slug}`}
                     title={postState.post.header}
                     shareButton={true}
                   />
