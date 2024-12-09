@@ -7,6 +7,7 @@ const { Post } = require("../models/post.model");
 const { Follow } = require("../models/follow.model");
 const bcrypt = require("bcryptjs");
 const { sendMail } = require("../config/nodemailer");
+const { OAuth2Client } = require("google-auth-library");
 
 const {
   generateToken,
@@ -358,7 +359,8 @@ module.exports.verifyUser = asyncHandler(async (req, res) => {
     return res.status(200).json({
       status: "OK",
       isAuthenticated: true,
-      user: { id: user._id, name: user.name, email: user.email },
+      user: { id: user._id, name: user.username, email: user.email,googleId:user.googleId },
+      // user: { id: user._id, name: "", email: user.email,googleId:'123' },
     });
   } catch (error) {
     console.error(error);
@@ -399,4 +401,100 @@ module.exports.getChatUsers = asyncHandler(async (req, res) => {
     console.error(error);
     res.status(500).json({ message: "Server Error" });
   }
+});
+
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+module.exports.googleAuth = asyncHandler(async (req, res) => {
+  const { googleToken } = req.body;
+  let payload;
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken: googleToken,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    payload = ticket.getPayload();
+  } catch (error) {
+    return res.status(400).json({
+      status: 400,
+      message: { text: "Invalid Google token", type: "googleToken" },
+    });
+  }
+
+  const { sub: googleId, email, name, picture } = payload;
+  // Check if user already exists
+  let user = await User.findOne({ googleId });
+  if (user) {
+    console.log(user);
+    
+  const token = await generateToken(user._id, user.username);
+  const refreshtoken = await generateRefreshToken(user._id, user.username);
+    return res.status(200).json({
+      status: 200,
+      data: { user, token, refreshToken: refreshtoken },
+      message: "User Logged in successfully",
+    });
+  }
+
+  // Check if email is already associated with another account
+  const isEmailExist = await User.findOne({ email });
+  if (isEmailExist) {
+    return res.status(403).json({
+      status: 403,
+      message: { text: "Email already associated with another account", type: "email" },
+    });
+  }
+ // Check if the username is taken, and create a unique username
+ let username = name.split(" ").join("").toLowerCase().substring(0, 15);
+ let existingUser = await User.findOne({ username });
+ let uniqueUsername = username;
+ let counter = 1;
+
+ while (existingUser) {
+   uniqueUsername = `${username}${counter}`;
+   existingUser = await User.findOne({ username: uniqueUsername });
+   counter++;
+ }
+  // Create a new user
+  user = await User.create({
+    googleId,
+    email,
+    username: uniqueUsername,
+    userType: "user",
+    status: "active",
+    genre: [],
+    subGenre: [],
+    profileImageUrl: picture || `${req.protocol}://${req.get("host")}/images/default-icon.svg`,
+   });
+
+  const channelData = {
+    userId: user._id,
+    channelName: name || "",
+    username: user.username,
+    about: "",
+    genre: "",
+    subGenre: "",
+    profileHandle: "",
+    profileTitle: "",
+    url: "",
+    email: email,
+    phone: "",
+    location: "",
+    backgroundColor: "",
+    channelIconImageUrl: picture || `${req.protocol}://${req.get("host")}/images/default-icon.svg`,
+    status: "active",
+  };
+
+  const channel = await Channel.create(channelData);
+
+  // Generate tokens
+  
+  const token = await generateToken(user._id, user.username);
+  const refreshtoken = await generateRefreshToken(user._id, user.username);
+  res.status(201).json({
+    status: 201,
+    data: { user, token, refreshtoken },
+    message: "User signed up successfully with Google",
+  });
 });

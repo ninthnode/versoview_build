@@ -82,6 +82,33 @@ export const signupUser = (formData) => async (dispatch) => {
     });
   }
 };
+export const googleAuth = (googleToken) => async (dispatch) => {
+  try {
+    dispatch({
+      type: LOADING_START,
+    });
+    const response = await axios.post(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/users/google`,
+      {googleToken}
+    );
+    if (response.status == 200 || response.status == 201) {
+      toast(response.data.message,{
+        autoClose: 3000,
+        type:'success'
+      })
+      console.log(response)
+      dispatch(signupsuccess(response));
+      localStorage.setItem("token", JSON.stringify(response.data.data.token));
+      localStorage.setItem('refreshToken', JSON.stringify(response.data.data.refreshtoken));
+      // window.location.href = "/choose-topics";
+    }
+  } catch (error) {
+    dispatch({
+      type: SIGNUP_FAILURE,
+      payload: error.response.data.message,
+    });
+  }
+};
 
 export const verifyUser = () => async (dispatch) => {
   try {

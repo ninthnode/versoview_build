@@ -24,7 +24,7 @@ function Login({ loginUser, error }) {
     email: "",
     password: "",
   });
-  
+
 
   const handleChange = (e) => {
     setFormData({
@@ -50,6 +50,9 @@ function Login({ loginUser, error }) {
   useEffect(() => {
     setBackendError(error)
   }, [error])
+
+ 
+
   return (
     <Box bg="white" mt={4} w="100%" position="relative">
       <Flex minH="85vh" align="center" justify="center">
@@ -76,9 +79,9 @@ function Login({ loginUser, error }) {
                   </Button>
                 </>
               )}
-              <Flex alignItems="flex-start" mb={4} mt={4}>
-                <Image src={"/assets/logo.svg"} alt="logo" mr={2} mt={2} h='1.6rem'/>
-                <Heading size="md" as="h4" fontWeight="bold" textAlign="left">
+              <Flex alignItems="center" mb={2} mt={4}>
+                <Image src={"/assets/logo.svg"} alt="logo" mr={2} h='1.6rem'/>
+                <Heading fontSize="lg" as="h4" fontWeight="bold" textAlign="left">
                   {showForm?"Login with Email":"Login"}
                 </Heading>
               </Flex>

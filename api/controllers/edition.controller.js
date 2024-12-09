@@ -32,7 +32,7 @@ module.exports.createEdition = asyncHandler(async (req, res) => {
 module.exports.getAllEdition = asyncHandler(async (req, res) => {
   try {
     const userId = req.user._id;
-    const userEditions = await Edition.find({userId: userId}).populate('postId')
+    const userEditions = await Edition.find({userId: userId}).populate("postId")
     .exec();
 
     res.status(200).json({

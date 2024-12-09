@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import {
   Box,
@@ -20,6 +21,7 @@ import {
 import SidebarRoutes from "../../routes/SidebarRoutes";
 import RightSidebar from "./RightSidebar";
 import { useRouter, usePathname } from "next/navigation";
+import { RightSidebarRoutes } from "@/routes";
 
 const Navbar = ({ children }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -28,10 +30,19 @@ const Navbar = ({ children }) => {
   const routeIndex = SidebarRoutes.findIndex((route) => route.url === path);
   const [index, setIndex] = React.useState(routeIndex);
 
-  const FullWidthRoutes = ['/publish']
-  const IsFullWidthRoutes = FullWidthRoutes.find((route) => path.startsWith(route))?true:false
+  const FullWidthRoutes = ["/publish"];
+  const IsFullWidthRoutes = FullWidthRoutes.find((route) =>
+    path.startsWith(route)
+  )
+    ? true
+    : false;
   return (
-    <Flex minH="100vh" bg="light" w="100%">
+    <Flex
+      minH="100vh"
+      bg="light"
+      w="100%"
+      justifyContent={!RightSidebarRoutes ? "flex-start" : "center"}
+    >
       <SidebarContent
         onClose={onClose}
         display={{ base: "none", md: "block" }}
@@ -41,10 +52,20 @@ const Navbar = ({ children }) => {
         justifyContent="space-between"
         direction="column"
         w="100%"
+        maxW={IsFullWidthRoutes ? "100%" : "4xl"}
       >
         <Box w="100%">
-          <Box ml={{ base: 0, md: "11rem" }}>
-            <Box w={{ base: "100%", md: IsFullWidthRoutes?'100%':"2xl",xl: IsFullWidthRoutes?'100%':"4xl" }} px={4} borderRightWidth='2px' borderColor='#f5f5f5'>
+          <Box>
+            <Box
+              w={{
+                base: "100%",
+                md: IsFullWidthRoutes ? "100%" : "2xl",
+                xl: IsFullWidthRoutes ? "100%" : "4xl",
+              }}
+              px={4}
+              borderRightWidth="2px"
+              borderColor="#f5f5f5"
+            >
               <MobileNav onOpen={onOpen} />
               <Divider />
               {children}
@@ -67,9 +88,7 @@ const Navbar = ({ children }) => {
               bottom="0"
             >
               {SidebarRoutes.map((route) => (
-                <BottomNavigationItem
-                  key={route.name}
-                >
+                <BottomNavigationItem key={route.name}>
                   <BottomNavigationIcon
                     as={route.icon}
                     fontSize="2xl"
@@ -83,10 +102,11 @@ const Navbar = ({ children }) => {
               ))}
             </BottomNavigation>
           </Box>
-        </Box>  
+        </Box>
       </Flex>
-      
-      <RightSidebar/>
+      <Box px={4} mt="4.4rem" w={IsFullWidthRoutes?"0":"100%"} maxW="xl">
+        <RightSidebar />
+      </Box>
     </Flex>
   );
 };

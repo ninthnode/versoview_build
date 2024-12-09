@@ -2,7 +2,9 @@ const express = require("express");
 const Message = require("../../models/message.model");
 const router = express.Router();
 const { protectUser } = require("../../middlewares/authMiddleware");
+const mongoose = require("mongoose");
 
+const { User } = require("../../models/user.model");
 
 
 const markMessagesAsRead = async (conversationId, userId) => {
@@ -62,38 +64,27 @@ router.get("/unread/:userId", protectUser,async (req, res) => {
 
 router.get("/recent-chats/:userId",protectUser, async (req, res) => {
     const { userId } = req.params;
-  
+
     try {
-      const chats = await Message.aggregate([
-        {
-          $match: {
-            participants: userId,
-          },
-        },
-        {
-          $project: {
-            participants: 1,
-            messages: { $slice: ["$messages", -1] },
-          },
-        },
-        {
-          $sort: { "messages.timestamp": -1 },
-        },
-      ]);
-  
-      const recentChats = chats.map((chat) => {
-        const lastMessage = chat.messages[0];
-        return {
-          participants: chat.participants.filter((id) => id !== userId),
-          lastMessage: {
-            senderId: lastMessage.senderId,
-            message: lastMessage.message,
-            timestamp: lastMessage.timestamp,
-            read: lastMessage.read,
-          },
-        };
-      });
-  
+      // console.log(userId)
+      const chats = await Message.find({
+        participants: userId,
+      }).sort({ "messages.timestamp": -1 });
+      // console.log(chats)
+// 
+      const recentChats = await Promise.all(
+        chats.map(async (chat) => {
+          const lastMessage = chat.messages[chat.messages.length - 1];
+
+          // Get details of other participants
+          const otherParticipantId = chat.participants.find((id) => id !== userId);
+          console.log(otherParticipantId)
+          const otherParticipant = await User.findOne({ _id: otherParticipantId });
+    
+          return otherParticipant;
+        })
+      );
+
       res.status(200).json({ success: true, data: recentChats });
     } catch (error) {
       console.error("Error fetching recent chats:", error);

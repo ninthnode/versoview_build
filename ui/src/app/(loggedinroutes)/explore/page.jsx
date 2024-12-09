@@ -95,7 +95,9 @@ const Search = () => {
               </>
             ) : (
               <Link href={`/channel/${result.username}`} key={result.id}>
-              <Flex key={result.id} py={4} px={2} my={1} rounded="md" shadow="md" bg={result.profileBgColor}>
+              <Flex key={result.id} py={4} px={2} my={1} rounded="md" shadow="md" 
+              // bg={result.profileBgColor}
+              >
                 <Image
                   src={result.profileImageUrl || "/assets/default-post-image.svg"}
                   alt="user profile"

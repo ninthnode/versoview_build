@@ -88,6 +88,10 @@ const userSchema = mongoose.Schema(
 			type: [String],
 			default: ["array"],
 		},
+		googleId: {
+			type: String,
+			default: null,
+		},
 	},
 	{
 		timestamps: true,

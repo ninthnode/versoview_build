@@ -31,7 +31,6 @@ const SidebarContent = ({ onClose, ...rest }) => {
       borderRight="1px"
       borderRightColor={useColorModeValue("gray.200", "gray.700")}
       w={{ base: "full", md: '11rem' }}
-      pos="fixed"
       h="full"
       {...rest}
     >
@@ -43,7 +42,7 @@ const SidebarContent = ({ onClose, ...rest }) => {
       </Flex>
       {/* <Divider flex={2} /> */}
       <Flex flexDirection="column" height='80vh' justifyContent="space-between">
-        <Box>
+        <Box w='11rem'>
         {/* {SidebarRoutes.map((link) => console.log(link))} */}
           {SidebarRoutes.map((link) => 
           (

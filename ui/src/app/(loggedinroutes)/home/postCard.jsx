@@ -24,9 +24,16 @@ import { getExcerptHtml, getExcerptText } from "@/app/utils/GetExcerpt";
 import DOMPurify from "dompurify";
 import useDeviceType from "@/components/useDeviceType";
 import dynamic from "next/dynamic";
-const PdfFlipBookModal = dynamic(() => import("@/components/posts/PdfFlipBookModal"), {
-  ssr: false,
-});
+import { openCommentModal } from "@/redux/comments/commentAction";
+
+const PdfFlipBookModal = dynamic(
+  () => import("@/components/posts/PdfFlipBookModal"),
+  {
+    ssr: false,
+  }
+);
+import { useDispatch } from "react-redux";
+
 const PostCard = ({
   post,
   title,
@@ -35,7 +42,13 @@ const PostCard = ({
   submitBookmark,
   isbookmarkScreenCard = false,
 }) => {
+
   const deviceType = useDeviceType();
+  const dispatch = useDispatch();
+
+  const handleRedirectToPost = async (id) => {
+    dispatch(openCommentModal(id,'post'));
+  };
   return (
     <Card maxW="2xl" mb={4} boxShadow="none">
       <CardHeader p={1}>
@@ -133,15 +146,31 @@ const PostCard = ({
                 {post.section} &bull; {post.subSection} &bull;{" "}
                 {formatDate(post.createdAt)} &bull; {post.readingTime} read
               </Text>
-              <Flex alignItems="center" mx="2" flexShrink={0}>
-                <Image src="/assets/chat-icon.png" h="1.2rem" w="1.4rem" />
-                <Text ml="1">0</Text>
-              </Flex>
+              <div
+                onClick={() => {
+                  handleRedirectToPost(post.slug);
+                }}
+                style={{ cursor: "pointer" }}
+              >
+                <Link href={`post/${post.slug}`}>
+                  <Flex alignItems="center" mx="2" flexShrink={0}>
+                    <Image src="/assets/chat-icon.png" h="1.2rem" w="1.4rem" />
+                    <Text ml="1">{post.commentCount}</Text>
+                  </Flex>
+                </Link>
+              </div>
             </Flex>
 
             <Box>
               {post.editionId?.pdfUrl && (
-                <PdfFlipBookModal title={post.editionId?.editionText+" " +post.editionId?.editionDate } pdfFile={post.editionId.pdfUrl} />
+                <PdfFlipBookModal
+                  title={
+                    post.editionId?.editionText +
+                    " " +
+                    post.editionId?.editionDate
+                  }
+                  pdfFile={post.editionId.pdfUrl}
+                />
               )}
             </Box>
           </Flex>
@@ -168,15 +197,17 @@ const PostCard = ({
           >
             {post.header}
           </Heading>
-          {post.standFirst&&<Heading
-            py="1"
-            mb="1"
-            fontWeight="bold"
-            fontSize="1.4rem"
-            lineHeight="1.5rem"
-          >
-            {post.standFirst}
-          </Heading>}
+          {post.standFirst && (
+            <Heading
+              py="1"
+              mb="1"
+              fontWeight="bold"
+              fontSize="1.4rem"
+              lineHeight="1.5rem"
+            >
+              {post.standFirst}
+            </Heading>
+          )}
         </Link>
         <Text
           fontSize="md"

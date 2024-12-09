@@ -95,8 +95,7 @@ const CommentsModal = ({
                   <IoClose fontSize="22px" />
                 </Button>
               </Flex>
-
-              {!isModalCommentsOpen ? (
+              {!isModalCommentsOpen || commentList[0]?.parentId==null? (
                 pageNumber === 0 && 
                 <Flex p="4" textAlign="right" gap="4">
                   <Textarea

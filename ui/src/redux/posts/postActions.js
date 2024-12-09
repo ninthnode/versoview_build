@@ -104,6 +104,7 @@ export const getPostById = (postId) => {
         type: GET_SINGLE_POST_SUCCESS,
         payload: data,
       });
+      return data
     } catch (error) {
       // dispatch(getPostsFailure(error.message));
     }
@@ -138,6 +139,7 @@ export const getPostByIdEditData = (postId) => {
 export const updatePostUpvote = (postId) => {
   return async (dispatch) => {
     try {
+      console.log(postId)
       const token = localStorage.getItem("token").replaceAll('"', "");
 
       const response = await axios.post(

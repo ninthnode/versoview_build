@@ -59,7 +59,7 @@ const commentsReducer = (state = initialState, action) => {
       return {
         ...state,
         isModalCommentsOpen: true,
-        comments:[action.payload]
+        comments:action.payload
       };
     case CLOSE_COMMENTS_MODAL:
       return {

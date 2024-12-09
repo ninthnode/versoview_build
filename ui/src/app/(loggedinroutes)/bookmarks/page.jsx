@@ -37,7 +37,7 @@ const Comment = ({
   commentText,
   openCommentModal,
 }) => (
-  <Box my="4" p={2} bg="#e5e5e5">
+  <Box my="4" p={2}>
     <Box p={2} bg="#fff">
       <PostCard
         key={postId._id || crypto.randomUUID()}
@@ -50,7 +50,7 @@ const Comment = ({
     <Box maxW="2xl" p={4} position="relative" bg="#fff" mt="0">
       <div
         onClick={() => {
-          openCommentModal(singleComment);
+          dispatch(openCommentModal(singleComment,'comment'))
         }}
       >
         <Link href={`post/${postId.slug}`}>
@@ -132,7 +132,7 @@ const Bookmark = ({
             postBookmarks.map((post) => {
               if (post.postId) {
                 return (
-                  <Box p={2} bg="#e5e5e5" key={post.postId._id}>
+                  <Box p={2} key={post.postId._id}>
                   <Box p={2} bg="#fff">
                     <PostCard
                       key={post._id || crypto.randomUUID()}

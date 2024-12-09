@@ -3,14 +3,13 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { verifyUser } from "@/redux/auth/authActions";
 import { useRouter, usePathname } from "next/navigation";
-import { ProtectedRoutes, AuthRoutes, RoutesList } from "@/routes/index";
+import { ProtectedRoutes, AuthRoutes, RoutesList,PublicRoutes } from "@/routes/index";
 import Loader from "@/components/Loader";
 import { setPostEdit } from "@/redux/posts/postActions";
 
 const PrivateRoute = ({ children }) => {
-  const userVerified = useSelector((s) => s.auth.userVerified);
+  const [userVerified, setUserVerified] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const stateUser = useSelector((state) => state.auth.user?.user);
   const dispatch = useDispatch();
   const router = useRouter();
@@ -18,30 +17,33 @@ const PrivateRoute = ({ children }) => {
 
   useEffect(() => {
     const fetchData = async () => {
-      let user;
+      let user =stateUser;
       try {
-        if (!user&&!stateUser) {
-          user = await dispatch(verifyUser());
+        if (path == "/publish") {
+          await dispatch(setPostEdit(false, ""));
+        } 
+        if (!user) {
+          const response = await dispatch(verifyUser());
+          user = response?.user;
         }
 
-        if (user || stateUser) {
-          setIsAuthenticated(true);
+        if (user) {
           if (
             AuthRoutes.find((route) => path == route.url) &&
-            (user || stateUser) &&
+            user &&
             !ProtectedRoutes.find((route) => path.startsWith(route.url))
-          )
+          ) {
             router.push("/home");
+          }
         } else {
           if (
-            !AuthRoutes.find((route) => path.startsWith(route.url)) &&
-            !path.startsWith("/home") &&
-            !path.startsWith("/post") &&
-            !(user || stateUser)
+            !PublicRoutes.find((route) => path.startsWith(route.url))
           )
             router.push("/login");
         }
+        setUserVerified(true);
       } catch (error) {
+        console.log(error);
         router.push("/login");
       } finally {
         setLoading(false);
@@ -49,59 +51,25 @@ const PrivateRoute = ({ children }) => {
     };
 
     fetchData();
-   
-  }, [dispatch, router, path]);
+  }, [path]);
 
-  useEffect(() => {
-    return async() => {
-      if(path== '/publish'){
-        await dispatch(setPostEdit(false, ""))
 
-      } 
-    };
-  }, [path])
-  
-
-  const verifyExeceptionRoutes = ['/home','/channel']
-  const RenderScreen = () =>
-    userVerified ||
-    verifyExeceptionRoutes.find((route) => path.startsWith(route)) ? (
+  const verifyExeceptionRoutes = ["/home", "/channel"];
+  const RenderScreen = () => {
+    if (verifyExeceptionRoutes.find((route) => path.startsWith(route))) {
+      return children;
+    }
+    
+    return userVerified&&!loading ? (
       children
     ) : (
       <Loader messages={null} showtext={false} />
-    ); 
-  if (loading) {
-    return (
-      <>
-      <RenderScreen/>
-    </>
     );
-  }
+  };
 
-  if (
-    AuthRoutes.find((route) => path == route.url) &&
-    isAuthenticated &&
-    !ProtectedRoutes.find((route) => path.startsWith(route.url))
-  ) {
-    return (
-      <>
-      <RenderScreen/>
-    </>
-    );
-  }
-  if (
-    !AuthRoutes.find((route) => path.startsWith(route.url)) &&
-    !path.startsWith("/home") &&
-    !path.startsWith("/post") &&
-    !isAuthenticated
-  )
-    return (
-      <>
-      <RenderScreen/>
-    </>
-    );
-
-    if(!loading) return <RenderScreen/>;
+  return (
+      <RenderScreen messages={null} showtext={false} />
+  );
 };
 
 export default PrivateRoute;

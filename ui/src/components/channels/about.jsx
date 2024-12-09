@@ -54,7 +54,7 @@ const FollowBtn = ({
       fontSize="sm"
       px={4}
       mr={2}
-      bg='#f4f4f4'
+      bg="#f4f4f4"
       rounded="md"
       fontWeight={"light"}
       border="1px solid"
@@ -69,6 +69,7 @@ const FollowBtn = ({
 const About = ({
   channelIconImageUrl,
   profileTitle,
+  userId,
   channelName,
   about,
   username,
@@ -82,9 +83,9 @@ const About = ({
   isLoading,
   followChannel,
   unfollowChannel,
-  isChannelLoading
+  isChannelLoading,
+  user,
 }) => {
-
   return (
     <Box
       py={4}
@@ -94,95 +95,108 @@ const About = ({
       bg="lightgray"
       borderRadius="md"
     >
-    {isChannelLoading?
-      <Flex h='150px' w='100%' justifyContent='center' alignItems='center'><Spinner color="#333"/></Flex>
-      :
-      <>
-      <Flex flexDirection="column" justifyContent="space-between" mr={4}>
-        <Avatar
-          ml={2}
-          src={
-            channelIconImageUrl
-          }
-          size="lg"
-          alt={channelName}
-        />
-        <Flex flexDirection="column" alignItems="center" mt={4}>
-          <FiMessageSquare size="20px" />
-          <Text fontSize="12px" textTransform="capitalize">
-            Message
-          </Text>
+      {isChannelLoading ? (
+        <Flex h="150px" w="100%" justifyContent="center" alignItems="center">
+          <Spinner color="#333" />
         </Flex>
-      </Flex>
+      ) : (
+        <>
+          <Flex flexDirection="column" justifyContent="space-between" mr={4}>
+            <Avatar
+              ml={2}
+              src={channelIconImageUrl}
+              size="lg"
+              alt={channelName}
+            />
+            {userId._id != user.id && (
+              <Link href={`/messages`}>
+              <Flex flexDirection="column" alignItems="center" mb={1} cursor='pointer'>
+                <FiMessageSquare size="18px" />
+                <Text
+                  fontSize="12px"
+                  lineHeight={1.2}
+                  textTransform="capitalize"
+                >
+                  Message
+                </Text>
+              </Flex>
+                </Link>
+            )}
+          </Flex>
 
-      <Flex flexDir='column' justifyContent='space-between'>
-        <Flex justifyContent="space-between" alignItems="flex-start" mb={2}>
-          <Flex flexDirection="column">
-            <Text fontSize={"lg"} fontWeight="bold" lineHeight='2rem'>
-              {channelName}
-            </Text>
-            <Text fontWeight="semibold" mt={-1}>
-              @{username}
-            </Text>
-          </Flex>
-          <FollowBtn
-            channelId={_id}
-            getFollowingStatus={getFollowingStatus}
-            isLoading={isLoading}
-            followChannel={followChannel}
-            unfollowChannel={unfollowChannel}
-          />
-        </Flex>
+          <Flex flexDir="column" justifyContent="space-between">
+            <Flex justifyContent="space-between" alignItems="flex-start" mb={2}>
+              <Flex flexDirection="column">
+                <Text
+                  fontSize={"lg"}
+                  fontWeight="bold"
+                  lineHeight="2rem"
+                  mr="4"
+                >
+                  {channelName}
+                </Text>
+                <Text fontWeight="semibold" mt={-1}>
+                  @{username}
+                </Text>
+              </Flex>
+              <FollowBtn
+                channelId={_id}
+                getFollowingStatus={getFollowingStatus}
+                isLoading={isLoading}
+                followChannel={followChannel}
+                unfollowChannel={unfollowChannel}
+              />
+            </Flex>
 
-        <Text mb={2} fontSize="sm" w="85%">
-          {about}
-        </Text>
-        <Link
-          href={url}
-          fontSize="xs"
-          isExternal
-          color="blue.500"
-          textDecoration="underline"
-        >
-          {url}
-        </Link>
+            <Text mb={2} fontSize="sm" w="85%">
+              {about}
+            </Text>
+            <Link
+              href={url}
+              fontSize="xs"
+              isExternal
+              color="blue.500"
+              textDecoration="underline"
+            >
+              {url}
+            </Link>
 
-        <Flex spacing={8} gap={4} mt={4}>
-          <Flex fontSize="sm" flexDirection="column" alignItems="left">
-            <Text fontWeight="bold" lineHeight={1}>
-              {postsCount}
-            </Text>
-            <Text fontSize="12px">Posts</Text>
+            <Flex spacing={8} gap={4} mt={4}>
+              <Flex fontSize="sm" flexDirection="column" alignItems="left">
+                <Text fontWeight="bold" lineHeight={1}>
+                  {postsCount}
+                </Text>
+                <Text fontSize="12px">Posts</Text>
+              </Flex>
+              <Flex fontSize="sm" flexDirection="column" alignItems="left">
+                <Text fontWeight="bold" lineHeight={1}>
+                  0
+                </Text>
+                <Text fontSize="12px">Editions</Text>
+              </Flex>
+              <Flex fontSize="sm" flexDirection="column" alignItems="left">
+                <Text fontWeight="bold" lineHeight={1}>
+                  {followingCount}
+                </Text>
+                <Text fontSize="12px">Following</Text>
+              </Flex>
+              <Flex fontSize="sm" flexDirection="column" alignItems="left">
+                <Text fontWeight="bold" lineHeight={1}>
+                  {followersCount}
+                </Text>
+                <Text fontSize="12px">Followers</Text>
+              </Flex>
+            </Flex>
           </Flex>
-          <Flex fontSize="sm" flexDirection="column" alignItems="left">
-            <Text fontWeight="bold" lineHeight={1}>
-              0
-            </Text>
-            <Text fontSize="12px">Editions</Text>
-          </Flex>
-          <Flex fontSize="sm" flexDirection="column" alignItems="left">
-            <Text fontWeight="bold" lineHeight={1}>
-              {followingCount}
-            </Text>
-            <Text fontSize="12px">Following</Text>
-          </Flex>
-          <Flex fontSize="sm" flexDirection="column" alignItems="left">
-            <Text fontWeight="bold" lineHeight={1}>
-              {followersCount}
-            </Text>
-            <Text fontSize="12px">Followers</Text>
-          </Flex>
-        </Flex>
-      </Flex>
-      </>
-    }
-     
+        </>
+      )}
     </Box>
   );
 };
 
 const mapStateToProps = (state) => ({
   isLoading: state.channel.isFollowLoading,
+  user: state.auth.user?.user,
 });
 
 const mapDispatchToProps = {

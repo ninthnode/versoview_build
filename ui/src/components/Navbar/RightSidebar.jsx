@@ -13,36 +13,34 @@ import Following from "@/app/(loggedinroutes)/home/following";
 import Chats from "@/app/(loggedinroutes)/chats";
 import { usePathname } from "next/navigation";
 import useDeviceType from "@/components/useDeviceType";
-
-function RightSidebar({userDetails,authVerified,user,fetchUser, followings, fetchfollowChannelList}) {
+import { RightSidebarRoutes } from "@/routes";
+function RightSidebar({userDetails,user,fetchUser, followings, fetchfollowChannelList}) {
   const path = usePathname();
   const deviceType = useDeviceType();
-  const SiderbarRoutes = ["/home"];
-  const ShowSidebarIf = SiderbarRoutes.find((route) => path.startsWith(route)) && deviceType=='desktop';
+  const ShowSidebarIf = RightSidebarRoutes.find((route) => path.startsWith(route)) && deviceType=='desktop';
     useEffect(() => {
-        if(authVerified &&ShowSidebarIf &&user){
+        if(ShowSidebarIf &&user){
             fetchfollowChannelList(); 
              fetchUser(user.id);
         }
-      }, [authVerified,ShowSidebarIf]);
-  return user&&ShowSidebarIf && (
-    <Box px={4} mt='4.4rem' w='100%'>
+      }, [ShowSidebarIf]);
+  return ShowSidebarIf&&(
+    <Box>
       <Heading as='h4' fontSize='lg' fontWeight='bold' mb='2'>Chats</Heading>
       <Divider/>
-      <Chats/>
+      <Chats user={user}/>
 
       <Heading as='h4' fontSize='lg' fontWeight='bold' mt='4' mb='2'>Following</Heading>
       <Divider/>
-      {!userDetails && !followings?.data&&(
-        <Spinner color="#333" mt='2'/>
-      )}
-      {userDetails && followings.data && (
+
+      {(userDetails && followings) ? (
         <Following
           followings={followings}
           user={userDetails}
           fetchfollowChannelList={fetchfollowChannelList}
         />
-      )}
+      ):
+      (<Spinner color="#333" mt='2'/>)}
     </Box>
   );
 }
@@ -63,4 +61,4 @@ const mapDispatchToProps = {
   fetchUser,
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(RightSidebar);
+export default connect(mapStateToProps, mapDispatchToProps)(React.memo(RightSidebar));

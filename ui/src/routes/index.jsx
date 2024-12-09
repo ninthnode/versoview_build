@@ -31,6 +31,12 @@ const AuthRoutes = [
     isprivate: false,
     url: "/verify-code",
   },
+  {
+    name: "GoogleAuthProfile",
+    icon: "",
+    isprivate: false,
+    url: "/google-auth",
+  },
 ];
 const OtherRoutes = [
   {
@@ -76,7 +82,41 @@ const OtherRoutes = [
     url: "/edition",
   },
 ]
+const PublicRoutes = [
+  {
+    name: "Home",
+    icon: "",
+    isprivate: true,
+    showTitle: false,
+    url: "/home",
+  },
+  {
+    name: "Post",
+    icon: "",
+    isprivate: true,
+    showTitle: false,
+    url: "/post",
+  },
+  {
+    name: "Edition",
+    icon: "",
+    isprivate: true,
+    showTitle: true,
+    url: "/edition",
+  },
+  {
+    name: "Channel",
+    icon: "",
+    isprivate: true,
+    showTitle: false,
+    url: "/channel",
+  },
+]
+
+
+
+const RightSidebarRoutes = ['/home']
 
 const ProtectedRoutes = [...SidebarRoutes,...OtherRoutes];
 const RoutesList = [...ProtectedRoutes, ...AuthRoutes,...OtherRoutes];
-export { ProtectedRoutes, AuthRoutes, RoutesList };
+export { ProtectedRoutes, AuthRoutes, RoutesList,PublicRoutes,RightSidebarRoutes };

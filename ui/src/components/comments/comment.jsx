@@ -48,7 +48,7 @@ const Comment = ({
   replyCount,
   parentSetIsOpen,
   neighbourComments,
-  sectionRefs,
+  sectionRefs=null
 }) => {
   const [isOpen, setIsOpen] = useState(comment.opened || false);
   const [replyId, setReplyId] = useState(false);
@@ -62,7 +62,7 @@ const Comment = ({
   };
 
   return (
-    <Box w="100%" mb={4} bg="#fff" h={"100%"} key={_id} ref={(el) => (sectionRefs.current[_id] = el)}>
+    <Box w="100%" mb={4} bg="#fff" h={"100%"} key={_id} ref={(el) => {if(sectionRefs!==null){sectionRefs.current[_id] = el}}}>
       <HStack align="start" spacing={4} position="relative" px={4} pt={6}>
         <Avatar
           size="md"
@@ -293,7 +293,8 @@ const Comment = ({
               </Text>
               {pageNumber > 0 && (
                 <Button
-                  onClick={async() => {await getPreviousPage(); }}
+                  onClick={() => pageNumber <= 0 ? parentSetIsOpen(false) : getPreviousPage(sectionRefs,comment._id)
+                  }
                   size="sm"
                   variant="ghost"
                   p="0"

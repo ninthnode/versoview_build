@@ -52,11 +52,12 @@ const Dms = () => {
         if (search === "") {
           const response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/messages/recent-chats/${authState.id}/`, { 
             headers: {
-            Authorization: `Bearer ${token}`,
+              Authorization: `Bearer ${token}`,
             }
           });
-          setAllUsers(response.data);
-          setSearching(false);
+          console.log(response.data.data)
+          setAllUsers(response.data.data);
+          setSearching(true);
         }else{
           
         const response = await
@@ -66,7 +67,7 @@ const Dms = () => {
           }
         });
         const data = response.data
-        setSearching(true);
+        // setSearching(true);
         setAllUsers(data);
         
       }

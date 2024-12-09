@@ -188,9 +188,12 @@ module.exports.getAllPost = asyncHandler(async (req, res) => {
     const postsWithBookmarkStatus = await Promise.all(
       finalPosts.map(async (post) => {
         const bookmark = await Bookmark.findOne({ userId, postId: post._id });
+        const comments = await PostComment.find({ postId: post._id });
+
         return {
           ...post.toObject(),
           isBookmarked: !!bookmark,
+          commentCount: comments.length,
           readingTime: calculateReadingTime(post.bodyRichText),
         };
       })
@@ -323,11 +326,11 @@ module.exports.getPostBySlug = asyncHandler(async (req, res) => {
 
 module.exports.getPostByIdLoggedOut = asyncHandler(async (req, res) => {
   try {
-    const postId = req.params._id;
+    const slug = req.params.slug;
     // Fetch post data
-    const postData = await Post.findOne({ _id: postId });
+    const postData = await Post.findOne({ slug: slug });
     if (!postData) {
-      console.log(`Post not found for ID: ${postId}`);
+      console.log(`Post not found for: ${slug}`);
       return res.status(404).json({ message: "Post not found" });
     }
 
@@ -361,7 +364,7 @@ module.exports.getPostByIdLoggedOut = asyncHandler(async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const votes = await Vote.find({ postId: postId });
+    const votes = await Vote.find({ postId: postData._id });
     const voteCounts = votes.reduce(
       (counts, vote) => {
         if (vote.voteType === true) {
@@ -373,7 +376,7 @@ module.exports.getPostByIdLoggedOut = asyncHandler(async (req, res) => {
       },
       { trueCount: 0, falseCount: 0 }
     );
-    const comments = await PostComment.find({ postId: postId });
+    const comments = await PostComment.find({ postId: postData._id });
 
     // Combine all the data
     const combinedData = {
@@ -491,9 +494,12 @@ module.exports.getPostByChannelId = asyncHandler(async (req, res) => {
     const postsWithBookmarkStatus = await Promise.all(
       postData.map(async (post) => {
         const bookmark = await Bookmark.findOne({ userId, postId: post._id });
+        const comments = await PostComment.find({ postId: post._id });
+
         return {
           ...post.toObject(),
           isBookmarked: !!bookmark,
+          commentCount: comments.length,
         };
       })
     );
@@ -558,7 +564,8 @@ module.exports.deletePost = asyncHandler(async (req, res) => {
 module.exports.upvotePost = asyncHandler(async (req, res) => {
   try {
     const userId = req.user._id;
-    const postId = req.params._id;
+    const postData = await Post.findOne({ slug: req.params.slug })
+    const postId = postData._id;
 
     const isAlreadyVoted = await Vote.findOne({
       votingUserId: userId,
@@ -596,8 +603,9 @@ module.exports.upvotePost = asyncHandler(async (req, res) => {
 module.exports.downvotePost = asyncHandler(async (req, res) => {
   try {
     const userId = req.user._id;
-    const postId = req.params._id;
 
+    const postData = await Post.findOne({ slug: req.params.slug })
+    const postId = postData._id;
     const isAlreadyVoted = await Vote.findOne({
       votingUserId: userId,
       postId: postId,
@@ -1427,16 +1435,9 @@ module.exports.getCommentAndRepliesCount = asyncHandler(async (req, res) => {
     const postData = await Post.findOne({ slug: slug });
     const postId = postData._id;
     const comments = await PostComment.find({ postId: postId });
-    let totalRepliesCount = 0;
-    for (const comment of comments) {
-      const repliesCount = await PostCommentReply.countDocuments({
-        postCommentId: comment._id,
-      });
-      totalRepliesCount += repliesCount;
-    }
     return res
       .status(200)
-      .json({ commentCount: comments.length, repliesCount: totalRepliesCount });
+      .json({ commentCount: comments.length, repliesCount: 0 });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: "Internal Server Error" });

@@ -44,13 +44,6 @@ import {
           success: true,
           editions: action.payload,
         };
-      case GET_EDITIONS_SUCCESS:
-        return {
-          ...state,
-          loading: false,
-          success: true,
-          editions: action.payload,
-        };
       case GET_SINGLE_EDITION_SUCCESS:
         return {
           ...state,

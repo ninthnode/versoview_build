@@ -211,7 +211,7 @@ const Following = ({ followings, user,fetchfollowChannelList }) => {
       {followingLoading ? (
         <Spinner />
       ) : followingsDataSorted.length > 0 ? (
-        followingsDataSorted?.map((following) => (
+        followingsDataSorted.map((following) => (
           <Flex
             key={following._id || crypto.randomUUID()}
             py={2}

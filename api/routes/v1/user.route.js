@@ -14,7 +14,8 @@ const {
 	verifyUser,
 	refreshTokenApi,
 	getAllUsers,
-	getChatUsers
+	getChatUsers,
+	googleAuth
 } = require("../../controllers/user.controller");
 
 const { protectUser } = require("../../middlewares/authMiddleware");
@@ -35,4 +36,7 @@ router.get("/getAllUsers", protectUser, getAllUsers);
 router.get("/getChatUsers/:query", protectUser, getChatUsers);
 router.post("/refresh-token", refreshTokenApi);
 
+
+
+router.post("/google", googleAuth);
 module.exports = router;

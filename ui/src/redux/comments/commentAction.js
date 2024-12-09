@@ -16,10 +16,10 @@ import { Code } from "@chakra-ui/react";
 import { compose } from "redux";
 import { set } from "valibot";
 
-export const openCommentModal = (comment) => ({
-  type: OPEN_COMMENTS_MODAL,
-  payload: comment,
-});
+// export const openCommentModal = (comment) => ({
+//   type: OPEN_COMMENTS_MODAL,
+//   payload: comment,
+// });
 export const closeCommentModal = () => ({
   type: CLOSE_COMMENTS_MODAL,
 });
@@ -38,6 +38,37 @@ const getCommentsFailure = (error) => ({
   payload: error,
 });
 
+export const openCommentModal = (postId,type) => {
+  return async (dispatch) => {
+    try {
+      const token = localStorage.getItem("token").replaceAll('"', "");
+      if(type === 'comment'){
+      
+        dispatch({
+            type: OPEN_COMMENTS_MODAL,
+            payload: [postId],
+          });
+      }else if(type === 'post'){
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/getAllComment/${postId}`,
+          {
+            headers: {
+              authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        const data = await response.data.data;
+        dispatch({
+          type: OPEN_COMMENTS_MODAL,
+          payload: data,
+        });
+      }
+      
+    } catch (error) {
+      dispatch(getCommentsFailure(error));
+    }
+  };
+};
 export const getCommentByPostId = (postId) => {
   return async (dispatch) => {
     dispatch(getCommentsRequest());
