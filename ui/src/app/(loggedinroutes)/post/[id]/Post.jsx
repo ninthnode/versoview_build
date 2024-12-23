@@ -235,7 +235,7 @@ function SinglePost({
                       w="1.4rem"
                     />
                     <Text color="textlight" fontSize="sm" ml="1">
-                      0
+                      {postState.commentCount}
                     </Text>
                   </Flex>
                 </Flex>

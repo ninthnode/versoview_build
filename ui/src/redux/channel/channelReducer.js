@@ -1,4 +1,5 @@
 import {
+  FETCH_PINNED_CHANNEL_SUCCESS,
     FETCH_CHANNEL_REQUEST,
     FETCH_CHANNEL_SUCCESS,
     FETCH_CHANNEL_FAILURE,
@@ -30,10 +31,16 @@ import {
     isFollowLoading: false,
     error: null,
     isFollowing: false,
+    pinnedChannels:[]
   };
   
   const channelReducer = (state = initialState, action) => {
     switch (action.type) {
+      case FETCH_PINNED_CHANNEL_SUCCESS:
+        return {
+          ...state,
+          pinnedChannels: action.payload,
+        };
       case FETCH_CHANNEL_REQUEST:
         return {
           ...state,

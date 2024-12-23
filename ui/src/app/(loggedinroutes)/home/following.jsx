@@ -29,7 +29,9 @@ import { FiMoreHorizontal } from "react-icons/fi";
 import { useDispatch } from "react-redux";
 import {
   unfollowChannel,
+  getAllPinnedChannels
 } from "@/redux/channel/channelActions";
+
 const pinChannel = (id) =>
   get(`channel/pinChannel/${id}`, true, { method: "PUT" }).then((r) => r.data);
 const unpinChannel = (id) =>
@@ -161,6 +163,7 @@ const Following = ({ followings, user,fetchfollowChannelList }) => {
           .toSorted(sortFn(view))
       );
     });
+    dispatch(getAllPinnedChannels())
   };
 
   const handleUnFollowChannel = async(channelId) => {

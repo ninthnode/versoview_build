@@ -4,11 +4,13 @@ import { Box, Avatar, Flex, HStack, Spinner, Divider } from "@chakra-ui/react";
 import axios from "axios";
 import Link from "next/link";
 import get from "@/app/utils/get";
-import { useSelector } from "react-redux";
+import { useSelector,useDispatch } from "react-redux";
 import AvatarShimmer from "../../../components/posts/AvatarShimmer";
+import {getAllPinnedChannels} from "@/redux/channel/channelActions";
+
 const StatusItem = ({ status }) => {
   const authState = useSelector((s) => s.auth?.user?.user);
-
+ 
   const [unread, setUnread] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const getUnread = () => {
@@ -33,7 +35,7 @@ const StatusItem = ({ status }) => {
         <Avatar
           size="lg"
           borderRadius={10}
-          src={status.avatar}
+          src={status.channelIconImageUrl}
         />
         {!isLoading ? (
           unread > 0 && (
@@ -70,45 +72,49 @@ const getChannelsForLoggedoutUser = () => {
       r.data.data.map((c) => ({
         id: c._id,
         name: c.channelName,
-        avatar: c.channelIconImageUrl,
+        channelIconImageUrl: c.channelIconImageUrl,
       }))
     );
 };
-const getChannels = () => {
-  const token = localStorage.getItem("token").replaceAll('"', "");
-  return axios
-    .get(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/channel/getAllChannel`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    )
-    .then((r) =>
-      r.data.data.map((c) => ({
-        id: c._id,
-        name: c.channelName,
-        avatar: c.channelIconImageUrl,
-        username:c.username,
-      }))
-    );
+const getChannels =() => {
+ 
+  // const token = localStorage.getItem("token").replaceAll('"', "");
+  // return axios
+  //   .get(
+  //     `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/channel/getAllChannel`,
+  //     {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //     }
+  //   )
+  //   .then((r) =>
+  //     r.data.data.map((c) => ({
+  //       id: c._id,
+  //       name: c.channelName,
+  //       avatar: c.channelIconImageUrl,
+  //       username:c.username,
+  //     }))
+  //   );
 };
 
 const StatusSlider = () => {
   const [channels, setChannels] = useState([]);
   const authState = useSelector((s) => s.auth?.user?.user);
   const authVerified = useSelector((s) => s.auth?.userVerified);
+  const pinnedChannelData = useSelector((s) => s.channel.pinnedChannels);
+  const dispatch = useDispatch();
+
 
   useEffect(() => {
     if(authVerified){
-      if (authState) getChannels().then(setChannels);
+      if (authState) dispatch(getAllPinnedChannels())
       else getChannelsForLoggedoutUser().then(setChannels);
     }
   }, [authVerified]);
-
-  if(channels.length==0) return <AvatarShimmer/>
-  return channels.length>0&& (
+{console.log(pinnedChannelData)}
+  if(pinnedChannelData.length==0) return <AvatarShimmer/>
+  return pinnedChannelData.length>0&& (
     <Box
       overflowX="scroll"
       __css={{
@@ -128,8 +134,8 @@ const StatusSlider = () => {
       paddingRight={0}
     >
       <HStack spacing={4} mb={2}>
-        {channels.map((status) => (
-          <StatusItem key={status.id} status={status} />
+        {pinnedChannelData.map((status) => (
+          <StatusItem key={status._id} status={status} />
         ))}
       </HStack>
       <Divider />

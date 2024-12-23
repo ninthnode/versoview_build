@@ -296,6 +296,7 @@ module.exports.getPostBySlug = asyncHandler(async (req, res) => {
       userId: mainuserId,
       postId: postId,
     });
+    const comments = await PostComment.find({ postId: postId });
 
     // Combine all the data
     const combinedData = {
@@ -305,6 +306,7 @@ module.exports.getPostBySlug = asyncHandler(async (req, res) => {
       votes: voteCounts,
       isBookmarked: !!bookmark,
       readingTime: calculateReadingTime(postData.bodyRichText),
+      commentCount: comments.length
     };
 
     const postIfUserAlreadyRead = await Post.findOne({

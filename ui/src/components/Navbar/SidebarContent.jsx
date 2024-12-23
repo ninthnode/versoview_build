@@ -37,7 +37,7 @@ const SidebarContent = ({ onClose, ...rest }) => {
       <Flex display={{ base: "flex", md: "none" }} alignItems="center" justifyContent="flex-end" h='3rem'>
         <CloseButton mx="8" variant='outline' onClick={onClose} />
       </Flex>
-      <Flex height="4rem" pt= "2rem" bg="secondary" justify="center">
+      <Flex height="4rem" pt= "2rem" justify="center">
         {/* <Image src={"/assets/desktop-logo.svg"} h='20px' alt="desktopLogo" /> */}
       </Flex>
       {/* <Divider flex={2} /> */}

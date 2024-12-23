@@ -100,7 +100,10 @@ export const googleAuth = (googleToken) => async (dispatch) => {
       dispatch(signupsuccess(response));
       localStorage.setItem("token", JSON.stringify(response.data.data.token));
       localStorage.setItem('refreshToken', JSON.stringify(response.data.data.refreshtoken));
+      if(response.status == 201)
       window.location.href = "/choose-topics";
+      if(response.status == 200)
+      window.location.href = "/home";
     }
   } catch (error) {
     dispatch({

@@ -17,6 +17,7 @@ import { formatDateTime } from "@/app/utils/DateUtils";
 const socket = io(process.env.NEXT_PUBLIC_BACKEND_URL);
 import { useRef } from "react";
 import axios from 'axios';
+import useDeviceType from "@/components/useDeviceType";
 
 const Dms = () => {
   const [selectedUser, setSelectedUser] = useState(null);
@@ -27,6 +28,7 @@ const Dms = () => {
   const messagesEndRef = useRef(null);
   const [search, setSearch] = useState("");
   const [searching, setSearching] = useState(false);
+  const deviceType = useDeviceType();
 
   useEffect(() => {
     if (authState) {
@@ -125,7 +127,8 @@ const Dms = () => {
   }, [messages]);
   return (
     <HStack spacing={0} overflow="hidden" alignItems="flex-start" maxH="90vh">
-      <Box
+                       {deviceType != "phone" && (
+                        <Box
         width="30%"
         borderRight="1px solid"
         borderColor="gray.200"
@@ -173,7 +176,7 @@ const Dms = () => {
             </Text>
           )}
         </VStack>
-      </Box>
+      </Box>)}
 
       {/* Chat Section */}
       <Box

@@ -1,6 +1,7 @@
 import axios from "axios";
 import token from "@/app/utils/token";
 import {
+  FETCH_PINNED_CHANNEL_SUCCESS,
   FETCH_CHANNEL_REQUEST,
   FETCH_CHANNEL_SUCCESS,
   FETCH_CHANNEL_FAILURE,
@@ -206,4 +207,23 @@ export const fetchLoggedInUserChannel = () => async (dispatch, getState) => {
   } catch (error) {
     dispatch({ type: FETCH_CHANNEL_FAILURE, error });
   }
+};
+
+
+export const getAllPinnedChannels = () => async (dispatch) => {
+  try {
+
+    const response = await axios.get(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/channel/getAllChannel`,
+      {
+        headers: {
+          authorization: `Bearer ${localStorage
+            .getItem("token")
+            .replace(/"/g, "")}`,
+        },
+      }
+    );
+    dispatch({ type: FETCH_PINNED_CHANNEL_SUCCESS,payload: response.data.data });
+
+  } catch (error) {}
 };

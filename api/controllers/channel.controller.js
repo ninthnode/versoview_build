@@ -67,7 +67,9 @@ module.exports.create = asyncHandler(async (req, res) => {
 module.exports.getAllChannel = asyncHandler(async (req, res) => {
 	try {
 	  const userId = req.user._id;
-	  const userFollows = await Follow.find({ userId }).sort({ pinned: -1 }).exec();
+	//   sort by pinned
+	//   const userFollows = await Follow.find({ userId }).sort({ pinned: -1 }).exec();
+	  const userFollows = await Follow.find({ userId: userId,pinned:true })
 	  let followedChannelIds = userFollows.map((follow) => follow.channelId);
   
 	  // Add a hardcoded channel ID to the list
