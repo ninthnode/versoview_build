@@ -42,7 +42,8 @@ const Navbar = ({ children }) => {
     <Flex
       minH="100vh"
       bg="light"
-      w="100%"
+      margin='0 auto'
+      pos='relative'
       justifyContent={{
         base: !RightSidebarRoutes ? "flex-start" : "center",
         md: "center",
@@ -52,46 +53,27 @@ const Navbar = ({ children }) => {
         onClose={onClose}
         display={{ base: "none", md: "block" }}
       />
-      <Flex
-        display="flex"
-        flexDir="row"
-        overflowY="scroll"
-        __css={{
-          "&::-webkit-scrollbar": {
-            w: "2",
-            h: "1",
-            display: "none",
-          },
-          "&::-webkit-scrollbar-track": {
-            w: "6",
-          },
-          "&::-webkit-scrollbar-thumb": {
-            borderRadius: "10",
-            bg: "gray.100",
-          },
-        }}
-        height='100vh'
-      >
         <Flex
           alignItems="center"
           justifyContent="space-between"
           direction="column"
-          w="100%"
           zIndex="9999"
           bg="#fff"
-          maxW={IsFullWidthRoutes ? "100%" : "3xl"}
+          w={IsFullWidthRoutes ? "100%" : "3xl"}
+          pos='relative'
         >
           <Box w="100%">
             <Box>
               <Box
                 w={{
                   base: "100%",
-                  md: IsFullWidthRoutes ? "100%" : "2xl",
+                  md: IsFullWidthRoutes ? "100%" : "xl",
                   xl: IsFullWidthRoutes ? "100%" : "3xl",
                 }}
                 px={4}
                 borderRightWidth="2px"
                 borderColor="#f5f5f5"
+                minH={!RightSidebarRoutes?'150vh':""}
               >
                 <MobileNav onOpen={onOpen} />
                 <Divider />
@@ -134,14 +116,15 @@ const Navbar = ({ children }) => {
         {deviceType != "phone" && (
           <Box
             px={4}
-            display={{ base: "none", lg: "block" }}
+            display={IsFullWidthRoutes ? "none" : { base: "none", lg: "block" }}
             mt="4.4rem"
-            w={IsFullWidthRoutes ? "0" : "xl"}
+            w={ { base: "xs", lg: "xl" }}
+            pos='relative'
+            id="sidebar"
           >
             <RightSidebar />
           </Box>
         )}
-      </Flex>
     </Flex>
   );
 };

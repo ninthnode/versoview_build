@@ -115,7 +115,7 @@ const PublicRoutes = [
 
 
 
-const RightSidebarRoutes = ['/home']
+const RightSidebarRoutes = ['/home','/channel','/post','/bookmarks','/edition','/profile','/explore'];
 
 const ProtectedRoutes = [...SidebarRoutes,...OtherRoutes];
 const RoutesList = [...ProtectedRoutes, ...AuthRoutes,...OtherRoutes];

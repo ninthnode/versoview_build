@@ -306,7 +306,7 @@ module.exports.getPostBySlug = asyncHandler(async (req, res) => {
       votes: voteCounts,
       isBookmarked: !!bookmark,
       readingTime: calculateReadingTime(postData.bodyRichText),
-      commentCount: comments.length
+      commentCount: comments.length,
     };
 
     const postIfUserAlreadyRead = await Post.findOne({
@@ -566,7 +566,7 @@ module.exports.deletePost = asyncHandler(async (req, res) => {
 module.exports.upvotePost = asyncHandler(async (req, res) => {
   try {
     const userId = req.user._id;
-    const postData = await Post.findOne({ slug: req.params.slug })
+    const postData = await Post.findOne({ slug: req.params.slug });
     const postId = postData._id;
 
     const isAlreadyVoted = await Vote.findOne({
@@ -606,7 +606,7 @@ module.exports.downvotePost = asyncHandler(async (req, res) => {
   try {
     const userId = req.user._id;
 
-    const postData = await Post.findOne({ slug: req.params.slug })
+    const postData = await Post.findOne({ slug: req.params.slug });
     const postId = postData._id;
     const isAlreadyVoted = await Vote.findOne({
       votingUserId: userId,
@@ -1070,7 +1070,7 @@ module.exports.postComment = asyncHandler(async (req, res) => {
             isBookmarked: false,
             trueCount: 0,
             falseCount: 0,
-            replyCount:0
+            replyCount: 0,
           };
         })
       );
@@ -1264,7 +1264,7 @@ module.exports.getAllCommentReplies = asyncHandler(async (req, res) => {
       repliesWithBookmarkStatus.map(async (reply) => {
         return {
           ...reply,
-          replyCount: reply.replies.length?reply.replies.length:0,
+          replyCount: reply.replies.length ? reply.replies.length : 0,
         };
       })
     );
@@ -1480,7 +1480,6 @@ module.exports.getAllUnreadPost = asyncHandler(async (req, res) => {
 
     // const unreadPosts = await UnreadPost.find({ channelId, userId });
     const unreadPosts = await Post.find({ channelId, readBy: { $ne: userId } });
-
     if (!unreadPosts) {
       return res.status(200).json({ status: 404, data: null });
     }
@@ -1696,7 +1695,7 @@ module.exports.getUserComments = asyncHandler(async (req, res) => {
       repliesWithBookmarkStatus.map(async (reply) => {
         return {
           ...reply,
-          replyCount: reply.replies.length?reply.replies.length:0,
+          replyCount: reply.replies.length ? reply.replies.length : 0,
         };
       })
     );
@@ -1708,57 +1707,6 @@ module.exports.getUserComments = asyncHandler(async (req, res) => {
       .json({ error: "Server error fetching comments and replies." });
   }
 });
-
-// const populateParentComments = async (commentId, level = 0, maxLevel = 3) => {
-//   if (level > maxLevel) return null;
-
-//   const comment = await PostComment.findById(commentId).populate('parentId')
-
-//   if (!comment) {
-//     return null;
-//   }
-
-//   let parentComment = null;
-//   if (comment.parentId) {
-//     parentComment = await populateParentComments(comment.parentId, level + 1, maxLevel);
-//   }
-
-//   return {
-//     ...comment.toObject(),
-//     parentId: parentComment,
-//   };
-// };
-
-// module.exports.getPreviousComments = asyncHandler(async (req, res) => {
-//   const { _id } = req.params;
-//   const commentId = _id;
-
-//   try {
-//     const parentComments = await populateParentComments(commentId);
-
-//     if (!parentComments) {
-//       return res.status(404).json({ message: "Comment not found" });
-//     }
-
-//     const topLevelComments = await PostComment.find({ postId: parentComments.postId,parentId: null }).sort({ createdAt: -1 });
-
-//     const topLevelCommentId = parentComments.parentId.parentId._id
-//     let isInclude =false
-//     topLevelComments.forEach(comment => {
-//       if(comment._id.toString() === topLevelCommentId.toString()){
-//         isInclude = true
-//       }
-//     })
-
-//     if(isInclude)
-//       return res.json(topLevelComments);
-//     else
-//       return res.json(formatedObj);
-//   } catch (error) {
-//     console.error(error);
-//     return res.status(500).json({ message: "Server error" });
-//   }
-// });
 
 module.exports.getPreviousComments = asyncHandler(async (req, res) => {
   const { _id } = req.params;
@@ -1788,5 +1736,31 @@ module.exports.getPreviousComments = asyncHandler(async (req, res) => {
     res.json(formattedComment);
   } catch (err) {
     res.status(500).send(err.message);
+  }
+});
+
+module.exports.setReadPost = asyncHandler(async (req, res) => {
+  try {
+    const channelId = req.params._id;
+    const userId = req.user._id;
+
+    if (!channelId || !userId) {
+      return res
+        .status(200)
+        .json({ status: 400, message: "channelId and userId are required" });
+    }
+    const unreadPosts = await Post.find({ channelId, readBy: { $ne: userId } });
+
+    await Promise.all(
+      unreadPosts.map(async (post) => {
+        post.readBy.push(userId);
+        await post.save();
+      })
+    );
+
+    return res.status(200).json({ status: 200, data: unreadPosts });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 });

@@ -14,7 +14,12 @@ const StatusItem = ({ status }) => {
   const [unread, setUnread] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const getUnread = () => {
-    return get(`post/getAllUnreadPost/${status.id}`)
+    return get(`post/getAllUnreadPost/${status._id}`)
+      .then((r) => r.data?.length)
+      .catch(() => 0);
+  };
+  const setReadPost = () => {
+    return get(`post/setReadPost/${status._id}`)
       .then((r) => r.data?.length)
       .catch(() => 0);
   };
@@ -31,6 +36,7 @@ const StatusItem = ({ status }) => {
   }, [status.id]);
   return (
     <Flex direction="column" alignItems="center" position="relative">
+    <div onClick={() => setReadPost()} >
       <Link href={`/channel/${status.username}`}>
         <Avatar
           size="lg"
@@ -59,6 +65,7 @@ const StatusItem = ({ status }) => {
           <Spinner size="sm" />
         )}
       </Link>
+      </div>
     </Flex>
   );
 };
@@ -76,27 +83,6 @@ const getChannelsForLoggedoutUser = () => {
       }))
     );
 };
-const getChannels =() => {
- 
-  // const token = localStorage.getItem("token").replaceAll('"', "");
-  // return axios
-  //   .get(
-  //     `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/channel/getAllChannel`,
-  //     {
-  //       headers: {
-  //         Authorization: `Bearer ${token}`,
-  //       },
-  //     }
-  //   )
-  //   .then((r) =>
-  //     r.data.data.map((c) => ({
-  //       id: c._id,
-  //       name: c.channelName,
-  //       avatar: c.channelIconImageUrl,
-  //       username:c.username,
-  //     }))
-  //   );
-};
 
 const StatusSlider = () => {
   const [channels, setChannels] = useState([]);
@@ -112,7 +98,6 @@ const StatusSlider = () => {
       else getChannelsForLoggedoutUser().then(setChannels);
     }
   }, [authVerified]);
-{console.log(pinnedChannelData)}
   if(pinnedChannelData.length==0) return <AvatarShimmer/>
   return pinnedChannelData.length>0&& (
     <Box

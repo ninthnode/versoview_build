@@ -41,7 +41,8 @@ const {
 	getPostIfUserNotLoggedIn,
 	getRecentlyViewedPosts,
 	getPreviousComments,
-	getUserComments
+	getUserComments,
+	setReadPost
 } = require("../../controllers/post.controller");
 const { protectUser } = require("../../middlewares/authMiddleware");
 const { upload } = require("../../config/multerUpload");
@@ -80,6 +81,7 @@ router.post("/postCommentReply/:_id", protectUser, postCommentReply);
 router.post("/commentReply/:_id", protectUser, commentReply);
 router.get("/getCommentReplies/:_id", protectUser, getCommentReplies);
 router.post("/unreadPost", protectUser, unreadPost);
+router.get("/setReadPost/:_id", protectUser, setReadPost);
 router.get("/getAllUnreadPost/:_id", protectUser, getAllUnreadPost);
 router.delete("/deleteUnreadPost/:_id", protectUser, deleteUnreadPost);
 router.delete("/deletePostComment/:_id", protectUser, deletePostComment);

@@ -24,8 +24,41 @@ function RightSidebar({userDetails,user,fetchUser, followings, fetchfollowChanne
              fetchUser(user.id);
         }
       }, [ShowSidebarIf]);
+
+
+      
+  useEffect(() => {
+
+    // Ensure the component is rendered and elements are available
+    const sidebar = document.getElementById("sidebar");
+    const sidebarContent = document.getElementById("content_wrapper");
+  
+    if (!sidebar || !sidebarContent) return;
+  
+    const handleScroll = () => {
+
+      const scrollTop = window.scrollY;
+      const viewportH = window.innerHeight;
+      const contentH = sidebarContent.getBoundingClientRect().height;
+      const sidebarTop = sidebar.getBoundingClientRect().top + window.scrollY;
+  
+      if (scrollTop >= contentH - viewportH) {
+        sidebarContent.style.transform = `translateY(-${contentH - viewportH + sidebarTop}px)`;
+        sidebarContent.style.position = "fixed";
+      } else {
+        sidebarContent.style.transform = "";
+        sidebarContent.style.position = "relative";
+      }
+    };
+  
+    window.addEventListener("scroll", handleScroll);
+  
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
   return ShowSidebarIf&&(
-    <Box>
+    <Box id='content_wrapper' maxW='lg' w="100%">
       <Heading as='h4' fontSize='lg' fontWeight='bold' mb='2'>Chats</Heading>
       <Divider/>
       <Chats user={user}/>

@@ -172,7 +172,7 @@ const Following = ({ followings, user,fetchfollowChannelList }) => {
   }
 
   return (
-    <Box>
+    <Box  mb='4'>
       {/* <Box px={0} py={3} bg={user.profileBgColor}>
         <Flex justifyContent="space-between" alignItems="center">
           <Flex alignItems="center">
