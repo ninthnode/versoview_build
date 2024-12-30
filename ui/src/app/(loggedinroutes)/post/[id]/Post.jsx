@@ -228,7 +228,7 @@ function SinglePost({
                     &bull; {formatDate(postState.post.createdAt)} &bull;{" "}
                     {postState.readingTime} read
                   </Text>
-                  <Flex alignItems="center" mx="2" flexShrink={0}>
+                  <Flex alignItems="center" mx="2" flexShrink={0} cursor='pointer' onClick={() => isAuthenticated&&onToggleCommentModal()}>
                     <Image
                       src="../assets/chat-icon.png"
                       h="1.2rem"

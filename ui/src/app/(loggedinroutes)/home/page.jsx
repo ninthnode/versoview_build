@@ -7,9 +7,7 @@ import {
   TabPanels,
   Tab,
   TabPanel,
-  Spinner,
   Text,
-  Divider
 } from "@chakra-ui/react";
 import { connect } from "react-redux";
 import {
@@ -107,7 +105,7 @@ const Home = ({
                         post={post}
                         submitBookmark={submitBookmarkPost}
                       />
-                      <Divider />
+                      {/* <Divider /> */}
                     </Box>
                   ))}
                 </>

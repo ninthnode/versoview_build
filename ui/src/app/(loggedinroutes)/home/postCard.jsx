@@ -14,6 +14,7 @@ import {
   Text,
   Skeleton,
   Tooltip,
+  Divider,
 } from "@chakra-ui/react";
 import Link from "next/link";
 import { CiSearch, CiBookmark, CiUser } from "react-icons/ci";
@@ -42,139 +43,143 @@ const PostCard = ({
   submitBookmark,
   isbookmarkScreenCard = false,
 }) => {
-
   const deviceType = useDeviceType();
   const dispatch = useDispatch();
 
   const handleRedirectToPost = async (id) => {
-    dispatch(openCommentModal(id,'post'));
+    dispatch(openCommentModal(id, "post"));
   };
   return (
-    <Card maxW="2xl" mb={4} boxShadow="none">
-      <CardHeader p={1}>
-        <Flex
-          spacing="4"
-          w="100%"
-          justifyContent="space-between"
-          alignItems="center"
-        >
-          <Flex alignItems="center" w={{ base: "220px", sm: "100%" }}>
-            <Link href={`/channel/${post.channelId.username}`}>
-              <Avatar
-                size="sm"
-                borderRadius={10}
-                src={post.channelId.channelIconImageUrl}
-              />
-            </Link>
-            <Link href={`/channel/${post.channelId.username}`}>
-              <Text ml="2" fontWeight="semibold" fontSize="md">
-                <Tooltip
-                  label={post.channelId?.channelName}
-                  aria-label="A tooltip"
-                >
-                  {getExcerptText(
-                    post.channelId?.channelName,
-                    deviceType == "phone" ? 30 : 50
-                  )}
-                </Tooltip>
-              </Text>
-            </Link>
-          </Flex>
-          <Flex>
-            {!small && (
-              <PostMenu
-                url={`${process.env.NEXT_PUBLIC_FRONTEND_URL}/post/${post.slug}`}
-                title={post.header}
-              />
-            )}
-            {showBookmarkButton && (
-              <IconButton
-                variant="nostyle"
-                color={
-                  post.isBookmarked || isbookmarkScreenCard
-                    ? "green.500"
-                    : "gray"
-                }
-                aria-label="See menu"
-                fontSize="lg"
-                textAlign="right"
-                justifyContent="flex-end"
-                p="0"
-                icon={
-                  post.isBookmarked || isbookmarkScreenCard ? (
-                    <BookmarkFilled style={{ margin: -6 }} />
-                  ) : (
-                    <CiBookmark style={{ margin: -6 }} />
-                  )
-                }
-                onClick={() => submitBookmark("post", post._id)}
-              />
-            )}
-          </Flex>
-        </Flex>
-      </CardHeader>
-      {!small &&
-        (post.mainImageURL ? (
-          <Image
-            border="1px solid lightgray"
-            borderRadius="md"
-            objectFit="cover"
-            // h="300px"
-            src={post.mainImageURL}
-            alt={post.header}
-          />
-        ) : (
-          <Skeleton height="300px" mb={4} />
-        ))}
-      <CardBody ml="1" p="0" border="0">
-        <Text
-          fontSize="sm"
-          pt="2"
-          display="flex"
-          gap="10px"
-          alignItems="center"
-          color="textlight"
-        >
-          <Flex w="100%" justify="space-between">
-            <Flex
-              w="100%"
-              justify="flex-start"
-              alignItems="flex-start"
-              flexWrap="nowrap"
-            >
-              <Text overflow="hidden" textOverflow="ellipsis" flexShrink={1}>
-                {post.section} &bull; {post.subSection} &bull;{" "}
-                {formatDate(post.createdAt)} &bull; {post.readingTime} read
-              </Text>
-              <div
-                onClick={() => {
-                  handleRedirectToPost(post.slug);
-                }}
-                style={{ cursor: "pointer" }}
-              >
-                <Link href={`post/${post.slug}`}>
-                  <Flex alignItems="center" mx="2" flexShrink={0}>
-                    <Image src="/assets/chat-icon.png" h="1.2rem" w="1.4rem" />
-                    <Text ml="1">{post.commentCount}</Text>
-                  </Flex>
-                </Link>
-              </div>
+    <Box>
+      <Card maxW="2xl" mb={4} boxShadow="none">
+        <CardHeader p={1}>
+          <Flex
+            spacing="4"
+            w="100%"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <Flex alignItems="center" w={{ base: "220px", sm: "100%" }}>
+              <Link href={`/channel/${post.channelId.username}`}>
+                <Avatar
+                  size="sm"
+                  borderRadius={10}
+                  src={post.channelId.channelIconImageUrl}
+                />
+              </Link>
+              <Link href={`/channel/${post.channelId.username}`}>
+                <Text ml="2" fontWeight="semibold" fontSize="md">
+                  <Tooltip
+                    label={post.channelId?.channelName}
+                    aria-label="A tooltip"
+                  >
+                    {getExcerptText(
+                      post.channelId?.channelName,
+                      deviceType == "phone" ? 30 : 50
+                    )}
+                  </Tooltip>
+                </Text>
+              </Link>
             </Flex>
-
-            <Box>
-              {post.editionId?.pdfUrl && (
-                <PdfFlipBookModal
-                  title={
-                    post.editionId?.editionText +
-                    " " +
-                    post.editionId?.editionDate
-                  }
-                  pdfFile={post.editionId.pdfUrl}
+            <Flex>
+              {!small && (
+                <PostMenu
+                  url={`${process.env.NEXT_PUBLIC_FRONTEND_URL}/post/${post.slug}`}
+                  title={post.header}
                 />
               )}
-            </Box>
+              {showBookmarkButton && (
+                <IconButton
+                  variant="nostyle"
+                  color={
+                    post.isBookmarked || isbookmarkScreenCard
+                      ? "green.500"
+                      : "gray"
+                  }
+                  aria-label="See menu"
+                  fontSize="lg"
+                  textAlign="right"
+                  justifyContent="flex-end"
+                  p="0"
+                  icon={
+                    post.isBookmarked || isbookmarkScreenCard ? (
+                      <BookmarkFilled style={{ margin: -6 }} />
+                    ) : (
+                      <CiBookmark style={{ margin: -6 }} />
+                    )
+                  }
+                  onClick={() => submitBookmark("post", post._id)}
+                />
+              )}
+            </Flex>
           </Flex>
-          {/* <Button
+        </CardHeader>
+        {!small &&
+          (post.mainImageURL ? (
+            <Image
+              border="1px solid lightgray"
+              borderRadius="md"
+              objectFit="cover"
+              // h="300px"
+              src={post.mainImageURL}
+              alt={post.header}
+            />
+          ) : (
+            <Skeleton height="300px" mb={4} />
+          ))}
+        <CardBody ml="1" p="0" border="0">
+          <Text
+            fontSize="sm"
+            pt="2"
+            display="flex"
+            gap="10px"
+            alignItems="center"
+            color="textlight"
+          >
+            <Flex w="100%" justify="space-between">
+              <Flex
+                w="100%"
+                justify="flex-start"
+                alignItems="flex-start"
+                flexWrap="nowrap"
+              >
+                <Text overflow="hidden" textOverflow="ellipsis" flexShrink={1}>
+                  {post.section} &bull; {post.subSection} &bull;{" "}
+                  {formatDate(post.createdAt)} &bull; {post.readingTime} read
+                </Text>
+                <div
+                  onClick={() => {
+                    handleRedirectToPost(post.slug);
+                  }}
+                  style={{ cursor: "pointer" }}
+                >
+                  <Link href={`post/${post.slug}`}>
+                    <Flex alignItems="center" mx="2" flexShrink={0}>
+                      <Image
+                        src="/assets/chat-icon.png"
+                        h="1.2rem"
+                        w="1.4rem"
+                      />
+                      <Text ml="1">{post.commentCount}</Text>
+                    </Flex>
+                  </Link>
+                </div>
+              </Flex>
+
+              <Box>
+                {post.editionId?.pdfUrl && (
+                  <PdfFlipBookModal
+                    title={
+                      post.editionId?.editionText +
+                      " " +
+                      post.editionId?.editionDate
+                    }
+                    pdfFile={post.editionId.pdfUrl}
+                  />
+                )}
+              </Box>
+            </Flex>
+            {/* <Button
             variant="ghost"
             colorScheme="gray"
             aria-label="See menu"
@@ -185,39 +190,44 @@ const PostCard = ({
           >
             127
           </Button> */}
-        </Text>
+          </Text>
 
-        <Link href={`/post/${post.slug}`}>
-          <Heading
-            py="1"
-            mb="1"
-            fontWeight="bold"
-            fontSize="lg"
-            lineHeight="2rem"
-          >
-            {post.header}
-          </Heading>
-          {post.standFirst && (
+          <Link href={`/post/${post.slug}`}>
             <Heading
               py="1"
               mb="1"
               fontWeight="bold"
-              fontSize="1.4rem"
-              lineHeight="1.5rem"
+              fontSize="lg"
+              lineHeight="2rem"
             >
-              {post.standFirst}
+              {post.header}
             </Heading>
-          )}
-        </Link>
-        <Text
-          fontSize="md"
-          textAlign="justify"
-          dangerouslySetInnerHTML={{
-            __html: getExcerptHtml(DOMPurify.sanitize(post.bodyRichText), 150),
-          }}
-        />
-      </CardBody>
-    </Card>
+            {post.standFirst && (
+              <Heading
+                py="1"
+                mb="1"
+                fontWeight="bold"
+                fontSize="1.4rem"
+                lineHeight="1.5rem"
+              >
+                {post.standFirst}
+              </Heading>
+            )}
+          </Link>
+          <Text
+            fontSize="md"
+            textAlign="justify"
+            dangerouslySetInnerHTML={{
+              __html: getExcerptHtml(
+                DOMPurify.sanitize(post.bodyRichText),
+                150
+              ),
+            }}
+          />
+        </CardBody>
+      </Card>
+      <Divider />
+    </Box>
   );
 };
 

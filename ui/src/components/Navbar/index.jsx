@@ -41,6 +41,8 @@ const Navbar = ({ children }) => {
   return (
     <Flex
       minH="100vh"
+      // w={IsFullWidthRoutes ? "100%" : "90%"}
+      w='100%'
       bg="light"
       margin='0 auto'
       pos='relative'
