@@ -2,6 +2,7 @@ import React from "react";
 import { Menu, MenuButton,MenuList,Button,IconButton } from "@chakra-ui/react";
 import { FiMoreHorizontal } from "react-icons/fi";
 import ShareButton from "./ShareButton";
+import CopyToClipboardButton from "../CopyToClipboardButton";
 const ShareMenu = ({ disabled = false, url, title }) => {
 
   return (
@@ -18,8 +19,9 @@ const ShareMenu = ({ disabled = false, url, title }) => {
         p='0'
       />
       </MenuButton>
-      <MenuList minW='7rem' maxW='10rem'>
+      <MenuList minW='8rem' maxW='10rem'>
           <ShareButton url={url} title={title} disabled={disabled}/>
+          <CopyToClipboardButton textToCopy={url}/>
       </MenuList>
     </Menu>
   );

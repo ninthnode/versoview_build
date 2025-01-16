@@ -1,12 +1,13 @@
 import React, { useState, useCallback } from "react";
 import Cropper from "react-easy-crop";
-import { getCroppedImg } from "./cropImage";
+import { getCroppedImg } from "./utils";
 import { FaCheck, FaTimes } from "react-icons/fa";
 import { MdModeEdit } from "react-icons/md";
-import { Image, Text,Flex, Tooltip,useDisclosure } from "@chakra-ui/react";
+import { Image as ChakraImage, Text,Flex, Tooltip,useDisclosure } from "@chakra-ui/react";
 import { FaUpload,FaCamera } from "react-icons/fa";
 import { MdLibraryAdd } from "react-icons/md";
 import LibraryModal from "@/components/publish/LibraryModal";
+const axios = require('axios');
 
 const ImageCropper = ({ onCropComplete, uploadedImage, croppedImage,imageSizeError,setCroppedImage,setUploadedImage,edition,handleLibraryImage }) => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
@@ -60,12 +61,13 @@ const ImageCropper = ({ onCropComplete, uploadedImage, croppedImage,imageSizeErr
               objectFit="cover"
             />
           ) : (
-            <Image
+            <ChakraImage
               objectFit="cover"
               src={croppedImage ? croppedImage : uploadedImage}
               alt="Cropped Image"
               w="100%"
               h="100%"
+              crossorigin="anonymous"
             />
           )}
           <div
@@ -138,7 +140,6 @@ const ImageCropper = ({ onCropComplete, uploadedImage, croppedImage,imageSizeErr
             <FaCamera fontSize="3rem" style={{backgroundColor:"#cccc", padding:'10px',cursor:'pointer'}}/>
           </label>
           </Tooltip>
-          {console.log(edition)}
           {edition&&<Tooltip label="Choose from Library">
           <Text onClick={onOpen}>
            <MdLibraryAdd fontSize="3rem" style={{backgroundColor:"#cccc", padding:'10px',cursor:'pointer'}}/>

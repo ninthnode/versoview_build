@@ -27,7 +27,6 @@ import Link from "next/link";
 import { CiBookmark } from "react-icons/ci";
 import PostCard from "@/app/(loggedinroutes)/home/postCard";
 import EditionCard from "@/components/channels/EditionCard";
-import { useDispatch } from "react-redux";
 
 const Comment = ({
   id,
@@ -38,9 +37,8 @@ const Comment = ({
   commentText,
   openCommentModal,
 }) => {
-  const dispatch = useDispatch();
   const handleClick = (singleComment) => {
-    dispatch(openCommentModal(singleComment, 'comment'));
+    openCommentModal(singleComment, 'comment');
   };
   return (
     <Box my="4" p={2}>

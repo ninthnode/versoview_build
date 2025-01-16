@@ -59,7 +59,6 @@ const Navbar = ({ children }) => {
           alignItems="center"
           justifyContent="space-between"
           direction="column"
-          zIndex="9999"
           bg="#fff"
           w={IsFullWidthRoutes ? "100%" : "3xl"}
           pos='relative'
@@ -120,7 +119,7 @@ const Navbar = ({ children }) => {
             px={4}
             display={IsFullWidthRoutes ? "none" : { base: "none", lg: "block" }}
             mt="4.4rem"
-            w={ { base: "xs", lg: "xl" }}
+            w={ { base: "xs", lg: "md" }}
             pos='relative'
             id="sidebar"
           >

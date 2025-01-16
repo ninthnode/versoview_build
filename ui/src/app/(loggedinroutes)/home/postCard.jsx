@@ -51,7 +51,7 @@ const PostCard = ({
   };
   return (
     <Box>
-      <Card maxW="2xl" mb={4} boxShadow="none">
+      <Card mb={4} boxShadow="none">
         <CardHeader p={1}>
           <Flex
             spacing="4"

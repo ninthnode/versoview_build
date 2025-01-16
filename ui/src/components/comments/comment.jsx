@@ -63,7 +63,7 @@ const Comment = ({
 
   return (
     <Box w="100%" mb={4} bg="#fff" h={"100%"} key={_id} ref={(el) => {if(sectionRefs!==null){sectionRefs.current[_id] = el}}}>
-      <HStack align="start" spacing={4} position="relative" px={4} pt={6}>
+      <HStack align="start" spacing={4} position="relative" px={2} pt={6}>
         <Avatar
           size="md"
           name={userId.channelName}

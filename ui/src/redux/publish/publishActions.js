@@ -7,13 +7,17 @@ import {
     GET_SINGLE_EDITION_REQUEST,
     GET_SINGLE_EDITION_SUCCESS,
     GET_USER_EDITION_REQUEST,
-    GET_USER_EDITION_SUCCESS
+    GET_USER_EDITION_SUCCESS,
+    UPLOAD_PDF_PROGRESS,
+    UPLOAD_IMAGES_PROGRESS,
+    CLEAN_EDITION
   } from './publishTypes';
   import { toast } from 'react-toastify';
 
+  export const cleanEdition = () => ({ type: CLEAN_EDITION });
   const getSignedUrl = async ({ key, content_type }) => {
     const response = await axios.post(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/s3/signed_profile_url`,
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/s3/signed_url`,
       {
         key,
         content_type,
@@ -21,39 +25,6 @@ import {
     );
     return response.data;
   };
-  
-  const uploadFileToSignedUrl = (signedUrl, file, contentType, onProgress) => {
-    return axios.put(signedUrl, file, {
-      onUploadProgress: onUploadProgress,
-      headers: {
-        "Content-Type": contentType,
-      },
-    });
-  };
-  let uploadToastId = null;
-  const onUploadProgress = (progressEvent) => {
-    const { loaded, total } = progressEvent;
-    const uploadProgress = Math.round((loaded / total) * 100);
-    if (uploadProgress !== null) {
-       if(uploadToastId != null) {
-        toast.update(uploadToastId, {
-          render: `Creating Edition: ${uploadProgress}%`,
-          progress: uploadProgress / 100,
-          autoClose: false,
-        });
-      }
-  
-      if (uploadProgress > 99) {
-        toast.update(uploadToastId, {
-          position: "bottom-right",
-          render: "Edition Created Sucessfully!",
-          progress: 100,
-          type: 'success',
-          autoClose: 5000,
-        });
-      }
-    }
-  }
   const extractImageUrl = (url) => {
     const urlObj = new URL(url);
     const pathname = urlObj.pathname;
@@ -61,57 +32,109 @@ import {
     const filename = segments.pop();
     return url.substring(0, url.indexOf(filename) + filename.length);
   };
-  export const createEdition = (key, content_type, uploadPdf, editionData) => async (dispatch) => {
-    try {
-      dispatch({ type: CREATE_EDITION_REQUEST });
-      if (uploadToastId === null) {
-        uploadToastId = toast.info(`Creating Edition: 0%`, {
-          position: "bottom-right",
-          progress: 0,
-          autoClose: false,
-        });
-      }
-      let responsefile;
-      if (uploadPdf) {
+ 
+  const onUploadProgress = (progressEvent, fileIndex, fileProgress, setAggregateProgress, totalSize) => {
+    const { loaded, total } = progressEvent;
+  
+    // Calculate the progress for the current file
+    const fileProgressPercentage = (loaded / total) * 50;
+  
+    // Update the progress for the specific file
+    fileProgress[fileIndex] = (loaded / totalSize) * 50;
+  
+    // Aggregate progress from all files
+    const aggregateProgress = Object.values(fileProgress).reduce((sum, progress) => sum + progress, 0);
+  
+    // Update the overall progress
+    setAggregateProgress(aggregateProgress);
+  };
+  
+  async function processFiles(files, setAggregateProgress, type) {
+    const fileUrls = [];
+    const totalSize = files.reduce((acc, file) => acc + file.size, 0);
+  
+    // Track individual progress for each file
+    const fileProgress = {};
+  
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      try {
+        const key = `${type}/${file.name}`;
+        const content_type = file.type;
         const signedUrlResponse = await getSignedUrl({ key, content_type });
-
-        const uploadResponse = await uploadFileToSignedUrl(
-          signedUrlResponse.data.signedUrl,
-          uploadPdf,
-          content_type
-        );
-
-        const newPdfUrl = extractImageUrl(uploadResponse.config.url);
-        editionData.pdfUrl = newPdfUrl;
+  
+        await axios.put(signedUrlResponse.data.signedUrl, file, {
+          headers: { "Content-Type": content_type },
+          onUploadProgress: (progressEvent) =>
+            onUploadProgress(progressEvent, i, fileProgress, setAggregateProgress, totalSize),
+        });
+  
+        const newFileUrl = extractImageUrl(signedUrlResponse.data.signedUrl);
+        fileUrls.push(newFileUrl);
+      } catch (error) {
+        console.error(`Failed to upload file: ${file.name}`, error);
+        throw new Error(`Error uploading file: ${file.name}`);
       }
-      responsefile = await axios.post(
+    }
+  
+    return fileUrls;
+  }
+  
+  export const createEdition = (chunkPdfFiles, capturedPdfImages, editionData) => async (dispatch) => {
+    try {
+      dispatch({ type: "CREATE_EDITION_REQUEST" });
+  
+      // Aggregate progress for all file uploads
+      let aggregateProgress = 0;
+      const setAggregateProgress = (progress) => {
+        aggregateProgress = progress;
+        dispatch({
+          type: UPLOAD_PDF_PROGRESS,
+          payload: aggregateProgress,
+        });
+      };
+  
+      // Process PDF files
+      const processedPdfs = await processFiles(chunkPdfFiles, setAggregateProgress, "pdf");
+      editionData.pdfUrls = processedPdfs;
+  
+      // Reset progress for images
+      let aggregateImageProgress = 0;
+      const setAggregateImageProgress = (progress) => {
+        aggregateImageProgress = progress;
+        dispatch({
+          type: UPLOAD_IMAGES_PROGRESS,
+          payload: aggregateImageProgress,
+        });
+      };
+      
+      // Process Image files
+      const processedImages = await processFiles(capturedPdfImages, setAggregateImageProgress, "images");
+      editionData.libraryImages = processedImages;
+  
+      // Send final edition data
+      const response = await axios.post(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/editions/create-edition`,
         editionData,
         {
           headers: {
-            authorization: `Bearer ${localStorage
-              .getItem("token")
-              .replaceAll('"', "")}`,
+            authorization: `Bearer ${localStorage.getItem("token").replaceAll('"', "")}`,
           },
         }
       );
-      if (uploadToastId) 
-        toast.update(uploadToastId, {
-          position: "bottom-right",
-          render: "Edition Created Sucessfully!",
-          progress: 100,
-          type: 'success',
-          autoClose: 5000,
-        });
+  
       dispatch({
-        type: CREATE_EDITION_SUCCESS,
-        payload: responsefile,
+        type: "CREATE_EDITION_SUCCESS",
+        payload: response.data,
       });
+  
+      // Redirect or other post-success actions
       window.location.href = "/publish";
     } catch (error) {
-      console.log(error)
+      console.error("Error creating edition:", error);
     }
   };
+  
   
   export const getAllEditions = () => async (dispatch) => {
     try {
@@ -182,4 +205,21 @@ import {
       } catch (error) {
        }
     };
+  };
+
+  export const getEditionPdf = (editionId,pageStart,pagesPerLoad) => async (dispatch) => {
+    try {
+      dispatch({ type: GET_SINGLE_EDITION_REQUEST });
+     const response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/editions/getPdf/${editionId}?pageStart=${pageStart}&pageEnd=${pageStart + pagesPerLoad - 1}`,{ 
+        headers: {
+          authorization: `Bearer ${localStorage
+            .getItem("token")
+            .replaceAll('"', "")}`,
+        },
+      });
+
+      return response
+    } catch (error) {
+      console.log(error)
+    }
   };

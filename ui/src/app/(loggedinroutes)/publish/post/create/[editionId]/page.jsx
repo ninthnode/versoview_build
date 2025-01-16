@@ -33,7 +33,10 @@ import ImageCropper from "@/components/Image-cropper/ImageCropper";
 import { useRouter } from "next/navigation";
 import useDeviceType from "@/components/useDeviceType";
 import { IoArrowBack } from "react-icons/io5";
-import { getEditionById } from "@/redux/publish/publishActions";
+import { getEditionById, cleanEdition } from "@/redux/publish/publishActions";
+import { Document, Page, pdfjs } from "react-pdf";
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+
 const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), {
   ssr: false,
 });
@@ -44,7 +47,7 @@ const PublishPdfPost = ({ params }) => {
   const toast = useToast();
 
   const postLoading = useSelector((s) => s.post.loadingModify);
-  const isEditPost = false
+  const isEditPost = false;
   const editPostId = useSelector((s) => s.post.editPostId);
   const editionDetails = useSelector((s) => s.publish.singleEdition);
   const singlePostEditContent = useSelector(
@@ -59,6 +62,16 @@ const PublishPdfPost = ({ params }) => {
   const [croppedImage, setCroppedImage] = useState(null);
   const [imageSizeError, setImageSizeError] = useState("");
 
+  const [pageStart, setPageStart] = useState(0);
+
+  const [pdfPages, setPdfPages] = useState([]);
+  const [numPages, setNumPages] = useState(null);
+
+  const [pdfLoading, setPdfLoading] = useState(false);
+
+  const [loadingStates, setLoadingStates] = useState(
+    Array(pdfPages.length).fill(true)
+  );
   const handleCropComplete = (croppedImageUrl) => {
     setCroppedImage(croppedImageUrl);
   };
@@ -105,12 +118,41 @@ const PublishPdfPost = ({ params }) => {
     };
 
     if (isEditPost) fetchAndSetData();
+    
   }, [isEditPost, singlePostEditContent]);
+  const base64ToArrayBuffer = (base64) => {
+    const binaryString = atob(base64);
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes.buffer;
+  };
 
   useEffect(() => {
-    dispatch(fetchLoggedInUserChannel());
-    dispatch(getEditionById(params.editionId));
+    const fetchData = async () => {
+      // Dispatch the necessary actions
+      await dispatch(fetchLoggedInUserChannel());
+      await dispatch(getEditionById(params.editionId));
+    };
+    fetchData();
+    
+    // Optional cleanup
+    return () => {
+        setUploadedImage(null);
+        setPdfPages([]);
+        setLoadingStates([]);
+        dispatch(cleanEdition());
+          };
   }, []);
+  useEffect(() => {
+    const fetchData = async () => {
+      setPdfPages((prev) => [...prev, editionDetails.pdfUrls[pageStart]]);
+    };
+    if (editionDetails._id != undefined && editionDetails != undefined)
+      fetchData();
+  }, [pageStart, editionDetails]);
 
   const handleFileSelect = async (e) => {
     const maxSize = 5 * 1024 * 1024;
@@ -228,11 +270,47 @@ const PublishPdfPost = ({ params }) => {
     }
     setIsEditing(!isEditing);
   };
-
+  const isHttpsURL=(string)=> {
+    try {
+      const url = new URL(string); 
+      return url.protocol === "https:";
+    } catch {
+      return false; // Invalid URL
+    }
+  }
   const handleLibraryImage = async (img) => {
+    if(isHttpsURL(img)){
+      let imageName =
+      img.lastIndexOf("/") + 1;
+    let postImage = await blobToFile(
+      img,
+      imageName
+    );
+    const imageDataUrl = await readFile(postImage);
+
+    setUploadedImage(imageDataUrl);
+    }
+else
     setUploadedImage(img);
   };
-
+  const handleScroll = (e) => {
+    if (
+      e.target.scrollHeight - e.target.scrollTop < e.target.clientHeight + 1 &&
+      !pdfLoading
+    ) {
+      setPageStart((prev) => prev + 1);
+      setPdfLoading(true);
+    }
+  };
+  const onLoadSuccess = (pdf, index) => {
+    setPdfLoading(false);
+    setLoadingStates((prevStates) => {
+      const updatedStates = [...prevStates];
+      updatedStates[index] = false;
+      return updatedStates;
+    });
+    setNumPages(pdf.numPages);
+  };
   return (
     <Box mb={"60px"}>
       <Flex py={5} gap="4">
@@ -241,21 +319,39 @@ const PublishPdfPost = ({ params }) => {
           w="60%"
           border="1px solid black"
           display={{ base: "none", md: "block" }}
-          height='fit-content'
-          pos='sticky'
-          top='0'
+          height="fit-content"
+          pos="sticky"
+          top="0"
         >
           <Heading fontSize="md" textAlign="center" my={4}>
             PDF PREVIEW
           </Heading>
           <Box border="1px solid #e2e8f0" h="100vh">
-            <Flex direction="column" align="center" justify="center" h="full">
-              <iframe
-                src={editionDetails.pdfUrl}
-                title="title"
-                height="1500px"
-                width="100%"
-              ></iframe>
+            <Flex align="flex-start" justify="center" h="full">
+              <div
+                style={{ width: "100%", height: "80vh", overflowY: "scroll" }}
+                onScroll={handleScroll}
+              >
+                {pdfPages&&pdfPages.map((pdf, index) => (
+                  <div key={`pdf_${index}`}>
+                    {loadingStates[index] ? (
+                      <Spinner size="xl" /> // Spinner shown while loading
+                    ) : (
+                      <Document
+                        file={pdf}
+                        onLoadSuccess={(pdf) => onLoadSuccess(pdf, index)}
+                      >
+                        {Array.from(new Array(numPages), (el, pageIndex) => (
+                          <Page
+                            key={`page_${pageIndex + 1}`}
+                            pageNumber={pageIndex + 1}
+                          />
+                        ))}
+                      </Document>
+                    )}
+                  </div>
+                ))}
+              </div>
             </Flex>
           </Box>
         </Box>
@@ -327,7 +423,7 @@ const PublishPdfPost = ({ params }) => {
                     />
                   </Box>
                 </FormControl>
-                <Box p="0" mt='2'>
+                <Box p="0" mt="2">
                   {deviceType == "phone" && (
                     <Text
                       p="0"
@@ -343,7 +439,7 @@ const PublishPdfPost = ({ params }) => {
               <Box w="100%">
                 <Flex mb="4" direction={{ base: "row", md: "column" }} gap={2}>
                   <FormControl id="section" mr={4}>
-                  <FormLabel fontSize="sm">Edition*</FormLabel>
+                    <FormLabel fontSize="sm">Edition*</FormLabel>
                     <Input
                       size="sm"
                       type="text"

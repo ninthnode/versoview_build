@@ -14,9 +14,14 @@ const editionSchema = new mongoose.Schema(
       ref: "User",
       require: true,
     },
-    pdfUrl: {
-			type: String,
-		},
+    pdfUrls: {
+		type: [String],
+		default: ["array"],
+	},
+    libraryImages: {
+		type: [String],
+		default: ["array"],
+	},
     editionText: {
 			type: String,
 		},

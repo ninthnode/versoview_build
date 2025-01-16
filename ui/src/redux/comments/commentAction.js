@@ -57,7 +57,7 @@ export const openCommentModal = (postId,type) => {
             },
           }
         );
-        const data = await response.data.data;
+        const data = response.data.data;
         dispatch({
           type: OPEN_COMMENTS_MODAL,
           payload: data,

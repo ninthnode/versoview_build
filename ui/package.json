@@ -21,6 +21,7 @@
     "framer-motion": "^11.1.9",
     "jodit-react": "^4.1.2",
     "next": "14",
+    "pdf-lib": "^1.17.1",
     "pdfjs-dist": "^4.6.82",
     "react": "^18.3.1",
     "react-easy-crop": "^5.0.8",

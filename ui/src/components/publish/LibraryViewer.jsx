@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import { Flex, Box, Image } from "@chakra-ui/react";
 import "react-pdf/dist/esm/Page/TextLayer.css";
@@ -6,8 +6,9 @@ import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 import "./styles.css";
 
-const LibraryViewer = ({ file,handleLibraryImage,onClose }) => {
+const LibraryViewer = ({ file, onImagesCaptured, onClose }) => {
   const [numPages, setNumPages] = useState(null);
+  const [capturedImages, setCapturedImages] = useState([]);
 
   const onDocumentLoadSuccess = ({ numPages }) => {
     setNumPages(numPages);
@@ -40,8 +41,7 @@ const LibraryViewer = ({ file,handleLibraryImage,onClose }) => {
       : null;
     if (canvas1) {
       const image = combineCanvases(canvas1, canvas2);
-      handleLibraryImage(image)
-      onClose()
+      return image;
     }
   };
 
@@ -95,20 +95,30 @@ const LibraryViewer = ({ file,handleLibraryImage,onClose }) => {
   
     return pages;
   };
-  
-
+  const captureAllPages = () => {
+    const images = [];
+    for (let i = 1; i <= numPages; i++) {
+      const image = handlePageClick(i);
+      if (image) {
+        images.push(image);
+      }
+    }
+    setCapturedImages(images); // Store the captured images in state
+    if (onImagesCaptured) {
+      onImagesCaptured(images); // Pass captured images to the parent component
+    }
+  };
+  useEffect(() => {
+    if (numPages) {
+      // After document load success, capture images
+      setTimeout(captureAllPages, 40000); // Slight delay to ensure pages are rendered
+    }
+  }, [numPages]);
   return (
     <>
       <Document file={file} onLoadSuccess={onDocumentLoadSuccess}>
         <Flex gap="4" wrap="wrap" justify='center' mb='4'>{renderPages()}</Flex>
       </Document>
-
-      {/* Display captured images below */}
-      {/* <Flex mt={4} gap={4} flexWrap="wrap">
-          <Box border="1px solid #ccc" p={2}>
-            <Image src={capturedImages}/>
-          </Box>
-      </Flex> */}
     </>
   );
 };

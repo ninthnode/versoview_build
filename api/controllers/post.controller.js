@@ -18,6 +18,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const fse = require("fs-extra");
 const { Follow } = require("../models/follow.model");
+const { compareSync } = require("bcryptjs");
 
 // get all pdf images
 function getAllImageFiles(folder) {
@@ -49,10 +50,29 @@ async function generateUniqueSlug(title) {
 // Create post
 module.exports.create = asyncHandler(async (req, res) => {
   try {
+    console.log('ss')
     const userId = req.user._id;
     const channelData = await Channel.findOne({ userId });
     const channelId = channelData._id;
+    
     const slug = await generateUniqueSlug(req.body.header);
+    if (req.body.bodyRichText) {
+      req.body.bodyRichText = req.body.bodyRichText.replace(
+        /<img src="data:image\/[^;]+;base64,([^"]+)"([^>]*)>/g,
+        (match, base64, attributes) => {
+          const imageUrl = "https://versoview-post-images.s3.us-east-1.amazonaws.com/public/test/image/image-1737002230842.png"; // Your cloud upload logic
+          
+          // Check if there are additional attributes (e.g., style)
+          if (attributes.includes('style="')) {
+            return `<img src="${imageUrl}" ${attributes}>`;
+          }
+    
+          // If no additional attributes, return the updated img tag
+          return `<img src="${imageUrl}">`;
+        }
+      );
+    }
+
     const postData = {
       channelId: channelId,
       userId: userId,
@@ -1763,4 +1783,31 @@ module.exports.setReadPost = asyncHandler(async (req, res) => {
     console.error(error);
     return res.status(500).json({ error: "Internal Server Error" });
   }
+});
+module.exports.uploadPostImage = asyncHandler(async (req, res) => {
+  try {
+    if (!req.file) {
+        return res.status(400).json({
+            error: true,
+            message: 'No file uploaded',
+        });
+    }
+
+    const fileUrl = `${req.protocol}://${req.get('host')}/uploads/${file.filename}`;
+
+    res.status(200).json({
+        error: false,
+        message: 'File uploaded successfully',
+        data: {
+            files: [req.file.filename],
+            path: fileUrl,
+            baseurl: process.env.BASE_URL || 'http://localhost:5000',
+        },
+    });
+} catch (error) {
+    res.status(500).json({
+        error: true,
+        message: error.message || 'Internal Server Error',
+    });
+}
 });

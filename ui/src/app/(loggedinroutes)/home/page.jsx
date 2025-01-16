@@ -97,8 +97,8 @@ const Home = ({
                 <PostCardShimmer />
               ) : (
                 <>
-                  {postList.map?.((post) => (
-                    <Box key={post._id}>
+                  {postList.map?.((post,i) => (
+                    <Box key={post._id} mt={i>0?'4':'0'}>
                       <PostCard
                         showBookmarkButton={user?true:false}
                         key={post._id || crypto.randomUUID()}

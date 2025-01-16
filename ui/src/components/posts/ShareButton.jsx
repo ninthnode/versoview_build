@@ -55,9 +55,11 @@ const sharePost = ()=>{
         icon={<FiShare2/>}
         isDisabled={disabled}
         onClick={sharePost}
+        w='100%'
         p='0'
       />:
-      <Button justifyContent='flex-start' m='0' p='0' variant="nostyle" pl='4' onClick={sharePost} w='100%'>Share</Button>}
+      <Button justifyContent='center' m='0' p='0' variant="nostyle" onClick={sharePost} w='100%'
+      textAlign='center'>Share</Button>}
       <Modal isOpen={isOpen} onClose={closeModal}>
         <ModalOverlay />
         <ModalContent>

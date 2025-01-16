@@ -42,7 +42,8 @@ const {
 	getRecentlyViewedPosts,
 	getPreviousComments,
 	getUserComments,
-	setReadPost
+	setReadPost,
+	uploadPostImage
 } = require("../../controllers/post.controller");
 const { protectUser } = require("../../middlewares/authMiddleware");
 const { upload } = require("../../config/multerUpload");
@@ -91,5 +92,7 @@ router.get("/getRecentlyViewedPosts/", protectUser, getRecentlyViewedPosts);
 
 router.get("/getPreviousComments/:_id",protectUser, getPreviousComments);
 router.get("/getUserComments",protectUser, getUserComments);
+
+router.post("/uploadPostImage",  upload.single('file'), uploadPostImage);
 
 module.exports = router;

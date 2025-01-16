@@ -87,7 +87,7 @@ const EditionCard = ({ edition, key, channel,submitBookmarkEdition }) => {
       </CardHeader>
       <CardBody p={1} w="100%">
       <Link href={`../edition/${edition._id}`}>
-        <Box key={key} boxShadow="md" pos="relative" w="100%">
+        <Box key={key} pos="relative" w="100%">
           <Flex gap="2" overflow="hidden" minH="200px">
             <div
               className="pdf-container"

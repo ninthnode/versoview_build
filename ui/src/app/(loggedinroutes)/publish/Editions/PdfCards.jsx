@@ -12,6 +12,7 @@ import {
   AccordionButton,
   AccordionPanel,
   AccordionIcon,
+  Image
 } from "@chakra-ui/react";
 import { IoAddCircle } from "react-icons/io5";
 import { MdDelete } from "react-icons/md";
@@ -27,16 +28,14 @@ import Link from "next/link";
 import { FaEdit } from "react-icons/fa";
 import { deletePost } from "@/redux/posts/postActions";
 import { deleteEdition } from "@/redux/publish/publishActions";
-import { useDispatch, useSelector } from "react-redux";
 
 const PdfCards = ({
-  setIsCreateEditPost,
-  setSelectedEdition,
   editions,
   getAllEditions,
+  deletePost,
+  deleteEdition
 }) => {
   const { push } = useRouter();
-  const dispatch = useDispatch();
   
   const [showDialog, ConfirmationDialogComponent] = useConfirmationDialog(
     "Are you sure you want to delete this edition?"
@@ -57,15 +56,15 @@ const PdfCards = ({
     const deletePostHandler = async (id) => {
       const confirmed = await showDialogPost();
       if (confirmed) {
-        await dispatch(deletePost(id));
-        dispatch(getAllEditions())
+        await deletePost(id);
+        getAllEditions()
       }
     };
     const deleteEditionHandler = async (id) => {
       const confirmed = await showDialog();
       if (confirmed) {
-        await dispatch(deleteEdition(id));
-        dispatch(getAllEditions())
+        await deleteEdition(id);
+        getAllEditions()
       }
     };
   return (
@@ -101,7 +100,8 @@ const PdfCards = ({
                 }}
                 onClick={() => push(`/publish/edition/${edition._id}`)}
               >
-                <PdfViewer pdfUrl={edition.pdfUrl} />
+              <Image src={edition.libraryImages[0]} alt="PDF" />
+                {/* <PdfViewer pdfUrl={edition.pdfUrl} /> */}
               </div>
               <Box w="100%">
                 <Text fontSize="sm" noOfLines={3}>
@@ -150,9 +150,9 @@ const PdfCards = ({
                   pb={4}
                   pos="absolute"
                   bg={"white"}
-                  zIndex="9999"
                   w="100%"
                   borderWidth="2px"
+                  zIndex='99'
                 >
                   {edition.postId.length <= 0 && (
                     <Text fontSize="sm">Post not found!</Text>
@@ -218,6 +218,8 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({
   getAllEditions: () => dispatch(getAllEditions()),
+  deletePost: (id) => dispatch(deletePost(id)),
+  deleteEdition: (id) => dispatch(deleteEdition(id)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(PdfCards);

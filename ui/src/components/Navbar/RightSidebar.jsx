@@ -58,13 +58,13 @@ function RightSidebar({userDetails,user,fetchUser, followings, fetchfollowChanne
     };
   }, []);
   return ShowSidebarIf&&(
-    <Box id='content_wrapper' maxW='lg' w="100%">
+    <Box id='content_wrapper' maxW='md'>
       <Heading as='h4' fontSize='lg' fontWeight='bold' mb='2'>Chats</Heading>
-      <Divider/>
+      {/* <Divider/> */}
       <Chats user={user}/>
 
       <Heading as='h4' fontSize='lg' fontWeight='bold' mt='4' mb='2'>Following</Heading>
-      <Divider/>
+      {/* <Divider/> */}
 
       {(userDetails && followings) ? (
         <Following

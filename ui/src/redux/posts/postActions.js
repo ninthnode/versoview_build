@@ -262,7 +262,6 @@ export const createNewPost = (key,content_type,image,formData) => {
         formData.mainImageURL = newImageUrl;
       }
       else{
-        console.log(process.env.NEXT_PUBLIC_BACKEND_URL+'/images/default-post-img.jpg')
         formData.mainImageURL = process.env.NEXT_PUBLIC_BACKEND_URL+'/images/default-post-img.jpg';
       }
 
@@ -352,4 +351,24 @@ export const deletePost = (postId) => {
       // dispatch(getPostsFailure(error.message));
     }
   };
+};
+
+
+export const uploadPostImage = (key, content_type, uploadImage) => async (dispatch) => {
+  try {
+    if (uploadImage) {
+      const signedUrlResponse = await getSignedUrl({ key, content_type });
+
+      const uploadResponse = await uploadFileToSignedUrl(
+        signedUrlResponse.data.signedUrl,
+        uploadPdf,
+        content_type
+      );
+
+      const newImageUrl = extractImageUrl(uploadResponse.config.url);
+      return newImageUrl
+    }
+  } catch (error) {
+    console.log(error)
+  }
 };

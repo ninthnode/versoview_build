@@ -1,7 +1,11 @@
 import React, { useRef, useState } from 'react';
 import JoditEditor from 'jodit-react';
+import { uploadPostImage } from '../redux/posts/postActions';
+import { useDispatch } from 'react-redux';
+
 const RichTextEditor = ({handleTextBodyChange,bodyRichText}) => {
     const editor = useRef(null);
+    const dispatch = useDispatch();
 
     const config = {
         readonly: false,
@@ -9,7 +13,23 @@ const RichTextEditor = ({handleTextBodyChange,bodyRichText}) => {
         minHeight: '300px',
         overflow: 'auto',
         askBeforePasteFromWord: false,
-              askBeforePasteHTML: false
+        askBeforePasteHTML: false, 
+        buttons: [
+            'source',
+            '|', 'bold', 'italic',
+            '|', 'ul', 'ol',
+            '|', 'font', 'fontsize', 'brush', 'paragraph',
+            '|', 'video', 'table', 'link',
+            '|', 'left', 'center', 'right', 'justify',
+            '|', 'undo', 'redo',
+            '|', 'hr', 'eraser', 'fullsize'
+        ],
+        extraButtons: ["image"],
+      uploader: {         
+        insertImageAsBase64URI: true,
+        imagesExtensions: ['jpg', 'png', 'jpeg', 'gif', 'svg', 'webp']
+      },
+
     };
 
     return (
