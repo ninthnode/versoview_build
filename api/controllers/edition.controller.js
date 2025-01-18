@@ -3,7 +3,6 @@ const { Post } = require("../models/post.model");
 const { Edition } = require("../models/edition.model");
 const { Channel } = require("../models/channel.model");
 const { Bookmark } = require("../models/bookmark.model");
-const { PDFDocument } = require("pdf-lib");
 
 module.exports.createEdition = asyncHandler(async (req, res) => {
   try {
@@ -81,52 +80,6 @@ module.exports.getEditionById = asyncHandler(async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
-async function extractPagesFromUrl(pdfUrl, startPage, endPage) {
-  const response = await fetch(pdfUrl);
-
-  if (!response.ok) {
-    throw new Error(
-      `Failed to fetch PDF: ${response.status} ${response.statusText}`
-    );
-  }
-
-  const pdfBuffer = await response.arrayBuffer();
-  const pdfBufferNode = Buffer.from(pdfBuffer);
-
-  const pdfDoc = await PDFDocument.load(pdfBufferNode);
-  const totalPages = pdfDoc.getPageCount();
-
-  if (startPage < 1) {
-    console.warn(
-      `Requested start page (${startPage}) is less than 1. Adjusting to start at page 1.`
-    );
-    startPage = 1;
-  }
-  
-  if (endPage > totalPages) {
-    console.warn(
-      `Requested end page (${endPage}) exceeds total pages (${totalPages}). Adjusting to end at page ${totalPages}.`
-    );
-    endPage = totalPages;
-  }
-  
-  if (startPage > endPage) {
-    throw new Error(
-      `Invalid range: start page (${startPage}) cannot be greater than end page (${endPage}).`
-    );
-  }
-  
-  const newPdfDoc = await PDFDocument.create();
-
-  for (let i = startPage; i <= endPage; i++) {
-    const [copiedPage] = await newPdfDoc.copyPages(pdfDoc, [i - 1]);
-    newPdfDoc.addPage(copiedPage);
-  }
-
-  const pdfBytes = await newPdfDoc.save();
-  return pdfBytes;
-}
 
 module.exports.getPdf = asyncHandler(async (req, res) => {
   const { pageStart, pageEnd } = req.query;

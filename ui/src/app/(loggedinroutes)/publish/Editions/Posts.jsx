@@ -36,7 +36,7 @@ function Posts() {
     };
     
   return (
-    <Box pl="4" borderLeftWidth="1px" borderColor="lightgray">
+    <Box pl="4" minW='sm' borderLeftWidth="1px" borderColor="lightgray">
       <Flex alignItems='center' justifyContent='space-between'>
       {ConfirmationDialogComponent}
       <Text fontSize="lg" mt={4} mb={4}>

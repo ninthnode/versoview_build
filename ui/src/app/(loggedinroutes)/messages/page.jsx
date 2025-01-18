@@ -18,8 +18,10 @@ const socket = io(process.env.NEXT_PUBLIC_BACKEND_URL);
 import { useRef } from "react";
 import axios from "axios";
 import useDeviceType from "@/components/useDeviceType";
+import { useRouter } from "next/navigation";
 
-const Dms = () => {
+
+const Dms = ({searchParams}) => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
@@ -30,13 +32,9 @@ const Dms = () => {
   const [searching, setSearching] = useState(false);
   const deviceType = useDeviceType();
   const [showChats, setShowChats] = useState(false);
+  const { id:paramsUserId } = searchParams;
+  const router = useRouter();
 
-  useEffect(() => {
-    setShowChats(deviceType!="phone");
-  }, [deviceType]);
-  useEffect(() => {
-    console.log(showChats)
-  }, [showChats]);
   useEffect(() => {
     if (authState) {
       socket.emit("register", authState.id);
@@ -67,7 +65,6 @@ const Dms = () => {
               },
             }
           );
-          console.log(response.data.data);
           setAllUsers(response.data.data);
           setSearching(true);
         } else {
@@ -80,7 +77,6 @@ const Dms = () => {
             }
           );
           const data = response.data;
-          // setSearching(true);
           setAllUsers(data);
         }
       } catch (error) {
@@ -97,7 +93,7 @@ const Dms = () => {
           const token = localStorage.getItem("token").replaceAll('"', "");
 
           const response = await axios.get(
-            `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/messages/chat/${authState.id}/${selectedUser._id}`,
+            `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/messages/chat/${authState.id}/${paramsUserId}`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -118,8 +114,13 @@ const Dms = () => {
       }
     }
     fetchMessages();
-  }, [authState, selectedUser]);
+  }, [paramsUserId]);
 
+  const handleClick = (user) => {
+    setSelectedUser(user)
+    router.push(`/messages?id=${user._id}`);
+  };
+  
   const handleSendMessage = () => {
     if (newMessage.trim()) {
       socket.emit("private_message", {
@@ -147,7 +148,7 @@ const Dms = () => {
         p="2"
         m='2'
         borderRadius="5"
-        onClick={() => setShowChats(false)}
+        onClick={() => {setSelectedUser(null);setShowChats(false)}}
       >
         All Users
       </Button>
@@ -191,7 +192,7 @@ const Dms = () => {
                         ? "gray.100"
                         : "transparent"
                     }
-                    onClick={() => setSelectedUser(user)}
+                    onClick={() => handleClick(user)}
                     borderRadius="md"
                     _hover={{ bg: "gray.100" }}
                     w="100%"

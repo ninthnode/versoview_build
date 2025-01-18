@@ -101,7 +101,6 @@ const PdfCards = ({
                 onClick={() => push(`/publish/edition/${edition._id}`)}
               >
               <Image src={edition.libraryImages[0]} alt="PDF" />
-                {/* <PdfViewer pdfUrl={edition.pdfUrl} /> */}
               </div>
               <Box w="100%">
                 <Text fontSize="sm" noOfLines={3}>

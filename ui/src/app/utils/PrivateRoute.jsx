@@ -37,7 +37,8 @@ const PrivateRoute = ({ children }) => {
           }
         } else {
           if (
-            !PublicRoutes.find((route) => path.startsWith(route.url))
+            !PublicRoutes.find((route) => path.startsWith(route.url))&&
+            ProtectedRoutes.find((route) => path.startsWith(route.url))
           )
             router.push("/login");
         }

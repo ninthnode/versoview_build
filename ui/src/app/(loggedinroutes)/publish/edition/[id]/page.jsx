@@ -86,7 +86,7 @@ const SingleEdition = ({params}) => {
             </Text>
           </Box>
           <Box borderBottomWidth="2px" borderColor="gray.300">
-            <PdfViewer pdfUrl={singleEdition.pdfUrl}/>
+          <Image src={singleEdition?.libraryImages?.length>0?singleEdition.libraryImages[0]:''} alt="PDF" />
           </Box>
 
           <Box px="2" py="4">

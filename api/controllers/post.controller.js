@@ -18,7 +18,6 @@ const fs = require("node:fs");
 const path = require("node:path");
 const fse = require("fs-extra");
 const { Follow } = require("../models/follow.model");
-const { compareSync } = require("bcryptjs");
 
 // get all pdf images
 function getAllImageFiles(folder) {
@@ -47,31 +46,57 @@ async function generateUniqueSlug(title) {
   return uniqueSlug;
 }
 
+async function processImgTags(htmlString, uploadImage) {
+  // Regular expression to match <img> tags
+  const imgTagRegex = /<img [^>]*src="([^"]+)"[^>]*>/g;
+
+  // Collect all matches and process them
+  const matches = [];
+  let match;
+
+  while ((match = imgTagRegex.exec(htmlString)) !== null) {
+    matches.push(match);
+  }
+
+  // Process each <img> tag asynchronously
+  for (const match of matches) {
+    const fullTag = match[0]; // The full <img> tag
+    const src = match[1]; // The src value
+
+    // Check if src is a Base64 string
+    if (src.startsWith("data:image/")) {
+      try {
+        // Upload the Base64 image and get the URL
+        const uploadedUrl = await uploadImage(src);
+
+        // Replace the Base64 src with the uploaded URL
+        htmlString = htmlString.replace(fullTag, fullTag.replace(src, uploadedUrl));
+      } catch (error) {
+        console.error("Error uploading image:", error);
+      }
+    }
+  }
+
+  return htmlString;
+}
+
 // Create post
 module.exports.create = asyncHandler(async (req, res) => {
   try {
-    console.log('ss')
     const userId = req.user._id;
     const channelData = await Channel.findOne({ userId });
     const channelId = channelData._id;
-    
     const slug = await generateUniqueSlug(req.body.header);
-    if (req.body.bodyRichText) {
-      req.body.bodyRichText = req.body.bodyRichText.replace(
-        /<img src="data:image\/[^;]+;base64,([^"]+)"([^>]*)>/g,
-        (match, base64, attributes) => {
-          const imageUrl = "https://versoview-post-images.s3.us-east-1.amazonaws.com/public/test/image/image-1737002230842.png"; // Your cloud upload logic
-          
-          // Check if there are additional attributes (e.g., style)
-          if (attributes.includes('style="')) {
-            return `<img src="${imageUrl}" ${attributes}>`;
-          }
+    // if (req.body.bodyRichText) {
+ 
+    //   const uploadImage = async (base64) => {
+    //     // Simulate upload and return a unique URL
+    //     return `https://versoview-post-images.s3.us-east-1.amazonaws.com/public/test/image/image-1737002230842.png`;
+    //   };
     
-          // If no additional attributes, return the updated img tag
-          return `<img src="${imageUrl}">`;
-        }
-      );
-    }
+    //   const result = await processImgTags(req.body.bodyRichText, uploadImage);
+    //   req.body.bodyRichText= result
+    // }
 
     const postData = {
       channelId: channelId,
@@ -105,18 +130,6 @@ module.exports.create = asyncHandler(async (req, res) => {
     // Update userType to 'publisher'
     await User.findByIdAndUpdate(userId, { userType: "publisher" });
 
-    // const postId = newPost._id;
-
-    // Create unread post for the user
-    // const unreadPostData = {
-    //   postId,
-    //   userId,
-    //   channelId,
-    //   readPost: false,
-    // };
-
-    // const newUnreadPost = new UnreadPost(unreadPostData);
-    // await newUnreadPost.save();
 
     res.status(201);
     res.json({
@@ -1783,31 +1796,4 @@ module.exports.setReadPost = asyncHandler(async (req, res) => {
     console.error(error);
     return res.status(500).json({ error: "Internal Server Error" });
   }
-});
-module.exports.uploadPostImage = asyncHandler(async (req, res) => {
-  try {
-    if (!req.file) {
-        return res.status(400).json({
-            error: true,
-            message: 'No file uploaded',
-        });
-    }
-
-    const fileUrl = `${req.protocol}://${req.get('host')}/uploads/${file.filename}`;
-
-    res.status(200).json({
-        error: false,
-        message: 'File uploaded successfully',
-        data: {
-            files: [req.file.filename],
-            path: fileUrl,
-            baseurl: process.env.BASE_URL || 'http://localhost:5000',
-        },
-    });
-} catch (error) {
-    res.status(500).json({
-        error: true,
-        message: error.message || 'Internal Server Error',
-    });
-}
 });
