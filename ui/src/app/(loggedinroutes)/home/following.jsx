@@ -210,7 +210,7 @@ const Following = ({ followings, user,fetchfollowChannelList }) => {
           setSortedFollowings={setfollowingsDataSorted}
         />
       </Flex>
-      <Divider />
+      {/* <Divider /> */}
       {followingLoading ? (
         <Spinner />
       ) : followingsDataSorted.length > 0 ? (

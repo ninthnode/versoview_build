@@ -33,7 +33,8 @@ const Home = ({
   }, [singleEdition]);
 
   useEffect(() => {
-    if (singleEditionPosts.length > 0) setPostList(singleEditionPosts);
+    if (singleEditionPosts.length > 0)
+      setPostList(singleEditionPosts);
   }, [singleEditionPosts]);
 
   const submitBookmarkPost = async (type, postId) => {
@@ -53,7 +54,8 @@ const Home = ({
 
   return (
     <Box>
-      {edition && edition.channelData && (
+    
+      {edition && edition!={} && edition.channelData && (
         <EditionCard
           key={1}
           edition={edition}
@@ -61,7 +63,7 @@ const Home = ({
           submitBookmarkEdition={submitBookmarkEdition}
         />
       )}
-      {postList.map?.((post) => (
+      {postList&&postList.length>0&&postList.map?.((post) => (
         <Box key={post._id}>
           <PostCard
             showBookmarkButton={user ? true : false}
@@ -69,7 +71,7 @@ const Home = ({
             post={post}
             submitBookmark={submitBookmarkPost}
           />
-          <Divider />
+          {/* <Divider /> */}
         </Box>
       ))}
     </Box>

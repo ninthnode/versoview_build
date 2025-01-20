@@ -1,4 +1,4 @@
-import { SET_TITLE } from './types';
+import { SET_TITLE,CLEAR_TITLE } from './types';
 const initialTitleState = {
   title: '',
   icon:''
@@ -10,6 +10,11 @@ const titleReducer = (state = initialTitleState, action) => {
       return {
         title: action.payload.title,
         icon: action.payload.icon,
+      };
+    case CLEAR_TITLE:
+      return {
+        title: '',
+        icon:''
       };
     default:
       return state;

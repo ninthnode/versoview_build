@@ -50,6 +50,8 @@ const Navbar = ({ children }) => {
         base: !RightSidebarRoutes ? "flex-start" : "center",
         md: "center",
       }}
+      
+          alignItems='stretch'
     >
       <SidebarContent
         onClose={onClose}
@@ -62,8 +64,9 @@ const Navbar = ({ children }) => {
           bg="#fff"
           w={IsFullWidthRoutes ? "100%" : "3xl"}
           pos='relative'
+          minH='100%'
         >
-          <Box w="100%">
+          <Box w="100%" minH='2000px'>
             <Box>
               <Box
                 w={{

@@ -8,6 +8,7 @@ const messageSchema = new mongoose.Schema({
 	messages: [
 		{
 			senderId: String,
+			receiverId: String,
 			message: String,
 			timestamp: { type: Date, default: Date.now },
 			read: { type: Boolean, default: false },

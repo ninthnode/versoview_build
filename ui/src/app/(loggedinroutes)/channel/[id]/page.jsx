@@ -8,10 +8,14 @@ import {
   fetchPosts,
   fetchFollowers,
   fetchFollowings,
+  clearChannel
 } from "@/redux/channel/channelActions";
 import {
   getEditionsByUserID
 } from "@/redux/publish/publishActions";
+import {
+  clearTitle
+} from "@/redux/navbar/action";
 import { setNavTitle } from "@/redux/navbar/action";
 import { addRemoveBookmarks } from "@/redux/bookmarks/bookmarkAction";
 
@@ -32,7 +36,9 @@ const Page = ({
   isPostLoading,
   isChannelLoading,
   getEditionsByUserID,
-  userEditions
+  userEditions,
+  clearChannel,
+  clearTitle
 }) => {
   const { id } = params;
 
@@ -49,6 +55,12 @@ const Page = ({
   useEffect(() => {
     if(user){
       fetchChannel(id);
+    }
+    return () => {
+      clearChannel()
+      clearTitle()
+      setPostList([])
+      setEditionList([])
     }
   }, [id,user]);
   useEffect(() => {
@@ -138,7 +150,9 @@ const mapDispatchToProps = {
   fetchFollowings,
   addRemoveBookmarks,
   setNavTitle,
-  getEditionsByUserID
+  getEditionsByUserID,
+  clearChannel,
+  clearTitle
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Page);

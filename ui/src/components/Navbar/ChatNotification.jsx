@@ -7,54 +7,54 @@ const ChatNotification = ({ userId }) => {
   const socketRef = useRef(null); // Store socket instance
 
   // Fetch unread messages count from the server
-  const fetchUnreadMessageCount = async (userId) => {
-    try {
-      const token = localStorage.getItem("token").replaceAll('"', "");
+  // const fetchUnreadMessageCount = async (userId) => {
+  //   try {
+  //     const token = localStorage.getItem("token").replaceAll('"', "");
 
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/messages/unread/${userId}`,
-        { 
-          headers: {
-          Authorization: `Bearer ${token}`,
-          }
-        }
-      );
-      return response.data.unreadCount;
-    } catch (error) {
-      console.error("Error fetching unread message count", error);
-      return 0;
-    }
-  };
+  //     const response = await axios.get(
+  //       `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/messages/unread/${userId}`,
+  //       { 
+  //         headers: {
+  //         Authorization: `Bearer ${token}`,
+  //         }
+  //       }
+  //     );
+  //     return response.data.unreadCount;
+  //   } catch (error) {
+  //     console.error("Error fetching unread message count", error);
+  //     return 0;
+  //   }
+  // };
 
-  useEffect(() => {
-    // Fetch initial unread count
-    const getUnreadCount = async () => {
-      const count = await fetchUnreadMessageCount(userId);
-      setUnreadCount(count);
-    };
-    getUnreadCount();
+  // useEffect(() => {
+  //   // Fetch initial unread count
+  //   const getUnreadCount = async () => {
+  //     const count = await fetchUnreadMessageCount(userId);
+  //     setUnreadCount(count);
+  //   };
+  //   getUnreadCount();
 
-    // Initialize socket connection
-    socketRef.current = io(process.env.NEXT_PUBLIC_BACKEND_URL);
+  //   // Initialize socket connection
+  //   socketRef.current = io(process.env.NEXT_PUBLIC_BACKEND_URL);
 
-    // Register user with the socket
-    socketRef.current.emit("register", userId);
+  //   // Register user with the socket
+  //   socketRef.current.emit("register", userId);
 
-    // Listen for real-time updates
-    socketRef.current.on("unreadCount", (count) => {
-      console.log("Received unreadCount update:", count);
-      setUnreadCount(count);
-    });
+  //   // Listen for real-time updates
+  //   socketRef.current.on("unreadCount", (count) => {
+  //     console.log("Received unreadCount update:", count);
+  //     setUnreadCount(count);
+  //   });
 
-    // Cleanup socket on component unmount
-    return () => {
-      if (socketRef.current) {
-        socketRef.current.off("unreadCount");
-        socketRef.current.disconnect();
-        socketRef.current = null;
-      }
-    };
-  }, [userId]);
+  //   // Cleanup socket on component unmount
+  //   return () => {
+  //     if (socketRef.current) {
+  //       socketRef.current.off("unreadCount");
+  //       socketRef.current.disconnect();
+  //       socketRef.current = null;
+  //     }
+  //   };
+  // }, [userId]);
 
   return (
     <Box pos="relative">

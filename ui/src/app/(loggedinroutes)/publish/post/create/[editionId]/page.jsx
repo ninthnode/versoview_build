@@ -40,6 +40,9 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/b
 const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), {
   ssr: false,
 });
+import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
+import 'react-pdf/dist/esm/Page/TextLayer.css';
+import '../../pdf.css';
 const PublishPdfPost = ({ params }) => {
   const dispatch = useDispatch();
   const deviceType = useDeviceType();
@@ -340,11 +343,12 @@ else
                       <Document
                         file={pdf}
                         onLoadSuccess={(pdf) => onLoadSuccess(pdf, index)}
+                            renderMode={"svg"}
                       >
                         {Array.from(new Array(numPages), (el, pageIndex) => (
-                          <Page
-                            key={`page_${pageIndex + 1}`}
+                          <Page 
                             pageNumber={pageIndex + 1}
+                            key={`page_${pageIndex + 1}`}
                           />
                         ))}
                       </Document>

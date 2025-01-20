@@ -167,14 +167,14 @@ const PostCard = ({
               </Flex>
 
               <Box>
-                {post.editionId?.pdfUrl && (
+                {post.editionId?.pdfUrls?.length>0 && (
                   <PdfFlipBookModal
                     title={
                       post.editionId?.editionText +
                       " " +
                       post.editionId?.editionDate
                     }
-                    pdfFile={post.editionId.pdfUrl}
+                    pdfFiles={post.editionId?.pdfUrls}
                   />
                 )}
               </Box>

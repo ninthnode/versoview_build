@@ -114,9 +114,10 @@ const Dms = ({searchParams}) => {
       }
     }
     fetchMessages();
-  }, [paramsUserId]);
+  }, [selectedUser]);
 
   const handleClick = (user) => {
+    user.unreadCount =0
     setSelectedUser(user)
     router.push(`/messages?id=${user._id}`);
   };
@@ -201,7 +202,7 @@ const Dms = ({searchParams}) => {
                       name={user.username}
                       src={user.channelIconImageUrl}
                     />
-                    <Text fontWeight="bold">{user.username}</Text>
+                    <Text fontWeight="bold">{user.username} {user?.unreadCount>0&&<span style={{backgroundColor:"red",padding:"0 5px",borderRadius:"50%",color:'#fff'}}>{user.unreadCount}</span>}</Text>
                   </HStack>
                 ))
               ) : (

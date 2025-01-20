@@ -29,7 +29,12 @@ const RichTextEditor = ({handleTextBodyChange,bodyRichText}) => {
         insertImageAsBase64URI: true,
         imagesExtensions: ['jpg', 'png', 'jpeg', 'gif', 'svg', 'webp']
       },
-
+      paste: {
+        clean: true, // Ensures that pasted content is stripped of unwanted styles
+        removeStyles: true, // Removes inline styles
+        removeClasses: true, // Removes classes
+        keepStyles: false // Prevents any styles from being retained
+    }
     };
 
     return (
@@ -42,10 +47,6 @@ const RichTextEditor = ({handleTextBodyChange,bodyRichText}) => {
                 onChange={newContent => {}}
                 minH="2xl"
             />
-            {/* <div style={{ marginTop: '20px' }}>
-                <h3>Content:</h3>
-                <div>{content}</div>
-            </div> */}
         </div>
     );
 };

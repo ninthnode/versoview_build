@@ -59,29 +59,24 @@ const io = new Server(server, {
 const users = {};
 
 io.on("connection", (socket) => {
-	console.log("User connected:", socket.id);
-
 	socket.on("register", (userId) => {
 		users[userId] = socket.id;
 		console.log("User registered:", userId);
 	});
 
 	socket.on("private_message", async ({ senderId, receiverId, message }) => {
-		console.log("SID, RID : ", senderId, receiverId);
-		console.log(users);
 		const receiverSocketId = users[receiverId];
-		console.log("Receiver socket id: ", receiverSocketId);
 
 		try {
 			let conversation = await Message.findOne({
 				participants: { $all: [senderId, receiverId] },
 			});
 			if (conversation) {
-				conversation.messages.push({ senderId, message });
+				conversation.messages.push({ senderId,receiverId, message });
 			} else {
 				conversation = new Message({
 					participants: [senderId, receiverId],
-					messages: [{ senderId, message }],
+					messages: [{ senderId,receiverId, message }],
 				});
 			}
 
@@ -91,16 +86,14 @@ io.on("connection", (socket) => {
 			const receiverSocketId = users[receiverId];
 			if (receiverSocketId) {
 				io.to(receiverSocketId).emit("unreadCount", unreadCount); // Emit unread count
-				console.log("Emitting unreadCount to:", receiverId, "Count:", unreadCount);
 			} else {
 				console.log("Receiver is not connected:", receiverId);
 			}
 
-			console.log("Message saved to database");
 		} catch (error) {
 			console.error("Error saving message to database:", error);
 		}
-
+		
 		if (receiverSocketId) {
 			io.to(receiverSocketId).emit("dm", { senderId, receiverId, message });
 		}
@@ -119,7 +112,6 @@ io.on("connection", (socket) => {
 		console.log("User disconnected:", socket.id);
 	});
 });
-
 const getUnreadMessageCount = async (userId) => {
     const conversations = await Message.aggregate([
         { $match: { participants: userId } },
@@ -127,7 +119,7 @@ const getUnreadMessageCount = async (userId) => {
         {
             $match: {
                 "messages.read": false,
-                "messages.senderId": { $ne: userId }, // Exclude the user's own messages
+                "messages.receiverId": { $ne: userId }, // Exclude the user's own messages
             },
         },
         { $group: { _id: null, count: { $sum: 1 } } },

@@ -199,10 +199,10 @@ module.exports.getAllPost = asyncHandler(async (req, res) => {
     const followedChannelIds = userFollows.map((follow) => follow.channelId);
     const postDataGenre = await Post.find({
       section: { $in: genres },
-    }).populate("channelId");
+    }).populate("channelId").populate("editionId");
     const postFollowedchannel = await Post.find({
       channelId: { $in: followedChannelIds },
-    }).populate("channelId");
+    }).populate("channelId").populate("editionId");
 
     let combinedPosts = [
       ...postDataGenre,

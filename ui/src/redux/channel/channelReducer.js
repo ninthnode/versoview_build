@@ -17,7 +17,8 @@ import {
     UNFOLLOW_CHANNEL_SUCCESS,
     UNFOLLOW_CHANNEL_FAILURE,
 
-    FETCH_USER_CHANNEL
+    FETCH_USER_CHANNEL,
+    CLEAR_CHANNEL
   } from './channelTypes';
   
   const initialState = {
@@ -119,6 +120,21 @@ import {
           ...state,
           userChannel: action.payload,
           isFollowLoading:false
+        };
+        case CLEAR_CHANNEL:
+        return {
+          ...state,
+          userChannel: null,
+          channel: null,
+          posts: [],
+          followers: [],
+          followings:[],
+          isChannelLoading: true,
+          isPostLoading: true,
+          isFollowLoading: false,
+          error: null,
+          isFollowing: false,
+          pinnedChannels:[]
         };
       default:
         return state;

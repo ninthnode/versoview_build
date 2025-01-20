@@ -41,7 +41,6 @@ function RightSidebar({userDetails,user,fetchUser, followings, fetchfollowChanne
       const viewportH = window.innerHeight;
       const contentH = sidebarContent.getBoundingClientRect().height;
       const sidebarTop = sidebar.getBoundingClientRect().top + window.scrollY;
-  
       if (scrollTop >= contentH - viewportH) {
         sidebarContent.style.transform = `translateY(-${contentH - viewportH + sidebarTop}px)`;
         sidebarContent.style.position = "fixed";
@@ -58,7 +57,7 @@ function RightSidebar({userDetails,user,fetchUser, followings, fetchfollowChanne
     };
   }, []);
   return ShowSidebarIf&&(
-    <Box id='content_wrapper' maxW='md'>
+    <Box id='content_wrapper' maxW='md' minW='md'>
       <Heading as='h4' fontSize='lg' fontWeight='bold' mb='2'>Chats</Heading>
       {/* <Divider/> */}
       <Chats user={user}/>

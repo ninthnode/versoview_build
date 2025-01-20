@@ -19,8 +19,11 @@ import {
   UNFOLLOW_CHANNEL_SUCCESS,
   UNFOLLOW_CHANNEL_FAILURE,
 
-  FETCH_USER_CHANNEL
+  FETCH_USER_CHANNEL,
+  CLEAR_CHANNEL
 } from "./channelTypes";
+  export const clearChannel = () => ({ type: CLEAR_CHANNEL });
+
 
 export const fetchChannel = (username) => async (dispatch) => {
   dispatch({ type: FETCH_CHANNEL_REQUEST });

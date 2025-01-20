@@ -8,9 +8,9 @@ const { User } = require("../../models/user.model");
 
 
 const markMessagesAsRead = async (conversationId, userId) => {
-    await Message.updateOne(
-        { _id: conversationId, "messages.senderId": { $ne: userId } },
-        { $set: { "messages.$[msg].read": true } },
+    await Message.updateMany(
+      { _id: conversationId, "messages.receiverId": userId, "messages.read": false },
+      { $set: { "messages.$[msg].read": true } },
         { arrayFilters: [{ "msg.read": false }] }
     );
 };
@@ -22,7 +22,7 @@ const getUnreadMessageCount = async (userId) => {
         {
             $match: {
                 "messages.read": false,
-                "messages.senderId": { $ne: userId },
+                "messages.receiverId": { $ne: userId },
             },
         },
         { $group: { _id: null, count: { $sum: 1 } } },
@@ -37,7 +37,7 @@ router.get("/chat/:senderId/:receiverId",protectUser, async (req, res) => {
 		const conversation = await Message.findOne({
 			participants: { $all: [senderId, receiverId] },
 		});
-		await markMessagesAsRead(conversation._id, senderId);
+		await markMessagesAsRead(conversation._id, receiverId);
 
 		if (conversation) {
 			res.json(conversation.messages);
@@ -48,6 +48,8 @@ router.get("/chat/:senderId/:receiverId",protectUser, async (req, res) => {
 		res.status(500).json({ error: "Failed to fetch messages" });
 	}
 });
+
+
 
 router.get("/unread/:userId", protectUser,async (req, res) => {
     const { userId } = req.params;
@@ -66,25 +68,35 @@ router.get("/recent-chats/:userId",protectUser, async (req, res) => {
     const { userId } = req.params;
 
     try {
-      // console.log(userId)
       const chats = await Message.find({
         participants: userId,
       }).sort({ "messages.timestamp": -1 });
-      // console.log(chats)
-// 
+
       const recentChats = await Promise.all(
         chats.map(async (chat) => {
           const lastMessage = chat.messages[chat.messages.length - 1];
-
+  
           // Get details of other participants
           const otherParticipantId = chat.participants.find((id) => id !== userId);
-          console.log(otherParticipantId)
           const otherParticipant = await User.findOne({ _id: otherParticipantId });
-    
-          return otherParticipant;
+  
+          // Count unread messages for the user
+          const unreadCount = chat.messages.filter(
+            (message) => message.senderId !== userId && !message.read
+          ).length;
+  
+         // Create a new object with unreadCount appended to user details
+         const participantWithUnreadCount = {
+          ...otherParticipant.toObject(), // Convert Mongoose document to plain object
+          unreadCount, // Add unread count property
+        };
+
+        return participantWithUnreadCount;
+  
+          // return otherParticipant;
         })
       );
-
+  
       res.status(200).json({ success: true, data: recentChats });
     } catch (error) {
       console.error("Error fetching recent chats:", error);

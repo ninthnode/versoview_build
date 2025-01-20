@@ -2,7 +2,7 @@ import React from "react";
 import {
   Box,
   Flex,
-  SimpleGrid,
+  Image,
   Text,
   Button,
   IconButton,
@@ -98,7 +98,7 @@ const EditionCard = ({ edition, key, channel,submitBookmarkEdition }) => {
                 cursor: "pointer",
               }}
             >
-              <PdfViewer pdfUrl={edition.pdfUrl} size='md'/>
+              <Image src={edition.libraryImages[0]} alt="pdf" />
             </div>
             <Box w="100%" pt='3'>
             <Text

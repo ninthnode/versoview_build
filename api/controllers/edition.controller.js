@@ -58,7 +58,7 @@ module.exports.getEditionById = asyncHandler(async (req, res) => {
       return res.status(404).json({ message: "Edition not found" });
     }
 
-    const postData = await Post.find({ editionId: editionId });
+    const postData = await Post.find({ editionId: editionId }).populate("channelId");
     const channelData = await Channel.findOne({ userId: editionData.userId });
 
     editionData._doc.channelData = channelData;
