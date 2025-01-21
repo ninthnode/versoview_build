@@ -66,7 +66,7 @@ const Navbar = ({ children }) => {
           pos='relative'
           minH='100%'
         >
-          <Box w="100%" minH='2000px'>
+          <Box w="100%" minH={path.startsWith('/messages') ? '100vh' : '2000px'}>
             <Box>
               <Box
                 w={{

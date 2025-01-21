@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Box, Button, Stack, Text, Flex } from "@chakra-ui/react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchPosts } from "@/redux/posts/postActions";
+import { fetchUserPosts } from "@/redux/posts/postActions";
 import Link from "next/link";
 import { FaEdit } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
@@ -18,7 +18,7 @@ function Posts() {
     'Are you sure you want to delete this post?'
   );
   useEffect(() => {
-    dispatch(fetchPosts());
+    dispatch(fetchUserPosts());
   }, []);
 
   const editPostHandler = async (id,editionId) => {

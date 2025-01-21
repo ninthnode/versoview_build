@@ -6,6 +6,7 @@ const {
 	extractPDFSlides,
 	getAllPdfSlides,
 	getAllPost,
+	getUserPosts,
 	getPostById,
 	getPostBySlug,
 	getPostByIdLoggedOut,
@@ -51,6 +52,7 @@ const router = express.Router();
 
 router.post("/createPost", protectUser, create);
 router.get("/getAllPost", protectUser, getAllPost);
+router.get("/getUserPosts", protectUser, getUserPosts);
 router.get("/getPostIfUserNotLoggedIn", getPostIfUserNotLoggedIn);
 router.get("/getPost/:slug", protectUser, getPostBySlug);
 router.get("/getPostById/:_id", protectUser, getPostById);

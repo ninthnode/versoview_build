@@ -245,6 +245,22 @@ module.exports.getAllPost = asyncHandler(async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+module.exports.getUserPosts = asyncHandler(async (req, res) => {
+  try {
+
+    const userId = req.user._id;
+
+    const userPosts = await Post.find({ userId: userId,editionId: null });
+
+    res.status(200).json({
+      message: "Success",
+      data: userPosts
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
 
 module.exports.getPostIfUserNotLoggedIn = asyncHandler(async (req, res) => {
   try {

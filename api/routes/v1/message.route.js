@@ -16,20 +16,29 @@ const markMessagesAsRead = async (conversationId, userId) => {
 };
 
 const getUnreadMessageCount = async (userId) => {
-    const conversations = await Message.aggregate([
-        { $match: { participants: userId } },
-        { $unwind: "$messages" },
-        {
-            $match: {
-                "messages.read": false,
-                "messages.receiverId": { $ne: userId },
-            },
-        },
-        { $group: { _id: null, count: { $sum: 1 } } },
-    ]);
-
-    return conversations[0]?.count || 0;
-};
+      const conversations = await Message.aggregate([
+          // Match conversations that include the user as a participant
+          { $match: { participants: userId } },
+  
+          // Unwind the messages array to handle each message individually
+          { $unwind: "$messages" },
+  
+          // Match only messages that are unread and received by the user
+          {
+              $match: {
+                  "messages.read": false,        // Unread messages
+                  "messages.receiverId": userId // Ensure the user is the receiver
+              }
+          },
+  
+          // Group the results and count the number of unread messages
+          { $group: { _id: null, count: { $sum: 1 } } }
+      ]);
+  
+      // Return the count or 0 if there are no unread messages
+      return conversations[0]?.count || 0;
+  };
+  
 router.get("/chat/:senderId/:receiverId",protectUser, async (req, res) => {
 	const { senderId, receiverId } = req.params;
 
@@ -37,7 +46,9 @@ router.get("/chat/:senderId/:receiverId",protectUser, async (req, res) => {
 		const conversation = await Message.findOne({
 			participants: { $all: [senderId, receiverId] },
 		});
-		await markMessagesAsRead(conversation._id, receiverId);
+    if(!conversation)
+        return res.status(200).json([]);
+		await markMessagesAsRead(conversation._id, senderId);
 
 		if (conversation) {
 			res.json(conversation.messages);

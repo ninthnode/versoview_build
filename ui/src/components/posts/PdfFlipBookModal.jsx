@@ -1,8 +1,7 @@
-// console.log(state.object.pages.currentPageIndex)
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import HTMLFlipBook from "react-pageflip";
-pdfjs.GlobalWorkerOptions.workerSrc = "//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs";
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 import {
   Button,
   Modal,
@@ -15,80 +14,41 @@ import {
   useDisclosure,
   Image,
   Flex,
-  Text
+  Box,
+  Text,
+  useEditable,
 } from "@chakra-ui/react";
 import "./style.css";
-
 const PdfFlipBookModal = ({ pdfFiles, title }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [currentPdfIndex, setCurrentPdfIndex] = useState(0);
-  const [numPagesList, setNumPagesList] = useState([]);
-  const [loadedPages, setLoadedPages] = useState([]);
-  const [currentPageIndex, setCurrentPageIndex] = useState(0);
+  const [pdfNum, setPdfNum] = useState(0);
+  const [numPages, setNumPages] = useState(null);
+  const [showNextBtn, setShowNextBtn] = useState(false);
+  const [showPrevBtn, setShowPrevBtn] = useState(false);
 
   const onDocumentLoadSuccess = ({ numPages }) => {
-    setNumPagesList((prev) => {
-      const updatedList = [...prev];
-      updatedList[currentPdfIndex] = numPages;
-      return updatedList;
-    });
-
-    // Load initial pages for the first PDF
-    if (currentPdfIndex === 0) {
-      const pages = Array.from({ length: Math.min(10, numPages) }, (_, i) => ({
-        pdfIndex: currentPdfIndex,
-        pageNumber: i + 1
-      }));
-      setLoadedPages(pages);
-    }
+    setNumPages(numPages);
   };
+  useEffect(() => {
+    if(pdfNum > 0)
+      setShowPrevBtn(true);
+    else
+    setShowPrevBtn(false);
+    if(pdfNum +1 ==pdfFiles.length)
+      setShowNextBtn(false);
+    else
+    setShowNextBtn(true);
 
-  const handlePageChange = (state) => {
-    const { currentPageIndex } = state.object.pages;
-    setCurrentPageIndex(currentPageIndex);
-
-    const totalPagesViewed = loadedPages.length;
-
-    // If the user reaches the last page of the current PDF, load the next PDF's pages
-    if (
-      currentPageIndex >= totalPagesViewed - 1 &&
-      currentPdfIndex < pdfFiles.length - 1
-    ) {
-      const nextPdfIndex = currentPdfIndex + 1;
-      const nextNumPages = numPagesList[nextPdfIndex] || 0;
-
-      const newPages = Array.from(
-        { length: Math.min(10, nextNumPages) },
-        (_, i) => ({
-          pdfIndex: nextPdfIndex,
-          pageNumber: i + 1
-        })
-      );
-
-      setLoadedPages((prev) => [...prev, ...newPages]);
-      setCurrentPdfIndex(nextPdfIndex);
-    }
-
-    // Handle going back to the previous PDF
-    if (currentPageIndex === 0 && currentPdfIndex > 0) {
-      const prevPdfIndex = currentPdfIndex - 1;
-      const prevNumPages = numPagesList[prevPdfIndex] || 0;
-
-      const prevPages = Array.from(
-        { length: Math.min(10, prevNumPages) },
-        (_, i) => ({
-          pdfIndex: prevPdfIndex,
-          pageNumber: i + 1
-        })
-      );
-
-      setLoadedPages(prevPages.concat(loadedPages));
-      setCurrentPdfIndex(prevPdfIndex);
-    }
-  };
-
+  }, [pdfNum])
+  
+  function getPageRange(pagenum, itemsPerPage) {
+    const start = (pagenum - 1) * itemsPerPage + 1;
+    const end = start + itemsPerPage - 1;
+    return `${start}/${end}`;
+  }
+  
   return (
-    <>
+    <Box>
       <Flex cursor="pointer" onClick={onOpen}>
         <Image src="../assets/book.svg" h="1.2rem" w="1.4rem" />
       </Flex>
@@ -97,41 +57,73 @@ const PdfFlipBookModal = ({ pdfFiles, title }) => {
         <ModalContent height="fit-content" m="0">
           <ModalHeader mt="2">{title}</ModalHeader>
           <ModalCloseButton />
-          <ModalBody height="100%">
-            {loadedPages.map((page, index) => (
-              <Document
-                key={`pdf-${page.pdfIndex}-page-${page.pageNumber}`}
-                file={pdfFiles[0]}
-                onLoadSuccess={onDocumentLoadSuccess}
+          <ModalBody minH="80vh" height="100%">
+            <Flex justifyContent="space-between" mb='2'>
+              <Button
+                variant="primary"
+                isDisabled={!showPrevBtn}
+                onClick={() => {
+                  setPdfNum(pdfNum - 1);
+                }}
               >
-                <HTMLFlipBook
-                  width={550}
-                  height={733}
-                  size="stretch"
-                  minWidth={315}
-                  autoSize
-                  showCover={false}
-                  usePortrait
-                  mobileScrollSupport
-                  flippingTime={1000}
-                  clickEventForward={false}
-                  useMouseEvents
-                  onChangeState={handlePageChange}
-                  style={{ margin: "auto" }}
-                  drawShadow
-                  maxShadowOpacity={0.5}
-                  isClickFlip={false}
-                >
-                  <div key={`page-${page.pageNumber}`}>
-                    <Page pageNumber={page.pageNumber} />
+                {"<"}
+              </Button>
+              <Text>
+                Page No - {getPageRange(pdfNum+1, 10)}
+              </Text>
+              <Button
+                variant="primary"
+                disabled={!showNextBtn}
+                onClick={() => {
+                  setPdfNum(pdfNum + 1);
+                }}
+              >
+                {">"}
+              </Button>
+            </Flex>
+
+            <Document
+              file={pdfFiles[pdfNum]}
+              onLoadSuccess={onDocumentLoadSuccess}
+            >
+              <HTMLFlipBook
+                width={550}
+                height={733}
+                size="stretch"
+                minWidth={315}
+                autoSize={true}
+                showCover={false}
+                usePortrait={true}
+                mobileScrollSupport={true}
+                onChangeState={(e) => {
+                  // if (
+                  //   pdfNum < pdfFiles.length &&
+                  //   e.object.pages.currentPageIndex == 8
+                  // )
+                  //   setShowNextBtn(true);
+                  // if (pdfNum != 0 && e.object.pages.currentPageIndex > 1)
+                  //   setShowPrevBtn(false);
+                }}
+                flippingTime={1000}
+                clickEventForward={false}
+                useMouseEvents={true}
+                style={{ margin: "auto" }}
+                // swipeDistance={30}
+                drawShadow={true}
+                maxShadowOpacity={0.5}
+                isClickFlip={false}
+              >
+                {Array.from(new Array(numPages), (el, index) => (
+                  <div key={`page_${index + 1}`}>
+                    <Page pageNumber={index + 1} />
                   </div>
-                </HTMLFlipBook>
-              </Document>
-            ))}
+                ))}
+              </HTMLFlipBook>
+            </Document>
           </ModalBody>
         </ModalContent>
       </Modal>
-    </>
+    </Box>
   );
 };
 

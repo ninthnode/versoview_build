@@ -54,6 +54,24 @@ export const fetchPosts = () => {
     }
   };
 };
+export const fetchUserPosts = () => {
+  return async (dispatch,getState) => {
+    dispatch(getPostsRequest());
+    try {
+        const token = localStorage.getItem("token").replaceAll('"', "");
+
+       const response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/getUserPosts`,{ 
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      const data = await response.data.data
+      dispatch(getPostsSuccess(data));
+    } catch (error) {
+      dispatch(getPostsFailure(error.message));
+    }
+  };
+};
 export const fetchRecentlyViewedPosts = () => {
   return async (dispatch,getState) => {
     dispatch(getPostsRequest());

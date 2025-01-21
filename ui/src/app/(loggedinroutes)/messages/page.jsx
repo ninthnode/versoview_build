@@ -14,14 +14,12 @@ import { useState, useEffect } from "react";
 import { io } from "socket.io-client";
 import { useSelector } from "react-redux";
 import { formatDateTime } from "@/app/utils/DateUtils";
-const socket = io(process.env.NEXT_PUBLIC_BACKEND_URL);
 import { useRef } from "react";
 import axios from "axios";
 import useDeviceType from "@/components/useDeviceType";
 import { useRouter } from "next/navigation";
-
-
-const Dms = ({searchParams}) => {
+import { initializeSocket, disconnectSocket } from "../../utils/socket";
+const Dms = ({ searchParams }) => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
@@ -32,25 +30,29 @@ const Dms = ({searchParams}) => {
   const [searching, setSearching] = useState(false);
   const deviceType = useDeviceType();
   const [showChats, setShowChats] = useState(false);
-  const { id:paramsUserId } = searchParams;
+  const { id: paramsUserId } = searchParams;
   const router = useRouter();
 
   useEffect(() => {
-    if (authState) {
-      socket.emit("register", authState.id);
+    if (authState&&selectedUser) {
+      const socket = initializeSocket(authState.id);
+
+      socket.on("dm", (data) => {
+        if(selectedUser&&data.senderId === selectedUser._id)
+        setMessages((prev) => [
+          ...prev,
+          { id: Date.now(), message: data.message, senderId: data.sender },
+        ]);
+      });
+
+      socket.on("recentChats", setAllUsers);
+
+      return () => {
+        disconnectSocket();
+      };
     }
+  }, [authState,selectedUser]);
 
-    socket.on("dm", (data) => {
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        { id: Date.now(), message: data.message, senderId: data.sender },
-      ]);
-    });
-
-    return () => {
-      socket.off("dm");
-    };
-  }, [authState]);
 
   useEffect(() => {
     const token = localStorage.getItem("token").replaceAll('"', "");
@@ -66,6 +68,25 @@ const Dms = ({searchParams}) => {
             }
           );
           setAllUsers(response.data.data);
+          if (!selectedUser&&paramsUserId) {
+            const foundUser = response.data.data.find(
+              (user) => user._id === paramsUserId
+            );
+            setSelectedUser(foundUser);
+            if(!foundUser){
+              const response = await axios.get(
+                `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/users/getUser/${paramsUserId}`,
+                {
+                  headers: {
+                    authorization: `Bearer ${localStorage
+                      .getItem("token")
+                      .replaceAll('"', "")}`,
+                  },
+                }
+              );
+              setSelectedUser(response.data.user);
+            }
+          }
           setSearching(true);
         } else {
           const response = await axios.get(
@@ -93,18 +114,17 @@ const Dms = ({searchParams}) => {
           const token = localStorage.getItem("token").replaceAll('"', "");
 
           const response = await axios.get(
-            `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/messages/chat/${authState.id}/${paramsUserId}`,
+            `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/messages/chat/${authState.id}/${selectedUser._id}`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,
               },
             }
           );
-
           if (response.status === 200) {
             const data = await response.data;
             setMessages(data);
-            deviceType == "phone"&&setShowChats(true);
+            deviceType == "phone" && setShowChats(true);
           } else {
             console.error("Failed to fetch previous messages");
           }
@@ -116,21 +136,24 @@ const Dms = ({searchParams}) => {
     fetchMessages();
   }, [selectedUser]);
 
+
   const handleClick = (user) => {
-    user.unreadCount =0
-    setSelectedUser(user)
+    user.unreadCount = 0;
+    setSelectedUser(user);
+    setSearch("");
     router.push(`/messages?id=${user._id}`);
   };
-  
+
   const handleSendMessage = () => {
-    if (newMessage.trim()) {
+    if (newMessage.trim() && authState && selectedUser) {
+      const socket = initializeSocket(authState.id);
       socket.emit("private_message", {
         senderId: authState.id,
         receiverId: selectedUser._id,
         message: newMessage,
       });
-      setMessages((prevMessages) => [
-        ...prevMessages,
+      setMessages((prev) => [
+        ...prev,
         { id: Date.now(), message: newMessage, senderId: authState.id },
       ]);
       setNewMessage("");
@@ -143,17 +166,21 @@ const Dms = ({searchParams}) => {
   }, [messages]);
   return (
     <>
-      {showChats&&<Button
-        bg="secondary"
-        w="fit-content"
-        p="2"
-        m='2'
-        borderRadius="5"
-        onClick={() => {setSelectedUser(null);setShowChats(false)}}
-      >
-        All Users
-      </Button>
-      }
+      {showChats && (
+        <Button
+          bg="secondary"
+          w="fit-content"
+          p="2"
+          m="2"
+          borderRadius="5"
+          onClick={() => {
+            setSelectedUser(null);
+            setShowChats(false);
+          }}
+        >
+          All Users
+        </Button>
+      )}
       <HStack spacing={0} overflow="hidden" alignItems="flex-start" maxH="90vh">
         {!showChats && (
           <Box
@@ -176,7 +203,7 @@ const Dms = ({searchParams}) => {
                 focusBorderColor="indigo.500"
               />
             </Box>
-            <VStack spacing={4} pt='2'>
+            <VStack spacing={4} pt="2">
               {!searching ? (
                 <Text textAlign="center" mt="1">
                   Start typing to search...
@@ -202,7 +229,21 @@ const Dms = ({searchParams}) => {
                       name={user.username}
                       src={user.channelIconImageUrl}
                     />
-                    <Text fontWeight="bold">{user.username} {user?.unreadCount>0&&<span style={{backgroundColor:"red",padding:"0 5px",borderRadius:"50%",color:'#fff'}}>{user.unreadCount}</span>}</Text>
+                    <Text fontWeight="bold">
+                      {user.username}{" "}
+                      {user?.unreadCount > 0 && (
+                        <span
+                          style={{
+                            backgroundColor: "red",
+                            padding: "0 5px",
+                            borderRadius: "50%",
+                            color: "#fff",
+                          }}
+                        >
+                          {user.unreadCount}
+                        </span>
+                      )}
+                    </Text>
                   </HStack>
                 ))
               ) : (
@@ -214,7 +255,7 @@ const Dms = ({searchParams}) => {
           </Box>
         )}
         {/* Chat Section */}
-        {(showChats||deviceType != "phone") && (
+        {(showChats || deviceType != "phone") && (
           <Box
             width={deviceType != "phone" ? "70%" : "100%"}
             height="80vh"
@@ -274,9 +315,9 @@ const Dms = ({searchParams}) => {
                         </Text>
                       </Box>
                     ))}
+                  </VStack>
                     {/* Ref to scroll to the bottom */}
                     <div ref={messagesEndRef} />
-                  </VStack>
                 </Box>
                 <Divider my={4} />
                 <HStack>
