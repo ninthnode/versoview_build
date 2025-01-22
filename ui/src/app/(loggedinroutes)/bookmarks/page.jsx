@@ -41,7 +41,7 @@ const Comment = ({
     openCommentModal(singleComment, 'comment');
   };
   return (
-    <Box my="4" p={2}>
+    <Box my="4">
       <Box p={2} bg="#fff">
         <PostCard
           key={postId._id || crypto.randomUUID()}
@@ -49,7 +49,7 @@ const Comment = ({
           showBookmarkButton={false}
         />
       </Box>
-      {/* <Divider /> */}
+ 
 
       <Box maxW="2xl" p={4} position="relative" bg="#fff" mt="0">
         <div
@@ -91,6 +91,7 @@ const Comment = ({
           <Text mt="3">{commentText}</Text>
         </HStack>
       </Box>
+           <Divider />
     </Box>
   );
 };

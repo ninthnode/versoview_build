@@ -272,7 +272,7 @@ const Dms = ({ searchParams }) => {
                   alignItems="center"
                   mb={4}
                   bg={"gray.100"}
-                  rounded="sm"
+                  rounded="md"
                   p={2}
                 >
                   <Avatar
@@ -320,7 +320,7 @@ const Dms = ({ searchParams }) => {
                     <div ref={messagesEndRef} />
                 </Box>
                 <Divider my={4} />
-                <HStack>
+                <HStack mb='2'>
                   <Input
                     placeholder="Type a message"
                     value={newMessage}

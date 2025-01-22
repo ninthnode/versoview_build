@@ -6,7 +6,6 @@ import {
   FormControl,
   Input,
   Flex,
-  Link,
   InputGroup,
   InputRightElement,
   Spinner,
@@ -17,7 +16,7 @@ import {
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { CiMail, CiLock } from "react-icons/ci";
 import { IoIosLogIn } from "react-icons/io";
-
+import Link from "next/link";
 function LoginForm({
   show,
   loading,

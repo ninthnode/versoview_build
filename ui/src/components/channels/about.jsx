@@ -1,7 +1,7 @@
 import { Spinner } from "@chakra-ui/react";
 import { connect } from "react-redux";
 import React, { useEffect, useState } from "react";
-import { Box, Flex, Text, Link, Avatar, Button } from "@chakra-ui/react";
+import { Box, Flex, Text, Avatar, Button } from "@chakra-ui/react";
 
 import {
   followChannel,
@@ -9,6 +9,7 @@ import {
   getFollowingStatus,
 } from "@/redux/channel/channelActions";
 import { FiMessageSquare } from "react-icons/fi";
+import Link from "next/link";
 
 const FollowBtn = ({
   channelId,
@@ -109,7 +110,7 @@ const About = ({
               alt={channelName}
             />
             {userId._id != user.id && (
-              <Link href={`/messages`}>
+              <Link href={`/messages?id=${userId._id}`}>
               <Flex flexDirection="column" alignItems="center" mb={1} cursor='pointer'>
                 <FiMessageSquare size="18px" />
                 <Text

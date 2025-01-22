@@ -19,34 +19,22 @@ import {
   useEditable,
 } from "@chakra-ui/react";
 import "./style.css";
-const PdfFlipBookModal = ({ pdfFiles, title }) => {
+const PdfFlipBookModal = ({ pdfFiles, title,numberOfPages }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [pdfNum, setPdfNum] = useState(0);
+  const [pdfCurrentPage, setPdfCurrentPage] = useState(1);
   const [numPages, setNumPages] = useState(null);
-  const [showNextBtn, setShowNextBtn] = useState(false);
-  const [showPrevBtn, setShowPrevBtn] = useState(false);
 
   const onDocumentLoadSuccess = ({ numPages }) => {
     setNumPages(numPages);
   };
-  useEffect(() => {
-    if(pdfNum > 0)
-      setShowPrevBtn(true);
-    else
-    setShowPrevBtn(false);
-    if(pdfNum +1 ==pdfFiles.length)
-      setShowNextBtn(false);
-    else
-    setShowNextBtn(true);
 
-  }, [pdfNum])
-  
   function getPageRange(pagenum, itemsPerPage) {
     const start = (pagenum - 1) * itemsPerPage + 1;
     const end = start + itemsPerPage - 1;
-    return `${start}/${end}`;
+    return `${pdfCurrentPage} - ${pdfCurrentPage + 1}`;
   }
-  
+
   return (
     <Box>
       <Flex cursor="pointer" onClick={onOpen}>
@@ -58,27 +46,28 @@ const PdfFlipBookModal = ({ pdfFiles, title }) => {
           <ModalHeader mt="2">{title}</ModalHeader>
           <ModalCloseButton />
           <ModalBody minH="80vh" height="100%">
-            <Flex justifyContent="space-between" mb='2'>
+            <Flex justifyContent="space-between" mb="2">
               <Button
                 variant="primary"
-                isDisabled={!showPrevBtn}
+                isDisabled={pdfNum==0}
                 onClick={() => {
                   setPdfNum(pdfNum - 1);
+                  setPdfCurrentPage((pdfNum - 1) * 10 + 1);
                 }}
               >
-                {"<"}
+                {"<"} Previous
               </Button>
-              <Text>
-                Page No - {getPageRange(pdfNum+1, 10)}
-              </Text>
+              <Text>Page No : {getPageRange(pdfNum + 1, 10)}</Text>
+              {console.log(pdfNum+1,pdfFiles.length)}
               <Button
                 variant="primary"
-                disabled={!showNextBtn}
+                isDisabled={pdfNum+1==pdfFiles.length}
                 onClick={() => {
                   setPdfNum(pdfNum + 1);
+                  setPdfCurrentPage((pdfNum + 1) * 10 + 1);
                 }}
               >
-                {">"}
+                Next {">"}
               </Button>
             </Flex>
 
@@ -96,13 +85,12 @@ const PdfFlipBookModal = ({ pdfFiles, title }) => {
                 usePortrait={true}
                 mobileScrollSupport={true}
                 onChangeState={(e) => {
-                  // if (
-                  //   pdfNum < pdfFiles.length &&
-                  //   e.object.pages.currentPageIndex == 8
-                  // )
-                  //   setShowNextBtn(true);
-                  // if (pdfNum != 0 && e.object.pages.currentPageIndex > 1)
-                  //   setShowPrevBtn(false);
+                  setPdfCurrentPage(
+                    pdfNum * 10 + e.object.pages.currentPageIndex + 1
+                  );
+                }}
+                onUpdate={(e) => {
+                  console.log(e)
                 }}
                 flippingTime={1000}
                 clickEventForward={false}

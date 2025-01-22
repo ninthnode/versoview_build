@@ -54,7 +54,7 @@ const CreateEdition = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [progress, setProgress] = useState(null);
   const [currentText, setCurrentText] = useState(
-    "Please Be patient this might take some time..."
+    "Please be patient this might take some time..."
   );
 
   const [uploadedPdf, setUploadedPdf] = useState(null);
