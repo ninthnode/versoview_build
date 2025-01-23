@@ -19,7 +19,9 @@ import axios from "axios";
 import useDeviceType from "@/components/useDeviceType";
 import { useRouter } from "next/navigation";
 import { initializeSocket, disconnectSocket } from "../../utils/socket";
-const Dms = ({ searchParams }) => {
+import { useSearchParams } from 'next/navigation';
+
+const Dms = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
@@ -30,7 +32,10 @@ const Dms = ({ searchParams }) => {
   const [searching, setSearching] = useState(false);
   const deviceType = useDeviceType();
   const [showChats, setShowChats] = useState(false);
-  const { id: paramsUserId } = searchParams;
+  const searchParams = useSearchParams();
+
+  const paramsUserId = searchParams.get('id');
+
   const router = useRouter();
 
   useEffect(() => {

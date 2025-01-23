@@ -330,7 +330,7 @@ else
             PDF PREVIEW
           </Heading>
           <Box border="1px solid #e2e8f0" h="100vh">
-            <Flex align="flex-start" justify="center" h="full">
+            <Flex align="flex-start" justifyContent="center" w='100%' h="full">
               <div
                 style={{ width: "100%", height: "80vh", overflowY: "scroll" }}
                 onScroll={handleScroll}
@@ -346,7 +346,7 @@ else
                             renderMode={"svg"}
                       >
                         {Array.from(new Array(numPages), (el, pageIndex) => (
-                          <Page 
+                          <Page
                             pageNumber={pageIndex + 1}
                             key={`page_${pageIndex + 1}`}
                           />

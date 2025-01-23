@@ -9,7 +9,6 @@ import {
     GET_USER_EDITION_REQUEST,
     GET_USER_EDITION_SUCCESS,
     UPLOAD_PDF_PROGRESS,
-    UPLOAD_IMAGES_PROGRESS,
     CLEAN_EDITION
   } from './publishTypes';
   
@@ -41,12 +40,6 @@ import {
           ...state,
           uploadSteps: 1,
           uploadProgress: action.payload,
-        };
-      case UPLOAD_IMAGES_PROGRESS:
-        return {
-          ...state,
-          uploadSteps: 2,
-          uploadProgress: state.uploadProgress + action.payload,
         };
       case CREATE_EDITION_SUCCESS:
         return {

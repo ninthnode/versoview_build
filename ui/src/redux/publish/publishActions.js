@@ -9,7 +9,6 @@ import {
     GET_USER_EDITION_REQUEST,
     GET_USER_EDITION_SUCCESS,
     UPLOAD_PDF_PROGRESS,
-    UPLOAD_IMAGES_PROGRESS,
     CLEAN_EDITION
   } from './publishTypes';
   import { toast } from 'react-toastify';
@@ -24,37 +23,45 @@ import {
       }
     );
     return response.data;
-  };
-  const extractImageUrl = (url) => {
+  };const extractImageUrl = (url) => {
     const urlObj = new URL(url);
     const pathname = urlObj.pathname;
     const segments = pathname.split("/");
     const filename = segments.pop();
     return url.substring(0, url.indexOf(filename) + filename.length);
   };
- 
-  const onUploadProgress = (progressEvent, fileIndex, fileProgress, setAggregateProgress, totalSize) => {
-    const { loaded, total } = progressEvent;
   
-    // Calculate the progress for the current file
-    const fileProgressPercentage = (loaded / total) * 50;
+  const onUploadProgress = (
+    progressEvent,
+    fileIndex,
+    uploadedBytesPerFile,
+    setProcessProgress,
+    totalSize
+  ) => {
+    const { loaded } = progressEvent; // Bytes uploaded for the current file
   
-    // Update the progress for the specific file
-    fileProgress[fileIndex] = (loaded / totalSize) * 50;
+    // Update the uploaded bytes for the current file
+    uploadedBytesPerFile[fileIndex] = loaded;
   
-    // Aggregate progress from all files
-    const aggregateProgress = Object.values(fileProgress).reduce((sum, progress) => sum + progress, 0);
+    // Calculate total uploaded bytes across all files
+    const totalUploadedBytes = Object.values(uploadedBytesPerFile).reduce(
+      (sum, bytes) => sum + bytes,
+      0
+    );
   
-    // Update the overall progress
-    setAggregateProgress(aggregateProgress);
+    // Calculate progress for this process
+    const processProgress = (totalUploadedBytes / totalSize) * 100;
+  
+    // Update the process-specific progress
+    setProcessProgress(processProgress);
   };
   
-  async function processFiles(files, setAggregateProgress, type) {
+  async function processFiles(files, setProcessProgress, type) {
     const fileUrls = [];
     const totalSize = files.reduce((acc, file) => acc + file.size, 0);
   
-    // Track individual progress for each file
-    const fileProgress = {};
+    // Track uploaded bytes for each file
+    const uploadedBytesPerFile = {};
   
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
@@ -63,10 +70,19 @@ import {
         const content_type = file.type;
         const signedUrlResponse = await getSignedUrl({ key, content_type });
   
+        // Reset uploaded bytes for this file
+        uploadedBytesPerFile[i] = 0;
+  
         await axios.put(signedUrlResponse.data.signedUrl, file, {
           headers: { "Content-Type": content_type },
           onUploadProgress: (progressEvent) =>
-            onUploadProgress(progressEvent, i, fileProgress, setAggregateProgress, totalSize),
+            onUploadProgress(
+              progressEvent,
+              i,
+              uploadedBytesPerFile,
+              setProcessProgress,
+              totalSize
+            ),
         });
   
         const newFileUrl = extractImageUrl(signedUrlResponse.data.signedUrl);
@@ -82,34 +98,36 @@ import {
   
   export const createEdition = (chunkPdfFiles, capturedPdfImages, editionData) => async (dispatch) => {
     try {
-      dispatch({ type: "CREATE_EDITION_REQUEST" });
+      dispatch({ type: CREATE_EDITION_REQUEST });
   
-      // Aggregate progress for all file uploads
-      let aggregateProgress = 0;
-      const setAggregateProgress = (progress) => {
-        aggregateProgress = progress;
+      // Separate progress states for PDFs and images
+      let pdfProgress = 0;
+      let imageProgress = 0;
+  
+      const setPdfProgress = (progress) => {
+        pdfProgress = progress;
+        updateAggregateProgress(); // Update combined progress
+      };
+  
+      const setImageProgress = (progress) => {
+        imageProgress = progress;
+        updateAggregateProgress(); // Update combined progress
+      };
+  
+      const updateAggregateProgress = () => {
+        const aggregateProgress = (pdfProgress * 0.5) + (imageProgress * 0.5); // Combine progress (50% each)
         dispatch({
           type: UPLOAD_PDF_PROGRESS,
           payload: aggregateProgress,
         });
       };
   
-      // Process PDF files
-      const processedPdfs = await processFiles(chunkPdfFiles, setAggregateProgress, "pdf");
+      // Process PDF files (50% weight)
+      const processedPdfs = await processFiles(chunkPdfFiles, setPdfProgress, "pdf");
       editionData.pdfUrls = processedPdfs;
   
-      // Reset progress for images
-      let aggregateImageProgress = 0;
-      const setAggregateImageProgress = (progress) => {
-        aggregateImageProgress = progress;
-        dispatch({
-          type: UPLOAD_IMAGES_PROGRESS,
-          payload: aggregateImageProgress,
-        });
-      };
-      
-      // Process Image files
-      const processedImages = await processFiles(capturedPdfImages, setAggregateImageProgress, "images");
+      // Process Image files (50% weight)
+      const processedImages = await processFiles(capturedPdfImages, setImageProgress, "images");
       editionData.libraryImages = processedImages;
   
       // Send final edition data
@@ -124,7 +142,7 @@ import {
       );
   
       dispatch({
-        type: "CREATE_EDITION_SUCCESS",
+        type: CREATE_EDITION_SUCCESS,
         payload: response.data,
       });
   
@@ -132,8 +150,11 @@ import {
       window.location.href = "/publish";
     } catch (error) {
       console.error("Error creating edition:", error);
+      // dispatch({ type: "CREATE_EDITION_FAILURE", error });
     }
   };
+  
+  
   
   
   export const getAllEditions = () => async (dispatch) => {

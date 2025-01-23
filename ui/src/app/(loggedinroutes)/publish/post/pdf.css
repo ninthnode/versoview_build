@@ -2,3 +2,6 @@
     display: block !important;
     z-index: 9999;
 }
+.react-pdf__Page__canvas,.react-pdf__Page__textContent{
+ margin: 0 auto !important;
+}
