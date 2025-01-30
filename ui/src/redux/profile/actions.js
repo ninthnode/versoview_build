@@ -6,6 +6,7 @@ import {
   USER_UPDATE_REQUEST,
   USER_UPDATE_SUCCESS,
   USER_UPDATE_FAILURE,
+  USER_REWARDS_SUCCESS
 } from "./types";
 import { toast } from 'react-toastify';
 const fetchUser = (id) => async (dispatch) => {
@@ -135,4 +136,23 @@ const updateUser = (key, content_type, uploadImage, id, dataObj) => {
 };
 
 
-export { fetchUser, updateUser };
+const getUserRewardsPoints = (id) => async (dispatch) => {
+  try {
+    const response = await axios.get(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/verso-rewards/getUserRewardsPoints`,
+      {
+        headers: {
+          authorization: `Bearer ${localStorage
+            .getItem("token")
+            .replaceAll('"', "")}`,
+        },
+      }
+    );
+    console.log(response.data.data);
+    dispatch({ type: USER_REWARDS_SUCCESS, payload: response.data.data });
+  } catch (error) {
+    // dispatch({ type: USER_FETCH_FAILURE, payload: error.message });
+  }
+};
+
+export { fetchUser, updateUser, getUserRewardsPoints };

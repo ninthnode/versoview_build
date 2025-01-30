@@ -9,7 +9,7 @@ import { MdLibraryAdd } from "react-icons/md";
 import LibraryModal from "@/components/publish/LibraryModal";
 const axios = require('axios');
 
-const ImageCropper = ({ onCropComplete, uploadedImage, croppedImage,imageSizeError,setCroppedImage,setUploadedImage,edition,handleLibraryImage }) => {
+const ImageCropper = ({ onCropComplete, uploadedImage, croppedImage,imageSizeError,setCroppedImage,setUploadedImage,edition,handleLibraryImage,libraryImages, setLibraryImages }) => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
@@ -147,7 +147,11 @@ const ImageCropper = ({ onCropComplete, uploadedImage, croppedImage,imageSizeErr
           </Tooltip>}
           </Flex>
           <Text>{imageSizeError}</Text>
-          <LibraryModal isOpen={isOpen} onClose={onClose} edition={edition} handleLibraryImage={handleLibraryImage}/>
+          <LibraryModal isOpen={isOpen} onClose={onClose}
+          libraryImages={libraryImages}
+                      setLibraryImages={setLibraryImages}
+                      editionId={edition._id}
+           handleLibraryImage={handleLibraryImage}/>
         </Flex>
       )}
     </div>

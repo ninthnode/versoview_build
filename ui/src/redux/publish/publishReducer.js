@@ -9,7 +9,9 @@ import {
     GET_USER_EDITION_REQUEST,
     GET_USER_EDITION_SUCCESS,
     UPLOAD_PDF_PROGRESS,
-    CLEAN_EDITION
+    CLEAN_EDITION,
+    LIBRARY_IMAGE_PROGRESS,
+    LIBRARY_IMAGE_SUCCESS
   } from './publishTypes';
   
   const initialState = {
@@ -21,7 +23,8 @@ import {
     success: false,
     userEditions: {},
     uploadProgress:0,
-    uploadSteps:0
+    uploadSteps:0,
+    libraryImageProgress:0
   };
   
  const publishReducer = (state = initialState, action) => {
@@ -41,6 +44,16 @@ import {
           uploadSteps: 1,
           uploadProgress: action.payload,
         };
+        case LIBRARY_IMAGE_PROGRESS:
+        return {
+          ...state,
+          libraryImageProgress: action.payload,
+        }
+        case LIBRARY_IMAGE_SUCCESS:
+        return {
+          ...state,
+          libraryImageProgress: 0,
+        }
       case CREATE_EDITION_SUCCESS:
         return {
           ...state,

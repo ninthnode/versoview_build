@@ -18,12 +18,10 @@ import {
   UNFOLLOW_CHANNEL_REQUEST,
   UNFOLLOW_CHANNEL_SUCCESS,
   UNFOLLOW_CHANNEL_FAILURE,
-
   FETCH_USER_CHANNEL,
-  CLEAR_CHANNEL
+  CLEAR_CHANNEL,
 } from "./channelTypes";
-  export const clearChannel = () => ({ type: CLEAR_CHANNEL });
-
+export const clearChannel = () => ({ type: CLEAR_CHANNEL });
 
 export const fetchChannel = (username) => async (dispatch) => {
   dispatch({ type: FETCH_CHANNEL_REQUEST });
@@ -170,10 +168,9 @@ export const getFollowingStatus = (channelId) => async (dispatch) => {
         },
       }
     );
-    
+
     return response.data.data;
-  } catch (error) {
-  }
+  } catch (error) {}
 };
 export const fetchfollowChannelList = () => async (dispatch) => {
   dispatch({ type: FETCH_FOLLOWERS_REQUEST });
@@ -191,8 +188,6 @@ export const fetchfollowChannelList = () => async (dispatch) => {
     dispatch({ type: FETCH_FOLLOWINGS_SUCCESS, payload: response.data });
   } catch (error) {}
 };
-
-
 
 export const fetchLoggedInUserChannel = () => async (dispatch, getState) => {
   try {
@@ -212,21 +207,31 @@ export const fetchLoggedInUserChannel = () => async (dispatch, getState) => {
   }
 };
 
-
-export const getAllPinnedChannels = () => async (dispatch) => {
-  try {
-
-    const response = await axios.get(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/channel/getAllChannel`,
-      {
-        headers: {
-          authorization: `Bearer ${localStorage
-            .getItem("token")
-            .replace(/"/g, "")}`,
-        },
+export const getAllPinnedChannels = () => {
+  return async (dispatch, getState) => {
+    try {
+      const { auth } = getState();
+      let response = {};
+      if (auth.isAuthenticated) {
+        response = await axios.get(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/channel/getAllChannel`,
+          {
+            headers: {
+              authorization: `Bearer ${localStorage
+                .getItem("token")
+                .replace(/"/g, "")}`,
+            },
+          }
+        );
+      } else {
+        response = await axios.get(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/channel/getAllChannelLoggedoutUser`
+        );
       }
-    );
-    dispatch({ type: FETCH_PINNED_CHANNEL_SUCCESS,payload: response.data.data });
-
-  } catch (error) {}
+      dispatch({
+        type: FETCH_PINNED_CHANNEL_SUCCESS,
+        payload: response.data.data,
+      });
+    } catch (error) {}
+  };
 };

@@ -443,7 +443,7 @@ function Profile() {
             </Box>
             <Divider h="1px" bg="#333" />
             <Box textAlign="left" w="100%">
-              <RewardsList />
+              <RewardsList userId={user._id} />
             </Box>
           </VStack>
         </Box>

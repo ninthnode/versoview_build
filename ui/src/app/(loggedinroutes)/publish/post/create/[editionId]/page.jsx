@@ -30,9 +30,7 @@ import dynamic from "next/dynamic";
 import PostPreview from "../../PostPreview";
 import { useToast } from "@chakra-ui/react";
 import ImageCropper from "@/components/Image-cropper/ImageCropper";
-import { useRouter } from "next/navigation";
 import useDeviceType from "@/components/useDeviceType";
-import { IoArrowBack } from "react-icons/io5";
 import { getEditionById, cleanEdition } from "@/redux/publish/publishActions";
 import { Document, Page, pdfjs } from "react-pdf";
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
@@ -65,6 +63,7 @@ const PublishPdfPost = ({ params }) => {
   const [croppedImage, setCroppedImage] = useState(null);
   const [imageSizeError, setImageSizeError] = useState("");
 
+const [libraryImages, setLibraryImages] = useState([]);
   const [pageStart, setPageStart] = useState(0);
 
   const [pdfPages, setPdfPages] = useState([]);
@@ -123,15 +122,6 @@ const PublishPdfPost = ({ params }) => {
     if (isEditPost) fetchAndSetData();
     
   }, [isEditPost, singlePostEditContent]);
-  const base64ToArrayBuffer = (base64) => {
-    const binaryString = atob(base64);
-    const len = binaryString.length;
-    const bytes = new Uint8Array(len);
-    for (let i = 0; i < len; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-    return bytes.buffer;
-  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -152,6 +142,7 @@ const PublishPdfPost = ({ params }) => {
   useEffect(() => {
     const fetchData = async () => {
       setPdfPages((prev) => [...prev, editionDetails.pdfUrls[pageStart]]);
+      setLibraryImages(editionDetails.libraryImages);
     };
     if (editionDetails._id != undefined && editionDetails != undefined)
       fetchData();
@@ -424,6 +415,8 @@ else
                       setUploadedImage={setUploadedImage}
                       edition={editionDetails}
                       handleLibraryImage={handleLibraryImage}
+                      libraryImages={libraryImages}
+                      setLibraryImages={setLibraryImages}
                     />
                   </Box>
                 </FormControl>
@@ -532,6 +525,9 @@ else
                 <RichTextEditor
                   handleTextBodyChange={handleTextBodyChange}
                   bodyRichText={formData.bodyRichText}
+                  editionId={editionDetails._id}
+                  libraryImages={libraryImages}
+                      setLibraryImages={setLibraryImages}
                 />
               </FormControl>
               <Button

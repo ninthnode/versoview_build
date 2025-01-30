@@ -1,24 +1,35 @@
-import React from 'react';
+import React,{useState,useEffect} from 'react';
 import { Box, Flex, Text, Avatar, IconButton, VStack } from '@chakra-ui/react';
 import { FiMoreHorizontal } from 'react-icons/fi';
+import { useDispatch,useSelector } from "react-redux";
+import { getUserRewardsPoints } from "@/redux/profile/actions";
 
-const rewardsData = [
-  { name: 'Joel Bookzs', points: 124, avatar: 'https://via.placeholder.com/40' },
-  { name: 'Colours Magazine', points: 187, avatar: 'https://via.placeholder.com/40' },
-  { name: 'Sleeveface', points: 10, avatar: 'https://via.placeholder.com/40' },
-  { name: 'The Economist', points: 5862, avatar: 'https://via.placeholder.com/40' },
-  { name: 'Whisky Appreciation...', points: 10, avatar: 'https://via.placeholder.com/40' },
-];
+function RewardsList({userId}) {
+  const dispatch = useDispatch();
+  const [userRewards, setUserRewards] = useState([]);
+  const userRewardsRedux = useSelector((s) => s.profile.userRewards);
+  const [totalPoints, setTotalPoints] = useState(0);
 
-function RewardsList() {
+useEffect(() => {
+  if(userId)
+  dispatch(getUserRewardsPoints(userId));
+}, [userId]);
+useEffect(() => {
+  if(userRewardsRedux){
+    const totalPoints = userRewardsRedux.reduce((total, user) => total + user.points, 0);
+    setTotalPoints(totalPoints);
+    setUserRewards(userRewardsRedux);
+  }
+}, [userRewardsRedux]);
+
   return (
     <Box>
       <Flex justifyContent="space-between" mb={4}>
         <Text fontWeight="bold" fontSize='lg'>VersoRewards</Text>
-        <Text fontWeight="bold" fontSize='lg'>Points</Text>
+        <Text fontWeight="bold" fontSize='lg'>Points: {totalPoints}</Text>
       </Flex>
       <VStack spacing={4} align="stretch">
-        {rewardsData.map((reward, index) => (
+        {userRewards&&userRewards.map((reward, index) => (
           <Flex key={index} align="center" justify="space-between" p={2} borderWidth="1px" borderRadius="md">
             <Flex align="center">
               <Avatar src={reward.avatar} name={reward.name} size="sm" mr={4} />

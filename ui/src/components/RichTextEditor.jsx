@@ -1,54 +1,179 @@
-import React, { useRef, useState } from 'react';
-import JoditEditor from 'jodit-react';
-import { uploadPostImage } from '../redux/posts/postActions';
-import { useDispatch } from 'react-redux';
+import React, { useRef, forwardRef, useMemo, useEffect } from "react";
+import JoditEditor from "jodit-react";
+import LibraryModal from "@/components/publish/LibraryModal";
+import { useDisclosure } from "@chakra-ui/react";
 
-const RichTextEditor = ({handleTextBodyChange,bodyRichText}) => {
-    const editor = useRef(null);
-    const dispatch = useDispatch();
+const RichTextEditor = forwardRef(
+  (
+    {
+      libraryImages,
+      setLibraryImages,
+      editionId,
+      value = "",
+      initialValue = "",
+      onChange = () => {},
+      name = "",
+      placeholderText = "",
+      showExtraButtons = false,
+      handleTextBodyChange,
+    },
+    ref
+  ) => {
+    const editorRef = useRef(null);
+    const cursorPositionRef = useRef(null); // Store cursor position
+    const { isOpen, onOpen, onClose } = useDisclosure();
 
-    const config = {
-        readonly: false,
-        placeholder: 'Start typing...',
-        minHeight: '300px',
-        overflow: 'auto',
-        askBeforePasteFromWord: false,
-        askBeforePasteHTML: false, 
-        buttons: [
-            'source',
-            '|', 'bold', 'italic',
-            '|', 'ul', 'ol',
-            '|', 'font', 'fontsize', 'brush', 'paragraph',
-            '|', 'video', 'table', 'link',
-            '|', 'left', 'center', 'right', 'justify',
-            '|', 'undo', 'redo',
-            '|', 'hr', 'eraser', 'fullsize'
-        ],
-        extraButtons: ["image"],
-      uploader: {         
-        insertImageAsBase64URI: true,
-        imagesExtensions: ['jpg', 'png', 'jpeg', 'gif', 'svg', 'webp']
-      },
-      paste: {
-        clean: true, // Ensures that pasted content is stripped of unwanted styles
-        removeStyles: true, // Removes inline styles
-        removeClasses: true, // Removes classes
-        keepStyles: false // Prevents any styles from being retained
-    }
+    const saveCursorPosition = () => {
+      const editorInstance = editorRef.current;
+      if (editorInstance) {
+        const selection = window.getSelection();
+        if (selection && selection.rangeCount > 0) {
+          cursorPositionRef.current = selection.getRangeAt(0).cloneRange();
+        }
+      }
     };
 
-    return (
-        <div>
-            <JoditEditor
-                ref={editor}
-                value={bodyRichText}
-                config={config}
-                onBlur={newContent => {handleTextBodyChange(newContent)}}
-                onChange={newContent => {}}
-                minH="2xl"
-            />
-        </div>
+    const restoreCursorPosition = () => {
+      if (cursorPositionRef.current) {
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(cursorPositionRef.current);
+      }
+    };
+
+    const handleLibraryImage = (img) => {
+      injectImage(img);
+      onClose();
+    };
+    const injectImage = (img) => {
+      const editorInstance = editorRef.current;
+      if (editorInstance && cursorPositionRef.current) {
+        const range = cursorPositionRef.current;
+        range.deleteContents();
+        const imgNode = document.createElement("img");
+        imgNode.src = img;
+        range.insertNode(imgNode);
+        range.collapse(false);
+        restoreCursorPosition();
+
+        const updatedContent = editorInstance.value || editorInstance.innerHTML;
+        if (onChange) {
+          onChange(name, updatedContent);
+        }
+      }
+    };
+    const insertImageUrlButton = {
+      name: "insertImageUrl",
+      icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M21 3H3C1.9 3 1 3.9 1 5v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14zM8.5 13.5l2.5 3.01L15.5 12l4.5 6H4l4.5-5.5z"/></svg>',
+      tooltip: "Insert Image",
+      exec: (editor) => {
+        // Focus the editor and save the cursor position
+        editor.selection.focus();
+        saveCursorPosition();
+
+        // Slightly delay opening the modal to ensure focus is set
+        setTimeout(() => {
+          onOpen();
+        }, 0);
+      },
+    };
+
+    const config = useMemo(
+      () => ({
+        buttons: [
+          "source",
+          "|",
+          "bold",
+          "italic",
+          "|",
+          "ul",
+          "ol",
+          "|",
+          "font",
+          "fontsize",
+          "brush",
+          "paragraph",
+          "|",
+          "video",
+          "table",
+          "link",
+          "|",
+          "left",
+          "center",
+          "right",
+          "justify",
+          "|",
+          "undo",
+          "redo",
+          "|",
+          "hr",
+          "eraser",
+          "fullsize",
+        ],
+        extraButtons: [insertImageUrlButton],
+        removeButtons: ["brush", "file"],
+        showXPathInStatusbar: false,
+        showCharsCounter: false,
+        showWordsCounter: false,
+        toolbarAdaptive: false,
+        theme: "default",
+        height: 500,
+        askBeforePasteFromWord: false,
+        askBeforePasteHTML: false,
+        processPasteHTML: true,
+        defaultActionOnPaste: "insert_only_text",
+        events: {
+          click: saveCursorPosition,
+          keyup: saveCursorPosition,
+          focus: restoreCursorPosition,
+          processPaste: function (event) {
+            event.preventDefault(); // Prevent default HTML pasting
+          
+            const text = event.clipboardData.getData("text/plain"); // Get plain text
+            const editorInstance = editorRef.current?.editor;
+          
+            try {
+              // Try inserting text using Jodit's built-in method
+              if (editorInstance) {
+                editorInstance.s.insertHTML(text);
+              }
+            } catch (error) {
+              console.error("Jodit paste error:", error);
+            }
+          },
+          
+          
+        },
+      }),
+      [showExtraButtons]
     );
-};
+
+    return (
+      <div className="text-editor-container">
+        <LibraryModal
+          isOpen={isOpen}
+          onClose={onClose}
+          libraryImages={libraryImages}
+          setLibraryImages={setLibraryImages}
+          editionId={editionId}
+          handleLibraryImage={handleLibraryImage}
+        />
+
+        <JoditEditor
+          ref={editorRef}
+          config={config}
+          value={initialValue}
+          tabIndex={1}
+          onChange={(newContent) => {
+            saveCursorPosition();
+          }}
+          onBlur={newContent => {handleTextBodyChange(newContent)}}
+          placeholder={placeholderText || "Write something..."}
+        />
+      </div>
+    );
+  }
+);
+RichTextEditor.displayName = "RichTextEditor";
 
 export default RichTextEditor;

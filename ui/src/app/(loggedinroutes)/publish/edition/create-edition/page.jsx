@@ -67,8 +67,6 @@ const CreateEdition = () => {
       setProgress(uploadProgress);
       if(uploadProgress < 50)setCurrentText("Step 1: Uploading PDF");
       if(uploadProgress > 50)setCurrentText("Step 2: Uploading Images");
-      // if (uploadSteps == 1) setCurrentText("Step 1: Uploading PDF");
-      // if (uploadSteps == 2) setCurrentText("Step 2: Uploading Images");
     }
   }, [uploadProgress, uploadSteps]);
   useEffect(() => {

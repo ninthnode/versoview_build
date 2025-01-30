@@ -14,6 +14,7 @@ const genreRoutesV1 = require("./routes/v1/genre.route");
 const s3Router = require("./routes/v1/s3");
 const messageRouter = require("./routes/v1/message.route");
 const searchRouter = require("./routes/v1/search.route");
+const versoRewardsRouter = require("./routes/v1/verso-rewards.route");
 const rateLimit = require("express-rate-limit");
 const fs = require("node:fs");
 const path = require("path");
@@ -233,6 +234,7 @@ app.use("/api/v1/editions/", editionRoutesV1);
 app.use("/api/v1/genre/", genreRoutesV1);
 app.use("/api/v1/messages", messageRouter);
 app.use("/api/v1/search", searchRouter);
+app.use("/api/v1/verso-rewards", versoRewardsRouter);
 app.use(notFoundError);
 app.use(errorHandler);
 

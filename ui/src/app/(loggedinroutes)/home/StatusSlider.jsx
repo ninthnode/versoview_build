@@ -94,8 +94,7 @@ const StatusSlider = () => {
 
   useEffect(() => {
     if(authVerified){
-      if (authState) dispatch(getAllPinnedChannels())
-      else getChannelsForLoggedoutUser().then(setChannels);
+      dispatch(getAllPinnedChannels())
     }
   }, [authVerified]);
   if(pinnedChannelData.length==0) return <AvatarShimmer/>

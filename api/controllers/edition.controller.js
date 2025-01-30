@@ -163,3 +163,24 @@ module.exports.deleteEdition = async (req, res) => {
       .json({ message: "Failed to delete edition", error: error.message });
   }
 };
+module.exports.uploadLibraryImage = async (req, res) => {
+  try {
+    let url = req.body.url; // The new URL to be added
+    let editionId = req.params._id; // The Edition ID from the request params
+
+    const edition = await Edition.findById(editionId); // Find the edition by its ID
+    if (!edition) {
+      return res.status(404).json({ message: "Edition not found" }); // Return 404 if the edition is not found
+    }
+    // Add the new URL to the start of the array and shift other elements
+    edition.libraryImages.unshift(url);
+
+    // Save the updated edition document
+    await edition.save();
+
+    res.status(200).json({ message: "Library image uploaded successfully", libraryImages: edition.libraryImages });
+  } catch (error) {
+    console.error("Error uploading library image:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};

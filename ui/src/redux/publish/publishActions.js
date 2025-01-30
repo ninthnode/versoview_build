@@ -9,7 +9,9 @@ import {
     GET_USER_EDITION_REQUEST,
     GET_USER_EDITION_SUCCESS,
     UPLOAD_PDF_PROGRESS,
-    CLEAN_EDITION
+    CLEAN_EDITION,
+    LIBRARY_IMAGE_PROGRESS,
+    LIBRARY_IMAGE_SUCCESS
   } from './publishTypes';
   import { toast } from 'react-toastify';
 
@@ -23,7 +25,9 @@ import {
       }
     );
     return response.data;
-  };const extractImageUrl = (url) => {
+  };
+  
+  const extractImageUrl = (url) => {
     const urlObj = new URL(url);
     const pathname = urlObj.pathname;
     const segments = pathname.split("/");
@@ -243,4 +247,61 @@ import {
     } catch (error) {
       console.log(error)
     }
+  };
+
+
+  
+const uploadFileToSignedUrl = (signedUrl, file, contentType,dispatch) => {
+  return axios.put(signedUrl, file, {
+    onUploadProgress: (progressEvent)=>{
+      const { loaded, total } = progressEvent;
+      const uploadProgress = Math.round((loaded / total) * 100);
+      dispatch({
+        type: LIBRARY_IMAGE_PROGRESS,
+        payload: uploadProgress,
+      });
+    },
+    headers: {
+      "Content-Type": contentType,
+    },
+  });
+};
+
+  export const uploadLibraryImage = (key,content_type,image,editionId) => {
+    return async (dispatch) => {
+      try {
+        let newImageUrl
+        if (image) {
+          const signedUrlResponse = await getSignedUrl({ key, content_type });
+  
+          const uploadResponse = await uploadFileToSignedUrl(
+            signedUrlResponse.data.signedUrl,
+            image,
+            content_type
+            ,
+            dispatch
+          );
+  
+         newImageUrl = extractImageUrl(uploadResponse.config.url);
+        }
+        
+        const token = localStorage.getItem("token").replaceAll('"', "");
+        const responsefile = await axios.post(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/editions/uploadLibraryImage/${editionId}`,
+          {url:newImageUrl},
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        dispatch({
+          type: LIBRARY_IMAGE_SUCCESS
+        });
+        return responsefile.data.libraryImages
+
+      } catch (error) {
+        // dispatch(getPostsFailure(error.message));
+      }
+    };
   };
