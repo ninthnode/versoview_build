@@ -4,7 +4,8 @@ import { GET_POSTS_REQUEST, GET_POSTS_SUCCESS, GET_POSTS_FAILURE,
   GET_RECENT_POSTS_SUCCESS,
   SET_POST_EDIT,
   GET_SINGLE_POST_EDITDATA_SUCCESS,POST_ADD_SUCCESS,
-  POST_EDIT_SUCCESS,MODIFY_POSTS_REQUEST } from './postType';
+  POST_EDIT_SUCCESS,MODIFY_POSTS_REQUEST,
+  WITHOUT_EDITION_POSTS_SUCCESS } from './postType';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -56,7 +57,6 @@ export const fetchPosts = () => {
 };
 export const fetchUserPosts = () => {
   return async (dispatch,getState) => {
-    dispatch(getPostsRequest());
     try {
         const token = localStorage.getItem("token").replaceAll('"', "");
 
@@ -66,9 +66,12 @@ export const fetchUserPosts = () => {
           },
         });
       const data = await response.data.data
-      dispatch(getPostsSuccess(data));
+      console.log(data)
+      dispatch({
+        type: WITHOUT_EDITION_POSTS_SUCCESS,
+        payload: data,
+      });
     } catch (error) {
-      dispatch(getPostsFailure(error.message));
     }
   };
 };

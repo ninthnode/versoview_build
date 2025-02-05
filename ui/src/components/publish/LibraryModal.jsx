@@ -163,7 +163,7 @@ const LibraryModal = ({
 
           {/* Library Images */}
           <Flex wrap="wrap" justifyContent="space-between" gap={4} mt={4}>
-            {libraryImages.map((image, index) => (
+            {libraryImages&&libraryImages.map((image, index) => (
               <Image
                 key={index}
                 src={image}

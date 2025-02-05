@@ -15,7 +15,7 @@ function LoginBtns() {
 
   return (
     <Box>
-      <Button
+      {/* <Button
         w="100%"
         height="50px"
         borderRadius="md"
@@ -26,12 +26,12 @@ function LoginBtns() {
           <FaFacebookF color="#3b5998" fontSize="22px" />
           <Text fontWeight={"light"}>Login with Facebook</Text>
         </Flex>
-      </Button>
+      </Button> */}
 
       <GoogleOAuthProvider clientId={clientId}>
         <CustomGoogleButton />
       </GoogleOAuthProvider>
-      <Button
+      {/* <Button
         mt={4}
         w="100%"
         height="50px"
@@ -43,7 +43,7 @@ function LoginBtns() {
           <FaApple color="#656565dd" fontSize="22px" />
           <Text fontWeight={"light"}>Login with Apple</Text>
         </Flex>
-      </Button>
+      </Button> */}
     </Box>
   );
 }

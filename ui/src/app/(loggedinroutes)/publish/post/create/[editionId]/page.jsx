@@ -10,9 +10,6 @@ import {
   FormControl,
   FormLabel,
   Stack,
-  Radio,
-  RadioGroup,
-  Image,
   Text,
   Select,
   Spinner,
@@ -38,9 +35,10 @@ pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/b
 const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), {
   ssr: false,
 });
-import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
-import 'react-pdf/dist/esm/Page/TextLayer.css';
-import '../../pdf.css';
+import "react-pdf/dist/esm/Page/AnnotationLayer.css";
+import "react-pdf/dist/esm/Page/TextLayer.css";
+import "../../pdf.css";
+import { set } from "valibot";
 const PublishPdfPost = ({ params }) => {
   const dispatch = useDispatch();
   const deviceType = useDeviceType();
@@ -63,7 +61,7 @@ const PublishPdfPost = ({ params }) => {
   const [croppedImage, setCroppedImage] = useState(null);
   const [imageSizeError, setImageSizeError] = useState("");
 
-const [libraryImages, setLibraryImages] = useState([]);
+  const [libraryImages, setLibraryImages] = useState([]);
   const [pageStart, setPageStart] = useState(0);
 
   const [pdfPages, setPdfPages] = useState([]);
@@ -120,7 +118,6 @@ const [libraryImages, setLibraryImages] = useState([]);
     };
 
     if (isEditPost) fetchAndSetData();
-    
   }, [isEditPost, singlePostEditContent]);
 
   useEffect(() => {
@@ -130,14 +127,14 @@ const [libraryImages, setLibraryImages] = useState([]);
       await dispatch(getEditionById(params.editionId));
     };
     fetchData();
-    
+
     // Optional cleanup
     return () => {
-        setUploadedImage(null);
-        setPdfPages([]);
-        setLoadingStates([]);
-        dispatch(cleanEdition());
-          };
+      setUploadedImage(null);
+      setPdfPages([]);
+      setLoadingStates([]);
+      dispatch(cleanEdition());
+    };
   }, []);
   useEffect(() => {
     const fetchData = async () => {
@@ -162,10 +159,44 @@ const [libraryImages, setLibraryImages] = useState([]);
       }
       setImageSizeError("");
       const imageDataUrl = await readFile(file);
-      setUploadedImage(imageDataUrl);
+      const processedImage = await processImage(imageDataUrl);
+      setUploadedImage(processedImage);
     }
   };
-
+  const processImage = (imageDataUrl) => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const targetWidth = 360;
+        const targetHeight = 205;
+  
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+  
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+  
+        // Fill background with white
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, 0, targetWidth, targetHeight);
+  
+        // Calculate aspect ratio to fit within canvas
+        let scale = Math.min(targetWidth / img.width, targetHeight / img.height);
+        let newWidth = img.width * scale;
+        let newHeight = img.height * scale;
+  
+        let xOffset = (targetWidth - newWidth) / 2;
+        let yOffset = (targetHeight - newHeight) / 2;
+  
+        // Draw image on canvas
+        ctx.drawImage(img, xOffset, yOffset, newWidth, newHeight);
+  
+        // Convert canvas to data URL
+        resolve(canvas.toDataURL("image/png"));
+      };
+      img.src = imageDataUrl;
+    });
+  };
   const readFile = (file) => {
     return new Promise((resolve) => {
       const reader = new FileReader();
@@ -264,28 +295,23 @@ const [libraryImages, setLibraryImages] = useState([]);
     }
     setIsEditing(!isEditing);
   };
-  const isHttpsURL=(string)=> {
+  const isHttpsURL = (string) => {
     try {
-      const url = new URL(string); 
+      const url = new URL(string);
       return url.protocol === "https:";
     } catch {
       return false; // Invalid URL
     }
-  }
+  };
   const handleLibraryImage = async (img) => {
-    if(isHttpsURL(img)){
-      let imageName =
-      img.lastIndexOf("/") + 1;
-    let postImage = await blobToFile(
-      img,
-      imageName
-    );
-    const imageDataUrl = await readFile(postImage);
+    if (isHttpsURL(img)) {
+      let imageName = img.lastIndexOf("/") + 1;
+      let postImage = await blobToFile(img, imageName);
+      const imageDataUrl = await readFile(postImage);
 
-    setUploadedImage(imageDataUrl);
-    }
-else
-    setUploadedImage(img);
+      const processedImage = await processImage(imageDataUrl);
+      setUploadedImage(processedImage);
+    } else setUploadedImage(img);
   };
   const handleScroll = (e) => {
     if (
@@ -321,31 +347,32 @@ else
             PDF PREVIEW
           </Heading>
           <Box border="1px solid #e2e8f0" h="100vh">
-            <Flex align="flex-start" justifyContent="center" w='100%' h="full">
+            <Flex align="flex-start" justifyContent="center" w="100%" h="full">
               <div
                 style={{ width: "100%", height: "80vh", overflowY: "scroll" }}
                 onScroll={handleScroll}
               >
-                {pdfPages&&pdfPages.map((pdf, index) => (
-                  <div key={`pdf_${index}`}>
-                    {loadingStates[index] ? (
-                      <Spinner size="xl" /> // Spinner shown while loading
-                    ) : (
-                      <Document
-                        file={pdf}
-                        onLoadSuccess={(pdf) => onLoadSuccess(pdf, index)}
-                            renderMode={"svg"}
-                      >
-                        {Array.from(new Array(numPages), (el, pageIndex) => (
-                          <Page
-                            pageNumber={pageIndex + 1}
-                            key={`page_${pageIndex + 1}`}
-                          />
-                        ))}
-                      </Document>
-                    )}
-                  </div>
-                ))}
+                {pdfPages &&
+                  pdfPages.map((pdf, index) => (
+                    <div key={`pdf_${index}`}>
+                      {loadingStates[index] ? (
+                        <Spinner size="xl" /> // Spinner shown while loading
+                      ) : (
+                        <Document
+                          file={pdf}
+                          onLoadSuccess={(pdf) => onLoadSuccess(pdf, index)}
+                          renderMode={"svg"}
+                        >
+                          {Array.from(new Array(numPages), (el, pageIndex) => (
+                            <Page
+                              pageNumber={pageIndex + 1}
+                              key={`page_${pageIndex + 1}`}
+                            />
+                          ))}
+                        </Document>
+                      )}
+                    </div>
+                  ))}
               </div>
             </Flex>
           </Box>
@@ -388,8 +415,7 @@ else
                 <FormControl id="mainImage">
                   <Box
                     border="3px dashed #e2e8f0"
-                    width="100%"
-                    maxWidth="360px"
+                    width="360px"
                     height="205px"
                     display="flex"
                     alignItems="center"
@@ -527,7 +553,7 @@ else
                   bodyRichText={formData.bodyRichText}
                   editionId={editionDetails._id}
                   libraryImages={libraryImages}
-                      setLibraryImages={setLibraryImages}
+                  setLibraryImages={setLibraryImages}
                 />
               </FormControl>
               <Button

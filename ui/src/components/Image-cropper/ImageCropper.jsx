@@ -3,13 +3,30 @@ import Cropper from "react-easy-crop";
 import { getCroppedImg } from "./utils";
 import { FaCheck, FaTimes } from "react-icons/fa";
 import { MdModeEdit } from "react-icons/md";
-import { Image as ChakraImage, Text,Flex, Tooltip,useDisclosure } from "@chakra-ui/react";
-import { FaUpload,FaCamera } from "react-icons/fa";
+import {
+  Image as ChakraImage,
+  Text,
+  Flex,
+  Tooltip,
+  useDisclosure,
+} from "@chakra-ui/react";
+import { FaUpload, FaCamera } from "react-icons/fa";
 import { MdLibraryAdd } from "react-icons/md";
 import LibraryModal from "@/components/publish/LibraryModal";
-const axios = require('axios');
+const axios = require("axios");
 
-const ImageCropper = ({ onCropComplete, uploadedImage, croppedImage,imageSizeError,setCroppedImage,setUploadedImage,edition,handleLibraryImage,libraryImages, setLibraryImages }) => {
+const ImageCropper = ({
+  onCropComplete,
+  uploadedImage,
+  croppedImage,
+  imageSizeError,
+  setCroppedImage,
+  setUploadedImage,
+  edition,
+  handleLibraryImage,
+  libraryImages,
+  setLibraryImages,
+}) => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
@@ -78,41 +95,44 @@ const ImageCropper = ({ onCropComplete, uploadedImage, croppedImage,imageSizeErr
               display: "flex",
               alignItems: "center",
               gap: "10px",
-              backgroundColor:'#fff',
-              padding:'5px',
-              borderRadius:'10px',
-              border:'2px solid #333'
+              backgroundColor: "#fff",
+              padding: "5px",
+              borderRadius: "10px",
+              border: "2px solid #333",
             }}
           >
-          <Flex gap='2'>
-            {isEditing ? (
-              <FaCheck
-                onClick={handleCrop}
-                style={{
-                  backgroundColor: "#333",
-                  cursor: "pointer",
-                  color: "#fff",
-                  fontSize: "24px",
-                  padding: "5px",
-                  borderRadius: "5px",
-                  backgroundColor: "green",
+            <Flex gap="2">
+              {isEditing ? (
+                <FaCheck
+                  onClick={handleCrop}
+                  style={{
+                    backgroundColor: "#333",
+                    cursor: "pointer",
+                    color: "#fff",
+                    fontSize: "24px",
+                    padding: "5px",
+                    borderRadius: "5px",
+                    backgroundColor: "green",
+                  }}
+                />
+              ) : (
+                <MdModeEdit
+                  onClick={handleEdit}
+                  style={{
+                    borderRadius: "5px",
+                    padding: "5px",
+                    backgroundColor: "#333",
+                    cursor: "pointer",
+                    color: "#fff",
+                    fontSize: "24px",
+                  }}
+                />
+              )}
+              <FaTimes
+                onClick={() => {
+                  setUploadedImage(null);
+                  setCroppedImage(null);
                 }}
-              />
-            ) : (
-              <MdModeEdit
-                onClick={handleEdit}
-                style={{
-                  borderRadius: "5px",
-                  padding: "5px",
-                  backgroundColor: "#333",
-                  cursor: "pointer",
-                  color: "#fff",
-                  fontSize: "24px",
-                }}
-              />
-            )}
-            <FaTimes
-                onClick={()=>{setUploadedImage(null);setCroppedImage(null)}}
                 style={{
                   borderRadius: "5px",
                   padding: "5px",
@@ -122,36 +142,62 @@ const ImageCropper = ({ onCropComplete, uploadedImage, croppedImage,imageSizeErr
                   fontSize: "24px",
                 }}
               />
-              </Flex>
+            </Flex>
           </div>
         </div>
       ) : (
-        <Flex flexDirection={
-          "column"
-        } alignItems="center">
-          <Flex gap='4' pos="relative">
-          <Tooltip label="Upload Image">
-          <label for="files" class="btn">
-            <FaUpload fontSize="3rem" style={{backgroundColor:"#cccc", padding:'10px',cursor:'pointer'}} />
-          </label>
-          </Tooltip>
-          <Tooltip label="Take Photo">
-          <label for="cameras" class="btn">
-            <FaCamera fontSize="3rem" style={{backgroundColor:"#cccc", padding:'10px',cursor:'pointer'}}/>
-          </label>
-          </Tooltip>
-          {edition&&<Tooltip label="Choose from Library">
-          <Text onClick={onOpen}>
-           <MdLibraryAdd fontSize="3rem" style={{backgroundColor:"#cccc", padding:'10px',cursor:'pointer'}}/>
-          </Text>
-          </Tooltip>}
+        <Flex flexDirection={"column"} alignItems="center">
+          <Flex gap="4" pos="relative">
+            <Tooltip label="Upload Image">
+              <label for="files" class="btn">
+                <FaUpload
+                  fontSize="3rem"
+                  style={{
+                    backgroundColor: "#cccc",
+                    padding: "10px",
+                    cursor: "pointer",
+                  }}
+                />
+              </label>
+            </Tooltip>
+            <Tooltip label="Take Photo">
+              <label for="cameras" class="btn">
+                <FaCamera
+                  fontSize="3rem"
+                  style={{
+                    backgroundColor: "#cccc",
+                    padding: "10px",
+                    cursor: "pointer",
+                  }}
+                />
+              </label>
+            </Tooltip>
+            {edition && (
+              <Tooltip label="Choose from Library">
+                <Text onClick={onOpen}>
+                  <MdLibraryAdd
+                    fontSize="3rem"
+                    style={{
+                      backgroundColor: "#cccc",
+                      padding: "10px",
+                      cursor: "pointer",
+                    }}
+                  />
+                </Text>
+              </Tooltip>
+            )}
           </Flex>
           <Text>{imageSizeError}</Text>
-          <LibraryModal isOpen={isOpen} onClose={onClose}
-          libraryImages={libraryImages}
-                      setLibraryImages={setLibraryImages}
-                      editionId={edition._id}
-           handleLibraryImage={handleLibraryImage}/>
+          {edition && (
+            <LibraryModal
+              isOpen={isOpen}
+              onClose={onClose}
+              libraryImages={libraryImages}
+              setLibraryImages={setLibraryImages}
+              editionId={edition._id}
+              handleLibraryImage={handleLibraryImage}
+            />
+          )}
         </Flex>
       )}
     </div>

@@ -73,16 +73,16 @@ export default function Channel({
   setView,
   options,
   userEditions,
-  submitBookmarkEdition
+  submitBookmarkEdition,
 }) {
   // Extract unique sections from posts
   const uniqueSections = Array.from(new Set(posts.map((post) => post.section)));
 
   return (
-    <Box maxW="2xl">
+    <Box>
       <Box>
         <Tabs>
-          <TabList gap={2} w="100%">
+        <TabList gap={2} w="100%" mb={1}>
             <Box
               display={"flex"}
               alignItems="flex-end"
@@ -125,12 +125,14 @@ export default function Channel({
               </Flex>
               {isPostLoading && <PostCardShimmer />}
               {view === options.posts && posts && posts.length ? (
-                posts.map((post) => (
-                  <PostCard
-                    key={post._id}
-                    post={post}
-                    submitBookmark={submitBookmarkPost}
-                  />
+                posts.map((post,i) => (
+                  <Box key={post._id} mt={i > 0 ? "4" : "0"}>
+                    <PostCard
+                      key={post._id}
+                      post={post}
+                      submitBookmark={submitBookmarkPost}
+                    />
+                  </Box>
                 ))
               ) : (
                 <></>

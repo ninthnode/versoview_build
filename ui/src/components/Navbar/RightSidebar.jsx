@@ -31,14 +31,16 @@ function RightSidebar({
     // Ensure the component is rendered and elements are available
     const sidebar = document.getElementById("sidebar");
     const sidebarContent = document.getElementById("content_wrapper");
-
+    const mainContainer = document.getElementById("main_container");
     if (!sidebar || !sidebarContent) return;
-
+    
     const handleScroll = () => {
       const scrollTop = window.scrollY;
       const viewportH = window.innerHeight;
       const contentH = sidebarContent.getBoundingClientRect().height;
+      const mainContainerH = mainContainer.getBoundingClientRect().height;
       const sidebarTop = sidebar.getBoundingClientRect().top + window.scrollY;
+      if(contentH<mainContainerH)
       if (scrollTop >= contentH - viewportH) {
         sidebarContent.style.transform = `translateY(-${
           contentH - viewportH + sidebarTop

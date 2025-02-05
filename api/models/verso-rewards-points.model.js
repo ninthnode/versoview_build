@@ -4,7 +4,7 @@ const VersoRewardsPointsSchema = new mongoose.Schema({
   action: {
     type: String,
     required: true,
-    enum: ['CREATE_POST','CREATE_EDITION', 'READ_POST', 'COMMENT', 'UPVOTE', 'DOWNVOTE', 'FOLLOWING',"FOLLOWER"],
+    enum: ['CREATE_POST','CREATE_EDITION', 'READ_POST', 'COMMENT', 'UPVOTE', 'DOWNVOTE', 'FOLLOWING',"FOLLOWER",'BOOKMARK'],
     unique: true,
   },
   points: {

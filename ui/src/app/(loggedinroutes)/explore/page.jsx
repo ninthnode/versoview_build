@@ -108,9 +108,9 @@ const Search = () => {
                 <Flex direction="column">
                   <Text fontWeight="bold">{result.channelName}</Text>
                   <Text fontWeight="semibold">{result.username}</Text>
-                  <Text fontStyle="italic" fontWeight="thin" color="gray.500">
+                  {/* <Text fontStyle="italic" fontWeight="thin" color="gray.500">
                     {result.email}
-                  </Text>
+                  </Text> */}
                 </Flex>
               </Flex>
               </Link>

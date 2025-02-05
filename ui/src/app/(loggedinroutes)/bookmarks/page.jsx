@@ -136,7 +136,7 @@ const Bookmark = ({
             if (post.postId) {
               return (
                 <Box key={post.postId._id}>
-                  <Box bg="#fff">
+                  <Box bg="#fff" mt={4}>
                     <PostCard
                       key={post._id || crypto.randomUUID()}
                       post={post.postId}

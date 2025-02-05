@@ -27,7 +27,7 @@ function LoginForm({
 }) {
   return (
     <form onSubmit={handleSubmit} height="100%">
-      <Flex flexDir="column" justifyContent="space-between" height="100%">
+      <Flex flexDir="column" justifyContent="space-between" height="100%" mt={8}>
         <Flex flexDir="column">
           <FormControl id="email" isRequired>
             <Flex alignItems="center" gap={2}>
@@ -77,13 +77,13 @@ function LoginForm({
             </Link>
           </Flex>
         </Flex>
-        <Box position="fixed" bottom="2%" left="0" right="0" w="100%">
+        <Box w="100%">
           <Flex justifyContent="center">
             <Button
               w="380px"
               textAlign="center"
               variant="primary"
-              m={2}
+              mt={8}
               type="submit"
             >
               <Flex justify={"flex-start"} w="90%" gap={6}>

@@ -21,7 +21,7 @@ function CustomGoogleButton() {
       variant="ghost"
       onClick={gLogin}
     >
-      <Flex justify={"flex-start"} w="90%" gap={6}>
+      <Flex justify={"flex-start"} w="60%" gap={6}>
         <FcGoogle fontSize="22px" />
         <Text fontWeight={"light"}>Login with Google</Text>
       </Flex>

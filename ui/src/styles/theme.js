@@ -5,11 +5,11 @@ import BottomNavigationStyles from "./components/BottomNavigation";
 
 const customTheme = extendTheme({
   fonts: {
-    body: "NotoSans-Bold, sans-serif",
-    heading: "Poppins-bold, sans-serif",
-    button: "NotoSans-Bold, sans-serif",
-    p: "NotoSans-Medium, sans-serif",
-    span: "NotoSans-Regular, sans-serif",
+    body: "Lato-Bold, sans-serif",
+    heading: "Lato-Bold, sans-serif",
+    button: "Lato-Bold, sans-serif",
+    p: "PTSerif-Regular, sans-serif",
+    span: "PTSerif-Regular, sans-serif",
   },
   fontSizes: {
     xs: "0.7rem",
@@ -35,8 +35,8 @@ const customTheme = extendTheme({
     global: {
       "@font-face": [
         {
-          fontFamily: "NotoSans-Regular",
-          src: 'url(/fonts/NotoSans-Regular.ttf) format("truetype")',
+          fontFamily: "PTSerif-Regular",
+          src: 'url(/fonts/PTSerif-Regular.ttf) format("truetype")',
           fontWeight: "normal",
         },
         {
@@ -56,7 +56,7 @@ const customTheme = extendTheme({
         },
       ],
       body: {
-        fontFamily: "NotoSans-Regular",
+        fontFamily: "PTSerif-Regular",
         fontSize: "0.875rem",
         lineHeight: "22.4px",
         fontWeight: "normal",

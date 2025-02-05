@@ -12,7 +12,7 @@ import useConfirmationDialog from "@/components/useConfirmationDialog"
 
 function Posts() {
   const dispatch = useDispatch();
-  const userPosts = useSelector((s) => s.post.posts);
+  const userPosts = useSelector((s) => s.post.withoutEditionPosts);
   const { push } = useRouter();
   const [showDialog, ConfirmationDialogComponent] = useConfirmationDialog(
     'Are you sure you want to delete this post?'
@@ -48,7 +48,8 @@ function Posts() {
       </Button>
       </Flex>
       <Stack spacing={0}>
-        {userPosts &&
+      {console.log(userPosts)}
+        {userPosts&&userPosts.length > 0 &&
           userPosts.map((item, index) => (
             <Flex
               key={index}

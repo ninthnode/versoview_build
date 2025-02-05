@@ -66,7 +66,7 @@ const Navbar = ({ children }) => {
           pos='relative'
           minH='100%'
         >
-          <Box w="100%" minH={path.startsWith('/messages') ? '100vh' : '2000px'}>
+          <Box w="100%" minH={'100vh'}>
             <Box>
               <Box
                 w={{
@@ -78,6 +78,7 @@ const Navbar = ({ children }) => {
                 borderRightWidth="2px"
                 borderColor="#f5f5f5"
                 minH={!RightSidebarRoutes?'150vh':""}
+                id="main_container"
               >
                 <MobileNav onOpen={onOpen} />
                 <Divider />

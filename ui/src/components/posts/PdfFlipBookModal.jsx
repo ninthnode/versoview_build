@@ -58,7 +58,7 @@ const PdfFlipBookModal = ({ pdfFiles, title,numberOfPages }) => {
                 {"<"} Previous
               </Button>
               <Text>Page No : {getPageRange(pdfNum + 1, 10)}</Text>
-              {console.log(pdfNum+1,pdfFiles.length)}
+              {/* {console.log(pdfNum+1,pdfFiles.length)} */}
               <Button
                 variant="primary"
                 isDisabled={pdfNum+1==pdfFiles.length}

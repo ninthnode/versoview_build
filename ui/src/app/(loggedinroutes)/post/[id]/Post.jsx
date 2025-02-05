@@ -145,7 +145,7 @@ function SinglePost({
   }, [postState.post]);
 
   return (
-    <Box maxW="2xl">
+    <Box>
       {!postState.post && <Loader />}
       {postState.post ? (
         <>
@@ -241,9 +241,15 @@ function SinglePost({
                 </Flex>
 
                 <Box>
-                  {postState.post.editionId?.pdfUrl && (
+                {console.log(postState.post.editionId)}
+                  {postState&&postState.post.editionId?.pdfUrls?.length>0 && (
                     <PdfFlipBookModal
-                      pdfFile={postState.post.editionId.pdfUrl}
+                     title={
+                      postState.post.editionId?.editionText +
+                      " " +
+                      postState.post.editionId?.editionDate
+                    }
+                    pdfFiles={postState.post.editionId?.pdfUrls}
                     />
                   )}
                 </Box>

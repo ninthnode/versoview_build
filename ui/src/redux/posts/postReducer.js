@@ -10,7 +10,8 @@ import {
   GET_SINGLE_POST_EDITDATA_SUCCESS,
   POST_ADD_SUCCESS,
   POST_EDIT_SUCCESS,
-  MODIFY_POSTS_REQUEST
+  MODIFY_POSTS_REQUEST,
+  WITHOUT_EDITION_POSTS_SUCCESS
 } from "./postType";
 
 const initialState = {
@@ -24,6 +25,7 @@ const initialState = {
   isEditPost: false,
   editPostId: "",
   singlePostEditContent: {},
+  withoutEditionPosts: [],
 };
 
 const postsReducer = (state = initialState, action) => {
@@ -96,6 +98,11 @@ const postsReducer = (state = initialState, action) => {
       return {
         ...state,
         loadingModify: false,
+      };
+    case WITHOUT_EDITION_POSTS_SUCCESS:
+      return {
+        ...state,
+        withoutEditionPosts: action.payload,
       };
     default:
       return state;

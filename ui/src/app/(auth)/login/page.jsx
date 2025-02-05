@@ -1,5 +1,5 @@
 "use client";
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -16,7 +16,6 @@ import LoginBtns from "./LoginBtns";
 import LoginForm from "./LoginForm";
 
 function Login({ loginUser, error }) {
-  
   const [backendError, setBackendError] = useState(null);
   const [show, setShow] = useState(false);
   const [showForm, setShowForm] = useState(false);
@@ -25,13 +24,12 @@ function Login({ loginUser, error }) {
     password: "",
   });
 
-
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
-    setBackendError(null)
+    setBackendError(null);
   };
 
   const handleSubmit = async (e) => {
@@ -48,41 +46,31 @@ function Login({ loginUser, error }) {
   };
 
   useEffect(() => {
-    setBackendError(error)
-  }, [error])
-
- 
+    setBackendError(error);
+  }, [error]);
 
   return (
-    <Box bg="white" mt={4} w="100%" position="relative">
-      <Flex minH="85vh" align="center" justify="center">
-        <Flex
+    <Box bg="white" mt={4} w="100%" position="relative" m='0' p='0'>
+        <Box
           flexDirection="column"
-          minH="85vh"
+          h="90vh"
           justifyContent="space-between"
-          w={{ base: "380px", lg: "380px" }}
-          px={{ base: 4, md: 8 }}
+          w={{ base: "320px", lg: "380px" }}
+          margin='0 auto'
+          // px={{ base: 4, md: 8 }}
           bg="white"
         >
-          <Box h="100%" mt={4}>
+          <Box h="100%" mt='70px'>
             <Box>
-              {showForm && (
-                <>
-                  <Button
-                    bg="secondary"
-                    w="fit-content"
-                    p="2"
-                    borderRadius="20"
-                    onClick={handleShowForm}
-                  >
-                    <Image m="0" src={"/assets/back.svg"} mr={2} />
-                  </Button>
-                </>
-              )}
               <Flex alignItems="center" mb={2} mt={4}>
-                <Image src={"/assets/logo.svg"} alt="logo" mr={2} h='1.6rem'/>
-                <Heading fontSize="lg" as="h4" fontWeight="bold" textAlign="left">
-                  {showForm?"Login with Email":"Login"}
+                <Image src={"/assets/logo.svg"} alt="logo" mr={2} h="1.6rem" />
+                <Heading
+                  fontSize="lg"
+                  as="h4"
+                  fontWeight="bold"
+                  textAlign="left"
+                >
+                  {showForm ? "Login with Email" : "Login"}
                 </Heading>
               </Flex>
               <Text mb={8} w="80%" color="textlight">
@@ -90,51 +78,32 @@ function Login({ loginUser, error }) {
                 more...
               </Text>
             </Box>
-            {showForm ? (
-              <LoginForm
-                loading={false}
-                show={show}
-                handleSubmit={handleSubmit}
-                handleChange={handleChange}
-                handleClick={handleClick}
-                errors={backendError}
-              />
-            ) : (
-              <LoginBtns />
-            )}
-          </Box>
+            <LoginBtns />
 
-          <Box position="fixed" bottom="10%" left="0" right="0" w="100%">
-            <Flex justifyContent="center">
-              {!showForm && (
-                <>
-                  <Flex justify="center" w="380px" px={{ base: 4, md: 8 }}>
-                    <Button mt={4} w="100%" onClick={handleShowForm}>
-                      <Flex
-                        justify={"flex-start"}
-                        alignItems="center"
-                        w="90%"
-                        gap={6}
-                        height="15px"
-                      >
-                        <img
-                          src="assets/envelope.png"
-                          width="18px"
-                          height="2px"
-                        />
-                        <Text fontWeight={"light"}>Login With Email</Text>
-                      </Flex>
-                    </Button>
-                  </Flex>
-                </>
-              )}
+            <Flex
+              justifyContent="center"
+              alignItems="center"
+              mt={8}
+              mb={4}
+              gap={2}
+            >
+              <Divider />
+              Or
+              <Divider />
             </Flex>
-            <Text textAlign="center" mt={8}>
+            <LoginForm
+              loading={false}
+              show={show}
+              handleSubmit={handleSubmit}
+              handleChange={handleChange}
+              handleClick={handleClick}
+              errors={backendError}
+            />
+            <Text textAlign="center" mt={4}>
               <Link href="/signup">Dont have account? SignUp</Link>
             </Text>
           </Box>
-        </Flex>
-      </Flex>
+        </Box>
     </Box>
   );
 }

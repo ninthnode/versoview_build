@@ -186,7 +186,7 @@ const Dms = () => {
           All Users
         </Button>
       )}
-      <HStack spacing={0} overflow="hidden" alignItems="flex-start" maxH="90vh">
+      <HStack spacing={0} overflow="hidden" alignItems="flex-start">
         {!showChats && (
           <Box
             width={deviceType != "phone" ? "30%" : "100%"}

@@ -1,5 +1,6 @@
 import { Box, Flex, Text, Image, Divider } from "@chakra-ui/react";
 import { formatDate } from "@/app/utils/DateUtils";
+import Link from "next/link";
 
 function RelatedArticleList({ channelPosts }) {
   return (
@@ -17,9 +18,11 @@ function RelatedArticleList({ channelPosts }) {
           py={3}
         >
           <Flex flexDir="column" justifyContent="space-between">
+          <Link href={`/post/${article.slug}`}>
             <Text fontSize="1.2rem" fontWeight="semibold">
               {article.header}
             </Text>
+            </Link>
             <Text fontSize="sm" color="gray.600">
               {article.section} &bull; {article.subSection} &bull;{" "}
               {formatDate(article.createdAt)} &bull; {article.readingTime} read
