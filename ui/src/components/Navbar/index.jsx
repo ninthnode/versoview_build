@@ -62,7 +62,8 @@ const Navbar = ({ children }) => {
           justifyContent="space-between"
           direction="column"
           bg="#fff"
-          w={IsFullWidthRoutes ? "100%" : "3xl"}
+          w={IsFullWidthRoutes ? "100%" :{ base: "xl",md: "xl", lg: "3xl" }}
+          overflowX='hidden'
           pos='relative'
           minH='100%'
         >
@@ -71,8 +72,6 @@ const Navbar = ({ children }) => {
               <Box
                 w={{
                   base: "100%",
-                  md: IsFullWidthRoutes ? "100%" : "xl",
-                  xl: IsFullWidthRoutes ? "100%" : "3xl",
                 }}
                 px={4}
                 borderRightWidth="2px"

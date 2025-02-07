@@ -34,10 +34,18 @@ const LibraryModal = ({
   const libraryImageProgress = useSelector(
     (s) => s.publish?.libraryImageProgress
   );
+  const [imageSizeError, setImageSizeError] = useState("");
 
   const handleFileSelection = (event) => {
     const file = event.target.files[0];
     if (file) {
+      const maxSize = 5 * 1024 * 1024;
+      console.log(file.size , maxSize);
+      if (file.size > maxSize)
+        setImageSizeError(
+          "File size exceeds the 5MB limit. Select a smaller file."
+        );
+        else setImageSizeError("");
       setSelectedFile(file);
       event.target.value = null;
     }
@@ -100,22 +108,28 @@ const LibraryModal = ({
                     />
                     Selected File: {selectedFile.name}
                   </Text>
-                  <Flex align="center" gap={2}>
-                    <Button
-                      size="md"
-                      colorScheme="teal"
-                      onClick={handleFileUpload}
-                    >
-                      Upload
-                    </Button>
-                    <IconButton
-                      aria-label="Deselect file"
-                      icon={<FaTimes />}
-                      size="sm"
-                      colorScheme="red"
-                      onClick={handleDeselectFile}
-                    />
-                  </Flex>
+                  <Box>
+                    <Flex justify="flex-end" align="center" w={"100%"} gap={2}>
+                      <Button
+                        size="md"
+                        colorScheme="teal"
+                        onClick={handleFileUpload}
+                        isDisabled={imageSizeError===""?false:true}
+                      >
+                        Upload
+                      </Button>
+                      <IconButton
+                        aria-label="Deselect file"
+                        icon={<FaTimes />}
+                        size="sm"
+                        colorScheme="red"
+                        onClick={handleDeselectFile}
+                      />
+                    </Flex>
+                    {imageSizeError===""?false:true && (
+                      <Text color="red.500">{imageSizeError}</Text>
+                    )}
+                  </Box>
                 </Flex>
               ) : (
                 <Flex
@@ -163,22 +177,23 @@ const LibraryModal = ({
 
           {/* Library Images */}
           <Flex wrap="wrap" justifyContent="space-between" gap={4} mt={4}>
-            {libraryImages&&libraryImages.map((image, index) => (
-              <Image
-                key={index}
-                src={image}
-                alt={`Image ${index + 1}`}
-                boxSize="30%" // Ensure three images fit per row
-                objectFit="cover"
-                borderRadius="md"
-                onClick={() => handleLibraryImage(image)}
-                _hover={{
-                  cursor: "pointer",
-                  transform: "scale(1.05)",
-                  transition: "transform 0.2s ease-in-out",
-                }}
-              />
-            ))}
+            {libraryImages &&
+              libraryImages.map((image, index) => (
+                <Image
+                  key={index}
+                  src={image}
+                  alt={`Image ${index + 1}`}
+                  boxSize="30%" // Ensure three images fit per row
+                  objectFit="cover"
+                  borderRadius="md"
+                  onClick={() => handleLibraryImage(image)}
+                  _hover={{
+                    cursor: "pointer",
+                    transform: "scale(1.05)",
+                    transition: "transform 0.2s ease-in-out",
+                  }}
+                />
+              ))}
           </Flex>
         </ModalBody>
       </ModalContent>

@@ -11,23 +11,20 @@ import {
   CardHeader,
   CardBody,
   Avatar,
+  Divider,
 } from "@chakra-ui/react";
-import { IoAddCircle } from "react-icons/io5";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { CiBookmark } from "react-icons/ci";
 import { FaBookmark as BookmarkFilled } from "react-icons/fa6";
 import Link from "next/link";
-const PdfViewer = dynamic(() => import("@/components/publish/PdfViewer"), {
-  ssr: false,
-});
 import { getExcerptHtml, getExcerptText } from "@/app/utils/GetExcerpt";
 import DOMPurify from "dompurify";
 
 const EditionCard = ({ edition, key, channel,submitBookmarkEdition }) => {
-  const { push } = useRouter();
-
+  
   return (
+    <Box mb='4'>
     <Card maxW="2xl" mb={4} boxShadow="none">
       <CardHeader p={1}>
         <Flex
@@ -114,6 +111,8 @@ const EditionCard = ({ edition, key, channel,submitBookmarkEdition }) => {
         </Link>
       </CardBody>
     </Card>
+    <Divider/>
+    </Box>
   );
 };
 

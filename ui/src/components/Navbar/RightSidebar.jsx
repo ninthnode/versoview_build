@@ -27,37 +27,54 @@ function RightSidebar({
     }
   }, [ShowSidebarIf]);
 
+  let lastScrollTop = 0;
+
   useEffect(() => {
-    // Ensure the component is rendered and elements are available
     const sidebar = document.getElementById("sidebar");
     const sidebarContent = document.getElementById("content_wrapper");
     const mainContainer = document.getElementById("main_container");
-    if (!sidebar || !sidebarContent) return;
-    
+  
+    if (!sidebar || !sidebarContent || !mainContainer) return;
+  
+    // Enable smooth scrolling
+    sidebarContent.style.transition = "transform 0.3s ease-out";
+  
+    let offset = 0; // Keeps track of sidebar movement
+  
     const handleScroll = () => {
       const scrollTop = window.scrollY;
       const viewportH = window.innerHeight;
       const contentH = sidebarContent.getBoundingClientRect().height;
       const mainContainerH = mainContainer.getBoundingClientRect().height;
       const sidebarTop = sidebar.getBoundingClientRect().top + window.scrollY;
-      if(contentH<mainContainerH)
-      if (scrollTop >= contentH - viewportH) {
-        sidebarContent.style.transform = `translateY(-${
-          contentH - viewportH + sidebarTop
-        }px)`;
+  
+      if (contentH < mainContainerH) {
+        if (scrollTop > lastScrollTop) {
+          // Scrolling Down: Move sidebar content up
+          offset = Math.max(
+            -(contentH - viewportH + sidebarTop),
+            offset - (scrollTop - lastScrollTop)
+          );
+        } else {
+          // Scrolling Up: Move sidebar content down smoothly
+          offset = Math.min(0, offset + (lastScrollTop - scrollTop));
+        }
+  
+        sidebarContent.style.transform = `translateY(${offset}px)`;
         sidebarContent.style.position = "fixed";
-      } else {
-        sidebarContent.style.transform = "";
-        sidebarContent.style.position = "relative";
       }
+  
+      lastScrollTop = scrollTop;
     };
-
+  
     window.addEventListener("scroll", handleScroll);
-
+  
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
   }, []);
+  
+  
   return (
     ShowSidebarIf && (
       <Box id="content_wrapper" maxW="md" minW="md">

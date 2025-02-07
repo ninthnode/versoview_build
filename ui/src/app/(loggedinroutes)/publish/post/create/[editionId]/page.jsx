@@ -38,7 +38,6 @@ const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), {
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
 import "../../pdf.css";
-import { set } from "valibot";
 const PublishPdfPost = ({ params }) => {
   const dispatch = useDispatch();
   const deviceType = useDeviceType();
@@ -67,11 +66,8 @@ const PublishPdfPost = ({ params }) => {
   const [pdfPages, setPdfPages] = useState([]);
   const [numPages, setNumPages] = useState(null);
 
-  const [pdfLoading, setPdfLoading] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(true);
 
-  const [loadingStates, setLoadingStates] = useState(
-    Array(pdfPages.length).fill(true)
-  );
   const handleCropComplete = (croppedImageUrl) => {
     setCroppedImage(croppedImageUrl);
   };
@@ -132,7 +128,6 @@ const PublishPdfPost = ({ params }) => {
     return () => {
       setUploadedImage(null);
       setPdfPages([]);
-      setLoadingStates([]);
       dispatch(cleanEdition());
     };
   }, []);
@@ -169,28 +164,31 @@ const PublishPdfPost = ({ params }) => {
       img.onload = () => {
         const targetWidth = 360;
         const targetHeight = 205;
-  
+
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d");
-  
+
         canvas.width = targetWidth;
         canvas.height = targetHeight;
-  
+
         // Fill background with white
         ctx.fillStyle = "white";
         ctx.fillRect(0, 0, targetWidth, targetHeight);
-  
+
         // Calculate aspect ratio to fit within canvas
-        let scale = Math.min(targetWidth / img.width, targetHeight / img.height);
+        let scale = Math.min(
+          targetWidth / img.width,
+          targetHeight / img.height
+        );
         let newWidth = img.width * scale;
         let newHeight = img.height * scale;
-  
+
         let xOffset = (targetWidth - newWidth) / 2;
         let yOffset = (targetHeight - newHeight) / 2;
-  
+
         // Draw image on canvas
         ctx.drawImage(img, xOffset, yOffset, newWidth, newHeight);
-  
+
         // Convert canvas to data URL
         resolve(canvas.toDataURL("image/png"));
       };
@@ -317,20 +315,21 @@ const PublishPdfPost = ({ params }) => {
     if (
       e.target.scrollHeight - e.target.scrollTop < e.target.clientHeight + 1 &&
       !pdfLoading
+      &&pdfPages.length<editionDetails.pdfUrls.length
     ) {
-      setPageStart((prev) => prev + 1);
-      setPdfLoading(true);
+      loadNextPdf()
     }
   };
   const onLoadSuccess = (pdf, index) => {
-    setPdfLoading(false);
-    setLoadingStates((prevStates) => {
-      const updatedStates = [...prevStates];
-      updatedStates[index] = false;
-      return updatedStates;
-    });
     setNumPages(pdf.numPages);
+    setPdfLoading(false);
+    if(pdfPages.length<editionDetails.pdfUrls.length)
+    loadNextPdf()
   };
+  const loadNextPdf=()=>{
+    setPageStart((prev) => prev + 1);
+    setPdfLoading(true);
+  }
   return (
     <Box mb={"60px"}>
       <Flex py={5} gap="4">
@@ -355,24 +354,24 @@ const PublishPdfPost = ({ params }) => {
                 {pdfPages &&
                   pdfPages.map((pdf, index) => (
                     <div key={`pdf_${index}`}>
-                      {loadingStates[index] ? (
-                        <Spinner size="xl" /> // Spinner shown while loading
-                      ) : (
-                        <Document
-                          file={pdf}
-                          onLoadSuccess={(pdf) => onLoadSuccess(pdf, index)}
-                          renderMode={"svg"}
-                        >
-                          {Array.from(new Array(numPages), (el, pageIndex) => (
-                            <Page
-                              pageNumber={pageIndex + 1}
-                              key={`page_${pageIndex + 1}`}
-                            />
-                          ))}
-                        </Document>
-                      )}
+                      <Document
+                        file={pdf}
+                        onLoadSuccess={(pdf) => onLoadSuccess(pdf, index)}
+                        renderMode={"svg"}
+                      >
+                        {Array.from(new Array(numPages), (el, pageIndex) => (
+                          <Page
+                            pageNumber={pageIndex + 1}
+                            key={`page_${pageIndex + 1}`}
+                          />
+                        ))}
+                      </Document>
                     </div>
                   ))}
+                      {pdfLoading&& <Flex w='100%' justifyContent='center' h='100px'>
+                        <Spinner size="md" />
+                      </Flex>
+                      }
               </div>
             </Flex>
           </Box>

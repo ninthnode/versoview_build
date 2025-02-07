@@ -323,7 +323,7 @@ const Comment = ({
                   showReply={showReply}
                   comment={reply}
                   {...reply}
-                  userId={userId}
+                  userId={reply.userId}
                   upvoteComment={upvoteComment}
                   downvoteComment={downvoteComment}
                   submitBookmark={submitBookmark}

@@ -205,7 +205,7 @@ module.exports.getAllPost = asyncHandler(async (req, res) => {
     }).populate("channelId").populate("editionId");
 
     let combinedPosts = [
-      ...postDataGenre,
+      // ...postDataGenre,
       ...userPosts,
       ...postFollowedchannel,
     ];
@@ -1688,7 +1688,6 @@ module.exports.getUserComments = asyncHandler(async (req, res) => {
       })
       .sort({ createdAt: -1 })
       .exec();
-
     // Collect all replies across all comments and add the parent comment reference
     const allReplies = comments.flatMap((comment) =>
       comment.replies.map((reply) => ({

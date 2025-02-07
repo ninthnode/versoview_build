@@ -241,7 +241,6 @@ function SinglePost({
                 </Flex>
 
                 <Box>
-                {console.log(postState.post.editionId)}
                   {postState&&postState.post.editionId?.pdfUrls?.length>0 && (
                     <PdfFlipBookModal
                      title={

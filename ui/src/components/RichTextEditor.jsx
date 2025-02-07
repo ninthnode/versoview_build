@@ -1,5 +1,5 @@
 import React, { useRef, forwardRef, useMemo, useEffect } from "react";
-import JoditEditor from "jodit-react";
+import JoditEditor,{Jodit} from "jodit-react";
 import LibraryModal from "@/components/publish/LibraryModal";
 import { useDisclosure } from "@chakra-ui/react";
 
@@ -122,25 +122,24 @@ const RichTextEditor = forwardRef(
         askBeforePasteHTML: false,
         processPasteHTML: true,
         defaultActionOnPaste: "insert_only_text",
+        nl2brInPlainText: false,
         events: {
           click: saveCursorPosition,
           keyup: saveCursorPosition,
           focus: restoreCursorPosition,
-          processPaste: function (event) {
-            event.preventDefault(); // Prevent default HTML pasting
-          
-            const text = event.clipboardData.getData("text/plain"); // Get plain text
-            const editorInstance = editorRef.current?.editor;
-          
-            try {
-              // Try inserting text using Jodit's built-in method
-              if (editorInstance) {
-                editorInstance.s.insertHTML(text);
-              }
-            } catch (error) {
-              console.error("Jodit paste error:", error);
-            }
+          beforeInit: (jodit) => {
+            jodit.events.on("paste", (e) => {
+              e.preventDefault();
+              const transferredData = Jodit.modules.Helpers.getDataTransfer(e);
+              if (!transferredData) return;
+      
+              const textAsPlain = transferredData.getData(Jodit.constants.TEXT_PLAIN);
+      const singleLineText = textAsPlain.replace(/\n/g, ' '); // Replace newlines with spaces
+                jodit.e.stopPropagation("paste");
+                jodit.s.insertHTML(singleLineText)
+            });
           },
+      
           
           
         },
