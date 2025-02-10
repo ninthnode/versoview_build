@@ -17,6 +17,7 @@ module.exports.createEdition = asyncHandler(async (req, res) => {
       libraryImages: data.libraryImages,
       genre: data.genre,
       subGenre: data.subGenre,
+      size: data.size,
     };
     const newEdition = new Edition(editionData);
     await newEdition.save();
@@ -34,7 +35,7 @@ module.exports.getAllEdition = asyncHandler(async (req, res) => {
   try {
     const userId = req.user._id;
     const userEditions = await Edition.find({ userId: userId })
-      .populate("postId")
+      .populate("postId").sort({ createdAt: -1 })
       .exec();
 
     res.status(200).json({
@@ -46,6 +47,31 @@ module.exports.getAllEdition = asyncHandler(async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+module.exports.getEditionsSize = asyncHandler(async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const userEditions = await Edition.find({ userId: userId })
+      .populate("postId")
+      .sort({ createdAt: -1 })
+      .exec();
+
+    // Ensure only valid numbers are summed
+    let totalSize = userEditions.reduce((acc, doc) => {
+      const docSize = Number(doc.size) || 0; // Convert to number, default to 0 if invalid
+      return acc + docSize;
+    }, 0);
+
+    totalSize = totalSize.toFixed(2); // Convert to string with 2 decimal places
+    res.status(200).json({
+      message: "Success",
+      data: totalSize,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 
 module.exports.getEditionById = asyncHandler(async (req, res) => {
   try {

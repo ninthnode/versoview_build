@@ -36,8 +36,9 @@ import DemographicForm from "./DemographicForm";
 import { PDFDocument } from "pdf-lib";
 import * as pdfjsLib from "pdfjs-dist";
 pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
-
+import axios from "axios";
 const CreateEdition = () => {
+  const UploadLimit = 500;
   const [pdfImage, setPdfImage] = useState("");
   const [about, setAbout] = useState("");
   const [edition, setEdition] = useState("");
@@ -58,6 +59,8 @@ const CreateEdition = () => {
   );
 
   const [uploadedPdf, setUploadedPdf] = useState(null);
+  const [isExceededLimit, setIsExceededLimit] = useState(false);
+  const [totalPreviousPdfSize, setTotalPreviousPdfSize] = useState(0);
 
   const uploadSteps = useSelector((state) => state.publish.uploadSteps);
   const uploadProgress = useSelector((state) => state.publish.uploadProgress);
@@ -65,28 +68,50 @@ const CreateEdition = () => {
   useEffect(() => {
     if (uploadProgress > 0) {
       setProgress(uploadProgress);
-      if(uploadProgress < 50)setCurrentText("Step 1: Uploading PDF");
-      if(uploadProgress > 50)setCurrentText("Step 2: Uploading Images");
+      if (uploadProgress < 50) setCurrentText("Step 1: Uploading PDF");
+      if (uploadProgress > 50) setCurrentText("Step 2: Uploading Images");
     }
   }, [uploadProgress, uploadSteps]);
   useEffect(() => {
-    if (user) {
-      let tempUserGenres = [];
-      user.genre.forEach((selectedGenre) => {
-        const genreObj = genres.find((g) => g.genre === selectedGenre);
-
-        if (genreObj) {
-          tempUserGenres = [
-            ...tempUserGenres,
-            { genre: selectedGenre, subGenres: genreObj.subGenres },
-          ];
+    const fetchData = async () => {
+      if (user) {
+        let tempUserGenres = [];
+        user.genre.forEach((selectedGenre) => {
+          const genreObj = genres.find((g) => g.genre === selectedGenre);
+  
+          if (genreObj) {
+            tempUserGenres = [
+              ...tempUserGenres,
+              { genre: selectedGenre, subGenres: genreObj.subGenres },
+            ];
+          }
+        });
+  
+        setUserGenres(tempUserGenres);
+        setGenre(user.genre);
+        setChannelName(user.channelName);
+  
+        try {
+          const response = await axios.get(
+            `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/editions/getEditionsSize`,
+            {
+              headers: {
+                authorization: `Bearer ${localStorage
+                  .getItem("token")
+                  .replaceAll('"', "")}`,
+              },
+            }
+          );
+  
+          setTotalPreviousPdfSize( Number(response?.data?.data) || 0);
+        } catch (error) {
+          console.error("Error fetching editions size:", error);
         }
-      });
-      setUserGenres(tempUserGenres);
-      setGenre(user.genre);
-      setChannelName(user.channelName);
-    }
-  }, [user]);
+      }
+    };
+  
+    fetchData();
+  }, [user]); 
   const handlePdfSelect = (event) => {
     const file = event.target.files[0];
     if (file && file.type === "application/pdf") {
@@ -132,19 +157,31 @@ const CreateEdition = () => {
     if (pdfImage) {
       const defaultFileName = `pdf-${Date.now()}.pdf`;
       const fileName = defaultFileName;
-
+      let totalSize = 0;
       let file = await blobToFile(pdfImage, fileName);
       const chunks = await dividePdfFileIntoChunks(file, 10);
 
       const chunkPdfFiles = await Promise.all(
         chunks.map(async ({ chunk, startPage, endPage }, index) => {
-          const fileName = `${startPage}-to-${endPage}` + Date.now() + ".pdf";
+          const fileName = `${startPage}-to-${endPage}-${Date.now()}.pdf`;
           const blob = new Blob([chunk], { type: "application/pdf" });
           const blobFile = await blobToFile(blob, fileName);
+
+          totalSize += blobFile.size; // Add each chunk size
+
           return blobFile;
         })
       );
-
+      const totalSizeInMB = (totalSize / (1024 * 1024)).toFixed(2);
+      console.log(totalPreviousPdfSize)
+      if (
+        Number(totalSizeInMB) + totalPreviousPdfSize >=
+        UploadLimit
+      ) {
+        setIsExceededLimit(true);
+        onClose();
+        return;
+      }
       let data = { about, edition, date, genre, subGenre };
       setUploadedPdf(file);
 
@@ -261,7 +298,9 @@ const CreateEdition = () => {
           console.error("Error processing PDF:", error);
         }
       }
-      await dispatch(createEdition(chunkPdfFiles, capturedPdfImages, data));
+      await dispatch(
+        createEdition(chunkPdfFiles, capturedPdfImages, data, totalSizeInMB)
+      );
     }
   };
   async function extractPagesFromFile(pdfFile, startPage, endPage) {
@@ -301,19 +340,6 @@ const CreateEdition = () => {
     const pdfBytes = await newPdfDoc.save();
     return pdfBytes;
   }
-  // async function extractPagesFromFile(pdfFile, startPage, endPage) {
-  //   const pdfBuffer = await pdfFile.arrayBuffer();
-  //   const pdfDoc = await PDFDocument.load(pdfBuffer);
-  //   const newPdfDoc = await PDFDocument.create();
-
-  //   for (let i = startPage - 1; i < endPage; i++) {
-  //     const [copiedPage] = await newPdfDoc.copyPages(pdfDoc, [i]);
-  //     newPdfDoc.addPage(copiedPage);
-  //   }
-
-  //   const newPdfBytes = await newPdfDoc.save();
-  //   return newPdfBytes;
-  // }
 
   async function dividePdfFileIntoChunks(pdfFile, chunkSize = 10) {
     let pdfBuffer;
@@ -377,9 +403,14 @@ const CreateEdition = () => {
         </Flex>
       </Flex>
       <SimpleGrid columns={{ base: 1, md: 3 }} gap="4">
-        <Modal size="lg" isOpen={isOpen} onClose={onClose} isCentered
-         closeOnOverlayClick={false} // Disable closing on overlay click
-         closeOnEsc={false}>
+        <Modal
+          size="lg"
+          isOpen={isOpen}
+          onClose={onClose}
+          isCentered
+          closeOnOverlayClick={false} // Disable closing on overlay click
+          closeOnEsc={false}
+        >
           <ModalOverlay />
           <ModalContent>
             <ModalHeader size="md" mt="4">
@@ -398,7 +429,7 @@ const CreateEdition = () => {
                   mb={4}
                   isIndeterminate={uploadProgress === 0}
                 />
-                  <Text mt="4" fontSize="sm" fontWeight="bold">
+                <Text mt="4" fontSize="sm" fontWeight="bold">
                   Please do not close or reload the page.
                 </Text>
               </Box>
@@ -557,7 +588,6 @@ const CreateEdition = () => {
               EDITION DETAILS
             </Text>
           </Box>
-
           <Box mt="4">
             <FormControl>
               <FormLabel
@@ -593,12 +623,19 @@ const CreateEdition = () => {
               />
             </FormControl>
           </Box>
+          {isExceededLimit && (
+            <Text color="red" fontSize="md">
+              You have exceeded the maximum file size of {UploadLimit}MB. Please Upgrade
+              your plan, or delete existing editions.
+            </Text>
+          )}{" "}
           <Button
             mt="8"
             w="full"
             fontSize="md"
             colorScheme="red"
             onClick={handleSave}
+            isDisabled={isExceededLimit}
           >
             Save
           </Button>

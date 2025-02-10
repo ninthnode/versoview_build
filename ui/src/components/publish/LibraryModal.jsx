@@ -14,6 +14,7 @@ import {
   Button,
   Text,
   IconButton,
+  Skeleton
 } from "@chakra-ui/react";
 import { FaUpload, FaTimes } from "react-icons/fa";
 import { FiImage } from "react-icons/fi";
@@ -36,16 +37,18 @@ const LibraryModal = ({
   );
   const [imageSizeError, setImageSizeError] = useState("");
 
+  // State to track loading of images
+  const [imageLoaded, setImageLoaded] = useState({});
+
   const handleFileSelection = (event) => {
     const file = event.target.files[0];
     if (file) {
       const maxSize = 5 * 1024 * 1024;
-      console.log(file.size , maxSize);
       if (file.size > maxSize)
         setImageSizeError(
           "File size exceeds the 5MB limit. Select a smaller file."
         );
-        else setImageSizeError("");
+      else setImageSizeError("");
       setSelectedFile(file);
       event.target.value = null;
     }
@@ -114,7 +117,7 @@ const LibraryModal = ({
                         size="md"
                         colorScheme="teal"
                         onClick={handleFileUpload}
-                        isDisabled={imageSizeError===""?false:true}
+                        isDisabled={imageSizeError === "" ? false : true}
                       >
                         Upload
                       </Button>
@@ -126,7 +129,7 @@ const LibraryModal = ({
                         onClick={handleDeselectFile}
                       />
                     </Flex>
-                    {imageSizeError===""?false:true && (
+                    {imageSizeError === "" ? false : true && (
                       <Text color="red.500">{imageSizeError}</Text>
                     )}
                   </Box>
@@ -175,24 +178,35 @@ const LibraryModal = ({
             </Box>
           </Box>
 
-          {/* Library Images */}
+          {/* Library Images with Shimmer Effect */}
           <Flex wrap="wrap" justifyContent="space-between" gap={4} mt={4}>
             {libraryImages &&
               libraryImages.map((image, index) => (
-                <Image
-                  key={index}
-                  src={image}
-                  alt={`Image ${index + 1}`}
-                  boxSize="30%" // Ensure three images fit per row
-                  objectFit="cover"
-                  borderRadius="md"
-                  onClick={() => handleLibraryImage(image)}
-                  _hover={{
-                    cursor: "pointer",
-                    transform: "scale(1.05)",
-                    transition: "transform 0.2s ease-in-out",
-                  }}
-                />
+                <Box key={index} boxSize="30%" position="relative">
+                  {/* Show Skeleton (Shimmer) until the image loads */}
+                  <Skeleton
+                    isLoaded={!!imageLoaded[image]}
+                    boxSize="100%"
+                    borderRadius="md"
+                  >
+                    <Image
+                      src={image}
+                      alt={`Image ${index + 1}`}
+                      boxSize="100%"
+                      objectFit="cover"
+                      borderRadius="md"
+                      onLoad={() =>
+                        setImageLoaded((prev) => ({ ...prev, [image]: true }))
+                      }
+                      onClick={() => handleLibraryImage(image)}
+                      _hover={{
+                        cursor: "pointer",
+                        transform: "scale(1.05)",
+                        transition: "transform 0.2s ease-in-out",
+                      }}
+                    />
+                  </Skeleton>
+                </Box>
               ))}
           </Flex>
         </ModalBody>

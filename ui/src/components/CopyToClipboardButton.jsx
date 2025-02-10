@@ -18,7 +18,7 @@ const CopyToClipboardButton = ({textToCopy}) => {
     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
       <Tooltip label={isCopied ? 'Copied!' : 'Copy to clipboard'} hasArrow>
         <Button onClick={handleCopy} w='100%' variant="nostyle">
-          {isCopied ? 'Copied' : 'Copy'}
+          {isCopied ? 'Link Copied' : 'Copy Link'}
         </Button>
       </Tooltip>
     </div>

@@ -67,7 +67,7 @@ const Navbar = ({ children }) => {
           pos='relative'
           minH='100%'
         >
-          <Box w="100%" minH={'100vh'}>
+          <Box w="100%" minH={'100vh'} mb='100px'>
             <Box>
               <Box
                 w={{

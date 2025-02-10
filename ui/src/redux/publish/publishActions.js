@@ -100,7 +100,7 @@ import {
     return fileUrls;
   }
   
-  export const createEdition = (chunkPdfFiles, capturedPdfImages, editionData) => async (dispatch) => {
+  export const createEdition = (chunkPdfFiles, capturedPdfImages, editionData,totalSizeInMB) => async (dispatch) => {
     try {
       dispatch({ type: CREATE_EDITION_REQUEST });
   
@@ -133,6 +133,9 @@ import {
       // Process Image files (50% weight)
       const processedImages = await processFiles(capturedPdfImages, setImageProgress, "images");
       editionData.libraryImages = processedImages;
+
+      
+      editionData.size = totalSizeInMB;
   
       // Send final edition data
       const response = await axios.post(

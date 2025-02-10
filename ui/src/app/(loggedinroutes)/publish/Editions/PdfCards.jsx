@@ -20,9 +20,6 @@ import { useRouter } from "next/navigation";
 import { connect } from "react-redux";
 import { getAllEditions } from "@/redux/publish/publishActions";
 import dynamic from "next/dynamic";
-const PdfViewer = dynamic(() => import("@/components/publish/PdfViewer"), {
-  ssr: false,
-});
 import useConfirmationDialog from "@/components/useConfirmationDialog";
 import Link from "next/link";
 import { FaEdit } from "react-icons/fa";
