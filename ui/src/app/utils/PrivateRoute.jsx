@@ -6,7 +6,8 @@ import { useRouter, usePathname } from "next/navigation";
 import { ProtectedRoutes, AuthRoutes, RoutesList,PublicRoutes } from "@/routes/index";
 import Loader from "@/components/Loader";
 import { setPostEdit } from "@/redux/posts/postActions";
-
+import {Image,Flex, Heading} from '@chakra-ui/react'
+import Head from "next/head";
 const PrivateRoute = ({ children }) => {
   const [userVerified, setUserVerified] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -64,7 +65,11 @@ const PrivateRoute = ({ children }) => {
     return userVerified&&!loading ? (
       children
     ) : (
-      <Loader messages={null} showtext={false} />
+      //  <Loader messages={null} showtext={false} />
+      <Flex h="100vh" justifyContent="center" alignItems="center" bg='#0D1627' flexDir="column">
+      <Image src={"/assets/loader.png"} alt="preloaderLogo" height='80px' width='100px'/>
+      <Heading size='md' color='#e5e5e5' mt='2'>VersoView</Heading>
+      </Flex>
     );
   };
 

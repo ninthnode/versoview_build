@@ -51,15 +51,15 @@ const Comment = ({
       </Box>
  
 
-      <Box maxW="2xl" p={4} position="relative" bg="#fff" mt="0">
+      <Box p={2} position="relative" bg="#fff" mt="0">
         <div
           onClick={()=>handleClick(singleComment)}
         >
           <Link href={`post/${postId.slug}`}>
             <HStack spacing={4} alignItems="flex-start">
-              <Avatar name={singleComment.userId.username} />
+              <Avatar name={singleComment.userId.channelName} src={singleComment.userId.profileImageUrl} />
               <VStack align="start" spacing={1}>
-                <Text fontWeight="bold">{singleComment.userId.username}</Text>
+                <Text fontWeight="bold" fontSize="md">{singleComment.userId.channelName}</Text>
                 <Text fontSize="sm" color="gray.500">
                   {singleComment.createdAt}
                 </Text>
@@ -81,7 +81,7 @@ const Comment = ({
             variant="ghost"
             color={!isBookmarked ? "gray" : "green.500"}
             aria-label="See menu"
-            fontSize="20px"
+            fontSize="lg"
             icon={!isBookmarked ? <CiBookmark /> : <BookmarkFilled />}
             onClick={() => submitBookmark("comment", id)}
           />
