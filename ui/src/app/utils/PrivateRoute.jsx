@@ -7,9 +7,9 @@ import { ProtectedRoutes, AuthRoutes, RoutesList,PublicRoutes } from "@/routes/i
 import Loader from "@/components/Loader";
 import { setPostEdit } from "@/redux/posts/postActions";
 import {Image,Flex, Heading} from '@chakra-ui/react'
-import Head from "next/head";
 const PrivateRoute = ({ children }) => {
   const [userVerified, setUserVerified] = useState(false);
+  const [userRedirecting, setUserRedirecting] = useState(false);
   const [loading, setLoading] = useState(true);
   const stateUser = useSelector((state) => state.auth.user?.user);
   const dispatch = useDispatch();
@@ -35,6 +35,7 @@ const PrivateRoute = ({ children }) => {
             !ProtectedRoutes.find((route) => path.startsWith(route.url))
           ) {
             router.push("/home");
+            setUserRedirecting(true);
           }
         } else {
           if (
@@ -57,20 +58,28 @@ const PrivateRoute = ({ children }) => {
 
 
   const verifyExeceptionRoutes = ["/home", "/channel"];
+
   const RenderScreen = () => {
+    const [delay, setDelay] = useState(true);
+    useEffect(() => {
+    const timer = setTimeout(() => {
+      setDelay(false);
+    }, 3000); // Adjust timeout as needed
+
+    return () => clearTimeout(timer); // Cleanup timeout on unmount
+  }, []);
     if (verifyExeceptionRoutes.find((route) => path.startsWith(route))) {
       return children;
     }
-    
-    return userVerified&&!loading ? (
-      children
-    ) : (
-      //  <Loader messages={null} showtext={false} />
-      <Flex h="100vh" justifyContent="center" alignItems="center" bg='#0D1627' flexDir="column">
-      <Image src={"/assets/loader.png"} alt="preloaderLogo" height='80px' width='100px'/>
-      <Heading size='md' color='#e5e5e5' mt='2'>VersoView</Heading>
-      </Flex>
-    );
+
+      return userVerified&&!loading&&!userRedirecting &&!delay ? (
+        children
+      ) : (
+        <Flex h="100vh" justifyContent="center" alignItems="center" bg='#0D1627' flexDir="column">
+        <Image src={"/assets/loader.png"} alt="preloaderLogo" height='80px' width='100px'/>
+        <Heading size='md' color='#e5e5e5' mt='2'>VersoView</Heading>
+        </Flex>
+      );
   };
 
   return (

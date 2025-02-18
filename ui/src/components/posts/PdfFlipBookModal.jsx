@@ -74,10 +74,10 @@ const PdfFlipBookModal = ({ pdfFiles, title }) => {
                 </Flex>
               ) : pages.length > 0 ? (
                 <HTMLFlipBook
-                  maxWidth={372}
+                  maxWidth={400}
                   maxHeight={500}
                   height={500}
-                  width={372}
+                  width={400}
                   size={deviceType != "phone"?"stretch":'fixed'}
                   enableBackground={true}
                   pageBackground="#333"

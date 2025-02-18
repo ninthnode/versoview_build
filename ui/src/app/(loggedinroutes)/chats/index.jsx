@@ -8,7 +8,7 @@ import {
   updateCommentDownvote,
 } from "@/redux/comments/commentAction";
 import { addRemoveBookmarks } from "@/redux/bookmarks/bookmarkAction";
-
+import Link from "next/link";
 function Chats({ user }) {
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -21,30 +21,29 @@ function Chats({ user }) {
     const token = localStorage.getItem("token")?.replaceAll('"', "");
     async function fetchComments() {
       try {
-        if(user){
-
+        if (user) {
           const response = await fetch(
             `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/getUserComments`,
             {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
 
-        if (!response.ok) {
-          throw new Error("Error fetching comments");
+          if (!response.ok) {
+            throw new Error("Error fetching comments");
+          }
+          const data = await response.json();
+          setComments(data);
         }
-        const data = await response.json();
-        setComments(data);
-      }
         setLoading(false);
       } catch (error) {
         console.error("Error:", error);
       } finally {
       }
     }
-   fetchComments();
+    fetchComments();
   }, [commentStateUpdateCount]);
 
   const upvoteComment = async (changeCommentId) => {
@@ -64,23 +63,25 @@ function Chats({ user }) {
   if (!loading && user === undefined) {
     return (
       <Box
-      minHeight="500px"
-      maxH="500px"
-      mt="2"
-      border={"1px solid"}
-      borderColor="gray.200"
-      overflowX="none"
-    >
-      <Box height="500px">
-      <Box
-        height={"80%"}
-        display={"flex"}
-        justifyContent={"center"}
-        alignItems={"center"}
+        minHeight="500px"
+        maxH="500px"
+        mt="2"
+        border={"1px solid"}
+        borderColor="gray.200"
+        overflowX="none"
       >
-        <p>Login to view comments</p>
-      </Box>
-      </Box>
+        <Box height="500px">
+          <Box
+            height={"80%"}
+            display={"flex"}
+            justifyContent={"center"}
+            alignItems={"center"}
+          >
+            <p>
+              <Link href="/login"><span style={{color:'blue'}}>Login</span></Link> to view comments
+            </p>
+          </Box>
+        </Box>
       </Box>
     );
   }
@@ -105,7 +106,7 @@ function Chats({ user }) {
             <Spinner />
           </Box>
         )}
-      
+
         {!loading && comments.length === 0 ? (
           <Box
             height={"50%"}

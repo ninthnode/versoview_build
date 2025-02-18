@@ -216,7 +216,7 @@ const PostCard = ({
           </Link>
           <Text
             fontSize="md"
-            textAlign="justify"
+            textAlign="left"
             dangerouslySetInnerHTML={{
               __html: getExcerptHtml(
                 DOMPurify.sanitize(post.bodyRichText),

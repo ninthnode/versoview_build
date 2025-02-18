@@ -173,7 +173,8 @@ const CreateEdition = () => {
         })
       );
       const totalSizeInMB = (totalSize / (1024 * 1024)).toFixed(2);
-      console.log(totalPreviousPdfSize)
+
+      console.log( Number(totalSizeInMB) ,totalPreviousPdfSize)
       if (
         Number(totalSizeInMB) + totalPreviousPdfSize >=
         UploadLimit
@@ -368,7 +369,9 @@ const CreateEdition = () => {
       const chunk = await extractPagesFromFile(pdfFile, startPage, endPage);
 
       // Push the chunk details
-      files.push({ chunk, startPage, endPage });
+      if (chunk) {
+        files.push({ chunk, startPage, endPage });
+      }
     }
 
     return files;

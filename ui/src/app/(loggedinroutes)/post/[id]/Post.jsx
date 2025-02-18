@@ -349,15 +349,17 @@ function SinglePost({
                 >
                   {postState.post.header}
                 </Heading>
-                <Text
-                  pb="2"
-                  mb="1"
-                  fontWeight="semibold"
-                  fontSize="1.2rem"
-                  lineHeight="2rem"
-                >
-                  {postState.post.standFirst}
-                </Text>
+                 {postState.post.standFirst && (
+                    <Heading
+                      py="1"
+                      mb="1"
+                      fontWeight="bold"
+                      fontSize="1.4rem"
+                      lineHeight="1.5rem"
+                    >
+                      {postState.post.standFirst}
+                    </Heading>
+                  )}
                 <Text
                   fontSize="md"
                   textAlign="left"

@@ -162,8 +162,8 @@ const PublishPdfPost = ({ params }) => {
     return new Promise((resolve) => {
       const img = new Image();
       img.onload = () => {
-        const targetWidth = 360;
-        const targetHeight = 205;
+        const targetWidth = 720;
+        const targetHeight = 410;
 
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d");
