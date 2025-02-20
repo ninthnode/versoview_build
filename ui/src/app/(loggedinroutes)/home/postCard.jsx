@@ -153,7 +153,7 @@ const PostCard = ({
                   }}
                   style={{ cursor: "pointer" }}
                 >
-                  <Link href={`post/${post.slug}`}>
+                  <Link href={`/post/${post.slug}`}>
                     <Flex alignItems="center" mx="2" flexShrink={0}>
                       <Image
                         src="/assets/chat-icon.png"

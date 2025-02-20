@@ -64,7 +64,7 @@ const PublishPdfPost = ({ params }) => {
   const [pageStart, setPageStart] = useState(0);
 
   const [pdfPages, setPdfPages] = useState([]);
-  const [numPages, setNumPages] = useState(null);
+  const [numPages, setNumPages] = useState({});
 
   const [pdfLoading, setPdfLoading] = useState(true);
 
@@ -162,8 +162,8 @@ const PublishPdfPost = ({ params }) => {
     return new Promise((resolve) => {
       const img = new Image();
       img.onload = () => {
-        const targetWidth = 720;
-        const targetHeight = 410;
+        const targetWidth = 1440;
+        const targetHeight = 820;
 
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d");
@@ -314,22 +314,21 @@ const PublishPdfPost = ({ params }) => {
   const handleScroll = (e) => {
     if (
       e.target.scrollHeight - e.target.scrollTop < e.target.clientHeight + 1 &&
-      !pdfLoading
-      &&pdfPages.length<editionDetails.pdfUrls.length
+      !pdfLoading &&
+      pdfPages.length < editionDetails.pdfUrls.length
     ) {
-      loadNextPdf()
+      loadNextPdf();
     }
   };
   const onLoadSuccess = (pdf, index) => {
-    setNumPages(pdf.numPages);
+    setNumPages((prev) => ({ ...prev, [index]: pdf.numPages }));
     setPdfLoading(false);
-    if(pdfPages.length<editionDetails.pdfUrls.length)
-    loadNextPdf()
+    if (pdfPages.length < editionDetails.pdfUrls.length) loadNextPdf();
   };
-  const loadNextPdf=()=>{
+  const loadNextPdf = () => {
     setPageStart((prev) => prev + 1);
     setPdfLoading(true);
-  }
+  };
   return (
     <Box mb={"60px"}>
       <Flex py={5} gap="4">
@@ -359,19 +358,23 @@ const PublishPdfPost = ({ params }) => {
                         onLoadSuccess={(pdf) => onLoadSuccess(pdf, index)}
                         renderMode={"svg"}
                       >
-                        {Array.from(new Array(numPages), (el, pageIndex) => (
-                          <Page
-                            pageNumber={pageIndex + 1}
-                            key={`page_${pageIndex + 1}`}
-                          />
-                        ))}
+                        {Array.from(
+                          new Array(numPages[index] || 0),
+                          (_, pageIndex) => (
+                            <Page
+                              pageNumber={pageIndex + 1}
+                              key={`page_${pageIndex + 1}`}
+                            />
+                          )
+                        )}
                       </Document>
                     </div>
                   ))}
-                      {pdfLoading&& <Flex w='100%' justifyContent='center' h='100px'>
-                        <Spinner size="md" />
-                      </Flex>
-                      }
+                {pdfLoading && (
+                  <Flex w="100%" justifyContent="center" h="100px">
+                    <Spinner size="md" />
+                  </Flex>
+                )}
               </div>
             </Flex>
           </Box>

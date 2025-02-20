@@ -10,6 +10,7 @@ import {Image,Flex, Heading} from '@chakra-ui/react'
 const PrivateRoute = ({ children }) => {
   const [userVerified, setUserVerified] = useState(false);
   const [userRedirecting, setUserRedirecting] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
   const [loading, setLoading] = useState(true);
   const stateUser = useSelector((state) => state.auth.user?.user);
   const dispatch = useDispatch();
@@ -63,7 +64,9 @@ const PrivateRoute = ({ children }) => {
     const [delay, setDelay] = useState(true);
     useEffect(() => {
     const timer = setTimeout(() => {
+      setShowSplash(false)
       setDelay(false);
+    
     }, 3000); // Adjust timeout as needed
 
     return () => clearTimeout(timer); // Cleanup timeout on unmount
@@ -75,11 +78,13 @@ const PrivateRoute = ({ children }) => {
       return userVerified&&!loading&&!userRedirecting &&!delay ? (
         children
       ) : (
+        showSplash?
         <Flex h="100vh" justifyContent="center" alignItems="center" bg='#0D1627' flexDir="column">
         <Image src={"/assets/loader.png"} alt="preloaderLogo" height='80px' width='100px'/>
         <Heading size='md' color='#e5e5e5' mt='2'>VersoView</Heading>
-        </Flex>
-      );
+        </Flex>:
+       <Loader messages={null} showtext={false} />
+    );
   };
 
   return (
