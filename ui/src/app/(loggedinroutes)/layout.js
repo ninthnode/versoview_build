@@ -1,5 +1,6 @@
 
 import Navbar from "@/components/Navbar";
+import PrivateRoute from "../utils/PrivateRoute";
 
 export default function DashboardLayout({ children }) {
   if (!Promise.withResolvers) {
@@ -15,7 +16,9 @@ export default function DashboardLayout({ children }) {
   return (
     <>
     <Navbar>
+    <PrivateRoute>
       {children}
+      </PrivateRoute>
     </Navbar>
     <div id="dialog-root"></div>
     </>

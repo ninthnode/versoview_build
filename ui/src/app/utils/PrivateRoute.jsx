@@ -79,10 +79,11 @@ const PrivateRoute = ({ children }) => {
         children
       ) : (
         showSplash?
-        <Flex h="100vh" justifyContent="center" alignItems="center" bg='#0D1627' flexDir="column">
+        <Flex h="100vh" z-index="9999" pos='fixed' top={0} left={0} border={0} right={0} justifyContent="center" alignItems="center" bg='#0D1627' flexDir="column">
         <Image src={"/assets/loader.png"} alt="preloaderLogo" height='80px' width='100px'/>
         <Heading size='md' color='#e5e5e5' mt='2'>VersoView</Heading>
-        </Flex>:
+        </Flex>
+        :
        <Loader messages={null} showtext={false} />
     );
   };

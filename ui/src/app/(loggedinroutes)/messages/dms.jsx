@@ -165,7 +165,7 @@ const Dms = () => {
   };
   useEffect(() => {
     if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
     }
   }, [messages]);
   return (
@@ -269,78 +269,70 @@ const Dms = () => {
             border="1px solid #e5e5e5"
             borderRadius="md"
           >
-            {selectedUser ? (
-              <>
-                <Flex
-                  mt="2"
-                  alignItems="center"
-                  mb={4}
-                  bg={"gray.100"}
-                  rounded="md"
-                  p={2}
+              <Box height="80vh" display="flex" flexDirection="column">
+      {selectedUser ? (
+        <>
+          {/* Chat Header */}
+          <Flex
+            mt="2"
+            alignItems="center"
+            bg="gray.100"
+            rounded="md"
+            p={3}
+          >
+            <Avatar name={selectedUser.username} src={selectedUser.channelIconImageUrl} />
+            <Text ml={2} fontWeight="bold">{selectedUser.username}</Text>
+          </Flex>
+
+          {/* Chat Messages Box */}
+          <Box flex="1" overflowY="auto" maxHeight="70vh" p={3}>
+            <VStack spacing={4} align="stretch">
+              {messages.map((msg) => (
+                <Box
+                  key={msg.id}
+                  alignSelf={msg.senderId === authState.id ? "flex-end" : "flex-start"}
+                  maxWidth="70%"
+                  mr={msg.senderId === authState.id ? 2 : 0}
                 >
-                  <Avatar
-                    name={selectedUser.username}
-                    src={selectedUser.channelIconImageUrl}
-                  />
-                  <Text ml={2} fontWeight="bold">
-                    {selectedUser.username}
+                  <Box
+                    bg={msg.senderId === authState.id ? "blue.500" : "gray.200"}
+                    color={msg.senderId === authState.id ? "white" : "black"}
+                    borderRadius="lg"
+                    p={3}
+                  >
+                    <Text>{msg.message}</Text>
+                  </Box>
+                  <Text fontSize="xs" color="gray.500">
+                    {formatDateTime(msg.timestamp)}
                   </Text>
-                </Flex>
-                <Box flex="1" overflowY="auto">
-                  <VStack spacing={4}>
-                    {messages.map((msg) => (
-                      <Box
-                        key={msg.id}
-                        alignSelf={
-                          msg.senderId === authState.id
-                            ? "flex-end"
-                            : "flex-start"
-                        }
-                        maxWidth="70%"
-                        mr={msg.senderId === authState.id ? 2 : 0}
-                      >
-                        <Box
-                          bg={
-                            msg.senderId === authState.id
-                              ? "blue.500"
-                              : "gray.200"
-                          }
-                          color={
-                            msg.senderId === authState.id ? "white" : "black"
-                          }
-                          borderRadius="lg"
-                          p={3}
-                        >
-                          <Text>{msg.message}</Text>
-                        </Box>
-                        <Text fontSize="xs" color="gray.500">
-                          {formatDateTime(msg.timestamp)}
-                        </Text>
-                      </Box>
-                    ))}
-                  </VStack>
-                    {/* Ref to scroll to the bottom */}
-                    <div ref={messagesEndRef} />
                 </Box>
-                <Divider my={4} />
-                <HStack mb='2'>
-                  <Input
-                    placeholder="Type a message"
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                  />
-                  <Button colorScheme="blue" onClick={handleSendMessage}>
-                    Send
-                  </Button>
-                </HStack>
-              </>
-            ) : (
-              <Text textAlign="center" mt="20">
-                Select a user to start chatting
-              </Text>
-            )}
+              ))}
+            </VStack>
+            {/* Scroll to Bottom Ref */}
+            <div ref={messagesEndRef} />
+          </Box>
+
+          <Divider my={4} />
+
+          {/* Chat Input Field */}
+          <HStack p={3}>
+            <Input
+              placeholder="Type a message..."
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+            />
+            <Button colorScheme="blue" onClick={handleSendMessage}>
+              Send
+            </Button>
+          </HStack>
+        </>
+      ) : (
+        <Text textAlign="center" mt="20">
+          Select a user to start chatting
+        </Text>
+      )}
+    </Box>
           </Box>
         )}
       </HStack>

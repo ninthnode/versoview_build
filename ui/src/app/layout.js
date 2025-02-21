@@ -5,7 +5,6 @@ import "@/styles/fonts.css";
 import { ChakraProvider } from "@chakra-ui/react";
 import customTheme from "@/styles/theme";
 import { Provider } from "react-redux";
-import PrivateRoute from "./utils/PrivateRoute";
 
 import store from "@/redux/store";
 
@@ -22,7 +21,7 @@ export default function RootLayout({ children }) {
         <ChakraProvider theme={customTheme}>
           <Provider store={store}>
             <ToastContainer />
-            <PrivateRoute>{children}</PrivateRoute>
+            {children}
           </Provider>
         </ChakraProvider>
       </body>
