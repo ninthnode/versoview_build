@@ -71,7 +71,7 @@ const PrivateRoute = ({ children }) => {
 
     return () => clearTimeout(timer); // Cleanup timeout on unmount
   }, []);
-    if (verifyExeceptionRoutes.find((route) => path.startsWith(route))) {
+    if (verifyExeceptionRoutes.find((route) => path.startsWith(route)&&!showSplash)) {
       return children;
     }
 

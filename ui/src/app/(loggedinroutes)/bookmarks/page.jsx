@@ -51,7 +51,7 @@ const Comment = ({
       </Box>
  
 
-      <Box p={2} position="relative" bg="#fff" mt="0">
+      <Box p={2} py={4} position="relative" bg="#fff" mt="0">
         <div
           onClick={()=>handleClick(singleComment)}
         >
@@ -76,7 +76,7 @@ const Comment = ({
             </HStack>
           </Link>
         </div>
-        <Box position="absolute" top="0" right="0">
+        <Box pt={3} position="absolute" top="0" right="0">
           <IconButton
             variant="ghost"
             color={!isBookmarked ? "gray" : "green.500"}

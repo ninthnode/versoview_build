@@ -120,7 +120,7 @@ const PostCard = ({
               border="1px solid lightgray"
               borderRadius="md"
               objectFit="cover"
-              // h="300px"
+              minH="300px"
               src={post.mainImageURL}
               alt={post.header}
             />
