@@ -4,4 +4,6 @@
 }
 .react-pdf__Page__canvas,.react-pdf__Page__textContent{
  margin: 0 auto !important;
+ width: round(var(1)* 651.969px, 1px);
+    height: round(var(1)* 878.74px, 1px);
 }

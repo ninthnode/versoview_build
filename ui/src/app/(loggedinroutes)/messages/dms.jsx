@@ -9,6 +9,7 @@ import {
   Button,
   Divider,
   Flex,
+  Spinner
 } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
@@ -18,7 +19,7 @@ import axios from "axios";
 import useDeviceType from "@/components/useDeviceType";
 import { useRouter } from "next/navigation";
 import { initializeSocket, disconnectSocket } from "../../utils/socket";
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams } from "next/navigation";
 
 const Dms = () => {
   const [selectedUser, setSelectedUser] = useState(null);
@@ -31,22 +32,23 @@ const Dms = () => {
   const [searching, setSearching] = useState(false);
   const deviceType = useDeviceType();
   const [showChats, setShowChats] = useState(false);
+  const [loading, setLoading] = useState(true);
   const searchParams = useSearchParams();
 
-  const paramsUserId = searchParams.get('id');
+  const paramsUserId = searchParams.get("id");
 
   const router = useRouter();
 
   useEffect(() => {
-    if (authState&&selectedUser) {
+    if (authState && selectedUser) {
       const socket = initializeSocket(authState.id);
 
       socket.on("dm", (data) => {
-        if(selectedUser&&data.senderId === selectedUser._id)
-        setMessages((prev) => [
-          ...prev,
-          { id: Date.now(), message: data.message, senderId: data.sender },
-        ]);
+        if (selectedUser && data.senderId === selectedUser._id)
+          setMessages((prev) => [
+            ...prev,
+            { id: Date.now(), message: data.message, senderId: data.sender },
+          ]);
       });
 
       socket.on("recentChats", setAllUsers);
@@ -55,8 +57,7 @@ const Dms = () => {
         disconnectSocket();
       };
     }
-  }, [authState,selectedUser]);
-
+  }, [authState, selectedUser]);
 
   useEffect(() => {
     const token = localStorage.getItem("token").replaceAll('"', "");
@@ -71,13 +72,17 @@ const Dms = () => {
               },
             }
           );
+          
           setAllUsers(response.data.data);
-          if (!selectedUser&&paramsUserId) {
+          setTimeout(() => {
+            setLoading(false);
+          },1200)
+          if (!selectedUser && paramsUserId) {
             const foundUser = response.data.data.find(
               (user) => user._id === paramsUserId
             );
             setSelectedUser(foundUser);
-            if(!foundUser){
+            if (!foundUser) {
               const response = await axios.get(
                 `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/users/getUser/${paramsUserId}`,
                 {
@@ -103,6 +108,7 @@ const Dms = () => {
           );
           const data = response.data;
           setAllUsers(data);
+          setLoading(false);
         }
       } catch (error) {
         console.error("Error:", error);
@@ -129,6 +135,9 @@ const Dms = () => {
             const data = await response.data;
             setMessages(data);
             deviceType == "phone" && setShowChats(true);
+            setTimeout(() => {
+              setLoading(false);
+            },1200)
           } else {
             console.error("Failed to fetch previous messages");
           }
@@ -139,7 +148,6 @@ const Dms = () => {
     }
     fetchMessages();
   }, [selectedUser]);
-
 
   const handleClick = (user) => {
     user.unreadCount = 0;
@@ -165,7 +173,10 @@ const Dms = () => {
   };
   useEffect(() => {
     if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
+      messagesEndRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "end",
+      });
     }
   }, [messages]);
   return (
@@ -179,14 +190,16 @@ const Dms = () => {
           borderRadius="5"
           onClick={() => {
             setSelectedUser(null);
-            setShowChats(false);
+            setShowChats(false);    setLoading(false);
           }}
         >
           All Users
         </Button>
       )}
       <HStack spacing={0} overflow="hidden" alignItems="flex-start">
-        {!showChats && (
+      {loading &&
+        <Spinner mt='4' size='md'/>}
+        {!loading && !showChats && (
           <Box
             width={deviceType != "phone" ? "30%" : "100%"}
             borderRight="1px solid"
@@ -208,6 +221,7 @@ const Dms = () => {
               />
             </Box>
             <VStack spacing={4} pt="2">
+       
               {!searching ? (
                 <Text textAlign="center" mt="1">
                   Start typing to search...
@@ -269,70 +283,87 @@ const Dms = () => {
             border="1px solid #e5e5e5"
             borderRadius="md"
           >
-              <Box height="80vh" display="flex" flexDirection="column">
-      {selectedUser ? (
-        <>
-          {/* Chat Header */}
-          <Flex
-            mt="2"
-            alignItems="center"
-            bg="gray.100"
-            rounded="md"
-            p={3}
-          >
-            <Avatar name={selectedUser.username} src={selectedUser.channelIconImageUrl} />
-            <Text ml={2} fontWeight="bold">{selectedUser.username}</Text>
-          </Flex>
-
-          {/* Chat Messages Box */}
-          <Box flex="1" overflowY="auto" maxHeight="70vh" p={3}>
-            <VStack spacing={4} align="stretch">
-              {messages.map((msg) => (
-                <Box
-                  key={msg.id}
-                  alignSelf={msg.senderId === authState.id ? "flex-end" : "flex-start"}
-                  maxWidth="70%"
-                  mr={msg.senderId === authState.id ? 2 : 0}
-                >
-                  <Box
-                    bg={msg.senderId === authState.id ? "blue.500" : "gray.200"}
-                    color={msg.senderId === authState.id ? "white" : "black"}
-                    borderRadius="lg"
+            <Box height="80vh" display="flex" flexDirection="column">
+              {selectedUser ? (
+                <>
+                  {/* Chat Header */}
+                  <Flex
+                    mt="2"
+                    alignItems="center"
+                    bg="gray.100"
+                    rounded="md"
                     p={3}
                   >
-                    <Text>{msg.message}</Text>
+                    <Avatar
+                      name={selectedUser.username}
+                      src={selectedUser.channelIconImageUrl}
+                    />
+                    <Text ml={2} fontWeight="bold">
+                      {selectedUser.username}
+                    </Text>
+                  </Flex>
+
+                  {/* Chat Messages Box */}
+                  <Box flex="1" overflowY="auto" maxHeight="70vh" p={3}>
+                    <VStack spacing={4} align="stretch">
+                      {messages.map((msg) => (
+                        <Box
+                          key={msg.id}
+                          alignSelf={
+                            msg.senderId === authState.id
+                              ? "flex-end"
+                              : "flex-start"
+                          }
+                          maxWidth="70%"
+                          mr={msg.senderId === authState.id ? 2 : 0}
+                        >
+                          <Box
+                            bg={
+                              msg.senderId === authState.id
+                                ? "blue.500"
+                                : "gray.200"
+                            }
+                            color={
+                              msg.senderId === authState.id ? "white" : "black"
+                            }
+                            borderRadius="lg"
+                            p={3}
+                          >
+                            <Text>{msg.message}</Text>
+                          </Box>
+                          <Text fontSize="xs" color="gray.500">
+                            {formatDateTime(msg.timestamp)}
+                          </Text>
+                        </Box>
+                      ))}
+                    </VStack>
+                    {/* Scroll to Bottom Ref */}
+                    <div ref={messagesEndRef} />
                   </Box>
-                  <Text fontSize="xs" color="gray.500">
-                    {formatDateTime(msg.timestamp)}
-                  </Text>
-                </Box>
-              ))}
-            </VStack>
-            {/* Scroll to Bottom Ref */}
-            <div ref={messagesEndRef} />
-          </Box>
 
-          <Divider my={4} />
+                  <Divider my={4} />
 
-          {/* Chat Input Field */}
-          <HStack p={3}>
-            <Input
-              placeholder="Type a message..."
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-            />
-            <Button colorScheme="blue" onClick={handleSendMessage}>
-              Send
-            </Button>
-          </HStack>
-        </>
-      ) : (
-        <Text textAlign="center" mt="20">
-          Select a user to start chatting
-        </Text>
-      )}
-    </Box>
+                  {/* Chat Input Field */}
+                  <HStack p={3}>
+                    <Input
+                      placeholder="Type a message..."
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      onKeyPress={(e) =>
+                        e.key === "Enter" && handleSendMessage()
+                      }
+                    />
+                    <Button colorScheme="blue" onClick={handleSendMessage}>
+                      Send
+                    </Button>
+                  </HStack>
+                </>
+              ) : (
+                <Text textAlign="center" mt="20">
+                  Select a user to start chatting
+                </Text>
+              )}
+            </Box>
           </Box>
         )}
       </HStack>
