@@ -99,7 +99,7 @@ export const googleAuth = (googleToken) => async (dispatch) => {
       })
       dispatch(signupsuccess(response));
       localStorage.setItem("token", JSON.stringify(response.data.data.token));
-      localStorage.setItem('refreshToken', JSON.stringify(response.data.data.refreshtoken));
+      localStorage.setItem('refreshToken', JSON.stringify(response.data.data.refreshToken));
       if(response.status == 201)
       window.location.href = "/choose-topics";
       if(response.status == 200)

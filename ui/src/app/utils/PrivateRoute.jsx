@@ -11,6 +11,7 @@ const PrivateRoute = ({ children }) => {
   const [userVerified, setUserVerified] = useState(false);
   const [userRedirecting, setUserRedirecting] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showSplash, setShowSplash] = useState(true);
   const stateUser = useSelector((state) => state.auth.user?.user);
   const dispatch = useDispatch();
   const router = useRouter();
@@ -60,7 +61,6 @@ const PrivateRoute = ({ children }) => {
 
   const RenderScreen = () => {
     const [delay, setDelay] = useState(true);
-    const [showSplash, setShowSplash] = useState(true);
     const [blinkIndex, setBlinkIndex] = useState(0);
     const timeoutRef = useRef(null);
     useEffect(() => {      
@@ -105,7 +105,7 @@ const PrivateRoute = ({ children }) => {
         bg="#0D1627"
         flexDir="column"
       >
-        <Image src={loaderImages[blinkIndex]} alt="preloaderLogo" height="500px" width="500px" />
+        <Image src={loaderImages[blinkIndex]} alt="preloaderLogo" objectFit="cover" height="500px" width="700px" />
       </Flex>
         :
        <Loader messages={null} showtext={false} />

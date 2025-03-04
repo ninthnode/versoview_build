@@ -302,14 +302,7 @@ const PublishPdfPost = ({ params }) => {
     }
   };
   const handleLibraryImage = async (img) => {
-    if (isHttpsURL(img)) {
-      let imageName = img.lastIndexOf("/") + 1;
-      let postImage = await blobToFile(img, imageName);
-      const imageDataUrl = await readFile(postImage);
-
-      const processedImage = await processImage(imageDataUrl);
-      setUploadedImage(processedImage);
-    } else setUploadedImage(img);
+    setUploadedImage(img);
   };
   const handleScroll = (e) => {
     if (

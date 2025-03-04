@@ -51,7 +51,6 @@ module.exports.getEditionsSize = asyncHandler(async (req, res) => {
   try {
     const userId = req.user._id;
     const userEditions = await Edition.find({ userId: userId })
-      .populate("postId")
       .sort({ createdAt: -1 })
       .exec();
 
@@ -60,7 +59,6 @@ module.exports.getEditionsSize = asyncHandler(async (req, res) => {
       const docSize = Number(doc.size) || 0; // Convert to number, default to 0 if invalid
       return acc + docSize;
     }, 0);
-
     totalSize = totalSize.toFixed(2); // Convert to string with 2 decimal places
     res.status(200).json({
       message: "Success",

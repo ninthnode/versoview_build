@@ -23,3 +23,6 @@ input[type="color"]::-webkit-color-swatch-wrapper {
   *{
     box-sizing: border-box;
   }
+  .jodit-wysiwyg a {
+    color: blue !important;
+  }

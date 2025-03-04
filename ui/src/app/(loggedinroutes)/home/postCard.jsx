@@ -175,6 +175,7 @@ const PostCard = ({
                       post.editionId?.editionDate
                     }
                     pdfFiles={post.editionId?.pdfUrls}
+                    images={post.editionId.libraryImages}
                   />
                 )}
               </Box>

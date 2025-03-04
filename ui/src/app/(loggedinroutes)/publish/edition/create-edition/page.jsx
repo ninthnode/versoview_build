@@ -225,72 +225,12 @@ const CreateEdition = () => {
             });
           };
 
-          // Function to combine two pages side by side
-          const combinePages = async (page1Num, page2Num) => {
-            const [file1, file2] = await Promise.all([
-              renderPage(page1Num),
-              renderPage(page2Num),
-            ]);
-
-            return new Promise((resolve, reject) => {
-              const img1 = new Image();
-              const img2 = new Image();
-
-              let loadedImages = 0;
-
-              const checkLoaded = () => {
-                if (++loadedImages === 2) {
-                  const canvas = document.createElement("canvas");
-                  const context = canvas.getContext("2d");
-
-                  canvas.width = img1.width + img2.width;
-                  canvas.height = Math.max(img1.height, img2.height);
-
-                  // Draw both images side by side
-                  context.drawImage(img1, 0, 0);
-                  context.drawImage(img2, img1.width, 0);
-
-                  canvas.toBlob((blob) => {
-                    if (blob) {
-                      const file = new File(
-                        [blob],
-                        `combined_${page1Num}_${page2Num}_${Date.now()}.png`,
-                        { type: "image/png" }
-                      );
-                      resolve(file);
-                    } else {
-                      reject(new Error("Canvas toBlob failed"));
-                    }
-                  }, "image/png");
-                }
-              };
-
-              img1.onload = checkLoaded;
-              img2.onload = checkLoaded;
-
-              img1.onerror = img2.onerror = (e) =>
-                reject(new Error("Image loading failed"));
-
-              img1.src = URL.createObjectURL(file1);
-              img2.src = URL.createObjectURL(file2);
-            });
-          };
-
           // Collect pages to render
           const pagesToRender = [];
 
-          // Render the first page as a single image
-          pagesToRender.push(renderPage(1));
-
           // Pair the rest of the pages starting from the second page
-          for (let i = 2; i <= numPages; i += 2) {
-            if (i + 1 <= numPages) {
-              // Combine two pages
-              pagesToRender.push(combinePages(i, i + 1));
-            } else {
-              // Render the last unpaired page
+          for (let i = 1; i <= numPages; i ++) {
               pagesToRender.push(renderPage(i));
-            }
           }
 
           // Wait for all pages to render

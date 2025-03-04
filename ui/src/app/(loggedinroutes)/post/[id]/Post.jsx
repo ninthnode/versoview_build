@@ -22,7 +22,7 @@ import {
   ModalCloseButton,
   useDisclosure,
   Textarea,
-  Tooltip
+  Tooltip,
 } from "@chakra-ui/react";
 import { BsChat } from "react-icons/bs";
 import { CiBookmark } from "react-icons/ci";
@@ -39,7 +39,7 @@ import {
 import {
   addCommentToPost,
   getCommentByPostId,
-  getCommentAndRepliesCount
+  getCommentAndRepliesCount,
 } from "@/redux/comments/commentAction";
 import { FaBookmark as BookmarkFilled } from "react-icons/fa";
 import { addRemoveBookmarks } from "@/redux/bookmarks/bookmarkAction";
@@ -49,17 +49,18 @@ import Comments from "@/app/(loggedinroutes)/(comments)/comments/[id]/page";
 import { formatDate } from "@/app/utils/DateUtils";
 import RelatedArticleList from "./RelatedArticleList";
 import DOMPurify from "dompurify";
-import {getExcerptText} from "@/app/utils/GetExcerpt";
-import HighlighterTag from '@/components/posts/HighlighterTag/core';
+import { getExcerptText } from "@/app/utils/GetExcerpt";
+import HighlighterTag from "@/components/posts/HighlighterTag/core";
 import Loader from "@/components/Loader";
 import dynamic from "next/dynamic";
-const PdfFlipBookModal = dynamic(() => import("@/components/posts/PdfFlipBookModal"), {
-  ssr: false,
-});
+const PdfFlipBookModal = dynamic(
+  () => import("@/components/posts/PdfFlipBookModal"),
+  {
+    ssr: false,
+  }
+);
 
-import {
-  fetchPosts as fetchChannelPosts,
-} from "@/redux/channel/channelActions";
+import { fetchPosts as fetchChannelPosts } from "@/redux/channel/channelActions";
 function SinglePost({
   params,
   postState,
@@ -77,7 +78,7 @@ function SinglePost({
   getCommentByPostId,
   postTotalComments,
   fetchChannelPosts,
-  channelPosts
+  channelPosts,
 }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedText, setSelectedText] = useState("");
@@ -98,7 +99,7 @@ function SinglePost({
     setCommentText(text);
   };
 
-  const submitComment = async() => {
+  const submitComment = async () => {
     const commentObj = {
       excerpt: selectedText,
       commentText: commentText,
@@ -127,16 +128,15 @@ function SinglePost({
         // console.log("Popover opened with text: ", text);
       },
       onClick: (selectedText) => {
-        handleSelection(selectedText)
+        handleSelection(selectedText);
         // console.log("You clicked on: ", selectedText);
       },
       onClose: () => {
         console.log("Popover closed");
-      }
+      },
     });
     highlighter.init();
-  }, [])
-  
+  }, []);
 
   useEffect(() => {
     if (postState.post) {
@@ -228,7 +228,13 @@ function SinglePost({
                     &bull; {formatDate(postState.post.createdAt)} &bull;{" "}
                     {postState.readingTime} read
                   </Text>
-                  <Flex alignItems="center" mx="2" flexShrink={0} cursor='pointer' onClick={() => isAuthenticated&&onToggleCommentModal()}>
+                  <Flex
+                    alignItems="center"
+                    mx="2"
+                    flexShrink={0}
+                    cursor="pointer"
+                    onClick={() => isAuthenticated && onToggleCommentModal()}
+                  >
                     <Image
                       src="../assets/chat-icon.png"
                       h="1.2rem"
@@ -241,16 +247,17 @@ function SinglePost({
                 </Flex>
 
                 <Box>
-                  {postState&&postState.post.editionId?.pdfUrls?.length>0 && (
-                    <PdfFlipBookModal
-                     title={
-                      postState.post.editionId?.editionText +
-                      " " +
-                      postState.post.editionId?.editionDate
-                    }
-                    pdfFiles={postState.post.editionId?.pdfUrls}
-                    />
-                  )}
+                  {postState &&
+                    postState.post.editionId?.pdfUrls?.length > 0 && (
+                      <PdfFlipBookModal
+                        title={
+                          postState.post.editionId?.editionText +
+                          " " +
+                          postState.post.editionId?.editionDate
+                        }
+                        pdfFiles={postState.post.editionId?.pdfUrls}
+                      />
+                    )}
                 </Box>
               </Flex>
 
@@ -349,20 +356,28 @@ function SinglePost({
                 >
                   {postState.post.header}
                 </Heading>
-                 {postState.post.standFirst && (
-                    <Heading
-                      py="1"
-                      mb="1"
-                      fontWeight="bold"
-                      fontSize="1.4rem"
-                      lineHeight="1.5rem"
-                    >
-                      {postState.post.standFirst}
-                    </Heading>
-                  )}
+                {postState.post.standFirst && (
+                  <Heading
+                    py="1"
+                    mb="1"
+                    fontWeight="bold"
+                    fontSize="1.4rem"
+                    lineHeight="1.5rem"
+                  >
+                    {postState.post.standFirst}
+                  </Heading>
+                )}
                 <Text
                   fontSize="md"
                   textAlign="left"
+                  sx={{
+                    a: {
+                      color: "blue.500", // Change link color
+                      _hover: {
+                        color: "blue.700", // Darker blue on hover
+                      },
+                    },
+                  }}
                   dangerouslySetInnerHTML={{
                     __html: DOMPurify.sanitize(postState.post.bodyRichText),
                   }}
@@ -383,7 +398,9 @@ function SinglePost({
                 getCommentByPostId={getCommentByPostId}
                 postSlug={postState.post.slug}
               />
-             { channelPosts&&channelPosts.length>0&&<RelatedArticleList channelPosts={channelPosts}/>}
+              {channelPosts && channelPosts.length > 0 && (
+                <RelatedArticleList channelPosts={channelPosts} />
+              )}
             </CardBody>
           </Card>
 

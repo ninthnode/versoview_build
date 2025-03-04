@@ -81,8 +81,6 @@ const RichTextEditor = forwardRef(
     const config = useMemo(
       () => ({
         buttons: [
-          "source",
-          "|",
           "bold",
           "italic",
           "|",
@@ -94,7 +92,6 @@ const RichTextEditor = forwardRef(
           "brush",
           "paragraph",
           "|",
-          "video",
           "table",
           "link",
           "|",
@@ -123,6 +120,7 @@ const RichTextEditor = forwardRef(
         processPasteHTML: true,
         defaultActionOnPaste: "insert_only_text",
         nl2brInPlainText: false,
+        contentStyle: "a { color: red !important; }",
         events: {
           click: saveCursorPosition,
           keyup: saveCursorPosition,

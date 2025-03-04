@@ -6,7 +6,7 @@ import {
   ModalHeader,
   ModalBody,
   ModalCloseButton,
-  Image,
+  Image as ChakraImage,
   Flex,
   Input,
   Box,
@@ -36,9 +36,10 @@ const LibraryModal = ({
     (s) => s.publish?.libraryImageProgress
   );
   const [imageSizeError, setImageSizeError] = useState("");
-
+  
   // State to track loading of images
   const [imageLoaded, setImageLoaded] = useState({});
+  const [mergedFiles, setMergedFiles] = useState([]);
 
   const handleFileSelection = (event) => {
     const file = event.target.files[0];
@@ -68,11 +69,119 @@ const LibraryModal = ({
     setLibraryImages(url);
     setSelectedFile(null);
   };
-
+  
   const handleDeselectFile = () => {
     setSelectedFile(null);
   };
 
+  const mergeImagesFromUrls = async (imageUrls) => {
+    const combinedImages = [];
+  
+    if (imageUrls.length === 0) return combinedImages;
+  
+    // Keep the first image as a standalone
+    combinedImages.push(imageUrls[0]);
+  
+    // Function to load an image from a URL
+    const loadImage = (url) => {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous"; // Avoid CORS issues
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error(`Failed to load image: ${url}`));
+        img.src = url;
+      });
+    };
+  
+    // Function to combine two images side by side
+    const combineTwoImages = async (url1, url2) => {
+      const [img1, img2] = await Promise.all([loadImage(url1), loadImage(url2)]);
+  
+      return new Promise((resolve, reject) => {
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+  
+        canvas.width = img1.width + img2.width;
+        canvas.height = Math.max(img1.height, img2.height);
+  
+        // Draw both images side by side
+        context.drawImage(img1, 0, 0);
+        context.drawImage(img2, img1.width, 0);
+  
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const mergedFile = new File(
+              [blob],
+              `merged_${Date.now()}.png`,
+              { type: "image/png" }
+            );
+            resolve(URL.createObjectURL(mergedFile)); // Convert File to Blob URL
+          } else {
+            reject(new Error("Canvas toBlob failed"));
+          }
+        }, "image/png");
+      });
+    };
+  
+    // Process the remaining images in pairs (starting from the second image)
+    for (let i = 1; i < imageUrls.length; i += 2) {
+      if (i + 1 < imageUrls.length) {
+        // Merge and process two images
+        const mergedBlobUrl = await combineTwoImages(imageUrls[i], imageUrls[i + 1]);
+        const processedImage = await processImage(mergedBlobUrl);
+        combinedImages.push(processedImage);
+      } else {
+        // Process last single image separately
+        const processedImage = await processImage(imageUrls[i]);
+        combinedImages.push(processedImage);
+      }
+    }
+  
+    return combinedImages;
+  };
+  
+  // Function to process an image: Resize, maintain aspect ratio, and add white background
+  const processImage = (imageDataUrl) => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const targetWidth = 1440;
+        const targetHeight = 820;
+  
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+  
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+  
+        // Fill background with white
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, 0, targetWidth, targetHeight);
+  
+        // Calculate aspect ratio to fit within canvas
+        let scale = Math.min(targetWidth / img.width, targetHeight / img.height);
+        let newWidth = img.width * scale;
+        let newHeight = img.height * scale;
+  
+        let xOffset = (targetWidth - newWidth) / 2;
+        let yOffset = (targetHeight - newHeight) / 2;
+  
+        // Draw image on canvas
+        ctx.drawImage(img, xOffset, yOffset, newWidth, newHeight);
+  
+        // Convert canvas to data URL
+        resolve(canvas.toDataURL("image/png"));
+      };
+      img.src = imageDataUrl;
+    });
+  };
+  useEffect(() => {
+    if(libraryImages)
+      mergeImagesFromUrls(libraryImages).then((mergedFiless) => {
+      setMergedFiles(mergedFiless);
+    })
+  }, [libraryImages])
+  
   return (
     <Modal mx="2" size="6xl" isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
@@ -102,7 +211,7 @@ const LibraryModal = ({
                   justifyContent="space-between"
                 >
                   <Text fontSize="sm" color="gray.600">
-                    <Image
+                    <ChakraImage
                       src={URL.createObjectURL(selectedFile)}
                       alt={`Uploading`}
                       boxSize="80px"
@@ -180,8 +289,8 @@ const LibraryModal = ({
 
           {/* Library Images with Shimmer Effect */}
           <Flex wrap="wrap" justifyContent="space-between" gap={4} mt={4}>
-            {libraryImages &&
-              libraryImages.map((image, index) => (
+            {mergedFiles &&mergedFiles.length > 0 &&
+              mergedFiles.map((image, index) => (
                 <Box key={index} boxSize="30%" position="relative">
                   {/* Show Skeleton (Shimmer) until the image loads */}
                   <Skeleton
@@ -189,7 +298,7 @@ const LibraryModal = ({
                     boxSize="100%"
                     borderRadius="md"
                   >
-                    <Image
+                    <ChakraImage
                       src={image}
                       alt={`Image ${index + 1}`}
                       boxSize="100%"

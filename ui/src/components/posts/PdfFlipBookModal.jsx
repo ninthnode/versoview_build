@@ -1,7 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { Document, Page, pdfjs } from "react-pdf";
+import React from "react";
 import HTMLFlipBook from "react-pageflip";
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 import {
   Modal,
   ModalOverlay,
@@ -14,35 +12,13 @@ import {
   Flex,
   Box,
   Text,
-  Spinner,
 } from "@chakra-ui/react";
 import "./style.css";
 import useDeviceType from "@/components/useDeviceType";
 
-const PdfFlipBookModal = ({ pdfFiles, title }) => {
+const PdfFlipBookModal = ({ images, title }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [pages, setPages] = useState([]);
-  const [loading, setLoading] = useState(true);
   const deviceType = useDeviceType();
-
-  useEffect(() => {
-    const loadPages = async () => {
-      setLoading(true);
-      let allPages = [];
-      for (let pdfIndex = 0; pdfIndex < pdfFiles.length; pdfIndex++) {
-        const fileUrl = pdfFiles[pdfIndex];
-        const pdf = await pdfjs.getDocument(fileUrl).promise;
-        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-          allPages.push({ fileUrl, pageNum, pdfIndex });
-        }
-      }
-      setPages(allPages);
-      setLoading(false);
-    };
-
-    setPages([]);
-    loadPages();
-  }, [pdfFiles]);
 
   return (
     <Box>
@@ -60,25 +36,18 @@ const PdfFlipBookModal = ({ pdfFiles, title }) => {
               display="flex"
               justifyContent="center"
               alignItems="center"
-              bg={{base:"#fff",md:"#222"}}
+              bg={{ base: "#fff", md: "#222" }}
               p={4}
               borderRadius="md"
-              minH="550"
+              minH="550px"
             >
-              {loading ? (
-                <Flex direction="column" align="center">
-                  <Spinner size="xl" color={{base:"#333",md:"#fff"}} />
-                  <Text color={{base:"#333",md:"#fff"}} mt={2}>
-                    Loading PDF...
-                  </Text>
-                </Flex>
-              ) : pages.length > 0 ? (
+              {images && images.length > 0 ? (
                 <HTMLFlipBook
                   maxWidth={400}
                   maxHeight={500}
                   height={500}
                   width={400}
-                  size={deviceType != "phone"?"stretch":'fixed'}
+                  size={deviceType !== "phone" ? "stretch" : "fixed"}
                   enableBackground={true}
                   pageBackground="#333"
                   autoSize={true}
@@ -93,17 +62,15 @@ const PdfFlipBookModal = ({ pdfFiles, title }) => {
                   maxShadowOpacity={0.5}
                   isClickFlip={false}
                 >
-                  {pages.map((page, index) => (
+                  {images.map((image, index) => (
                     <div key={index}>
-                      <Document file={page.fileUrl}>
-                        <Page pageNumber={page.pageNum} />
-                      </Document>
+                      <Image src={image} alt={`Page ${index + 1}`} />
                     </div>
                   ))}
                 </HTMLFlipBook>
               ) : (
                 <Text textAlign="center" color="white">
-                  No pages found.
+                  No images found.
                 </Text>
               )}
             </Box>
