@@ -197,12 +197,12 @@ module.exports.uploadLibraryImage = async (req, res) => {
       return res.status(404).json({ message: "Edition not found" }); // Return 404 if the edition is not found
     }
     // Add the new URL to the start of the array and shift other elements
-    edition.libraryImages.unshift(url);
+    edition.uploadImages.unshift(url);
 
     // Save the updated edition document
     await edition.save();
 
-    res.status(200).json({ message: "Library image uploaded successfully", libraryImages: edition.libraryImages });
+    res.status(200).json({ message: "Library image uploaded successfully", uploadImages: edition.uploadImages });
   } catch (error) {
     console.error("Error uploading library image:", error);
     res.status(500).json({ message: "Internal Server Error" });

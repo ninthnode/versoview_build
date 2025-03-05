@@ -6,8 +6,7 @@ import { useDisclosure } from "@chakra-ui/react";
 const RichTextEditor = forwardRef(
   (
     {
-      libraryImages,
-      setLibraryImages,
+      edition,
       editionId,
       value = "",
       initialValue = "",
@@ -150,8 +149,6 @@ const RichTextEditor = forwardRef(
         <LibraryModal
           isOpen={isOpen}
           onClose={onClose}
-          libraryImages={libraryImages}
-          setLibraryImages={setLibraryImages}
           editionId={editionId}
           handleLibraryImage={handleLibraryImage}
         />

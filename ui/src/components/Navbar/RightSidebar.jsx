@@ -111,7 +111,6 @@ function RightSidebar({
           <Flex gap={4}>
             <Link href="/policies/terms-of-service">
               <Text
-                as="a"
                 color="blue.500"
                 _hover={{ textDecoration: "underline", color: "blue.700" }}
               >
@@ -120,7 +119,6 @@ function RightSidebar({
             </Link>
             <Link href="/policies/legal-disclaimer" color="blue:500">
               <Text
-                as="a"
                 color="blue.500"
                 _hover={{ textDecoration: "underline", color: "blue.700" }}
               >
@@ -133,7 +131,6 @@ function RightSidebar({
           <Flex gap={4} alignItems="center">
             <Link href="/policies/privacy-policy" color="blue:500">
               <Text
-                as="a"
                 color="blue.500"
                 _hover={{ textDecoration: "underline", color: "blue.700" }}
               >

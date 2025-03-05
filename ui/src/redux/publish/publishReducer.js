@@ -50,9 +50,11 @@ import {
           libraryImageProgress: action.payload,
         }
         case LIBRARY_IMAGE_SUCCESS:
+          console.log(action.payload)
         return {
           ...state,
           libraryImageProgress: 0,
+          singleEdition: action.payload
         }
       case CREATE_EDITION_SUCCESS:
         return {

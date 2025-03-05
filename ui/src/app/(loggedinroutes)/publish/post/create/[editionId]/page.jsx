@@ -60,7 +60,6 @@ const PublishPdfPost = ({ params }) => {
   const [croppedImage, setCroppedImage] = useState(null);
   const [imageSizeError, setImageSizeError] = useState("");
 
-  const [libraryImages, setLibraryImages] = useState([]);
   const [pageStart, setPageStart] = useState(0);
 
   const [pdfPages, setPdfPages] = useState([]);
@@ -134,7 +133,6 @@ const PublishPdfPost = ({ params }) => {
   useEffect(() => {
     const fetchData = async () => {
       setPdfPages((prev) => [...prev, editionDetails.pdfUrls[pageStart]]);
-      setLibraryImages(editionDetails.libraryImages);
     };
     if (editionDetails._id != undefined && editionDetails != undefined)
       fetchData();
@@ -293,16 +291,23 @@ const PublishPdfPost = ({ params }) => {
     }
     setIsEditing(!isEditing);
   };
-  const isHttpsURL = (string) => {
-    try {
-      const url = new URL(string);
-      return url.protocol === "https:";
-    } catch {
-      return false; // Invalid URL
-    }
+
+  const blobUrlToDataUrl = async (blobUrl) => {
+    const response = await fetch(blobUrl);
+    const blob = await response.blob();
+    
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.readAsDataURL(blob);
+    });
   };
   const handleLibraryImage = async (img) => {
-    setUploadedImage(img);
+    blobUrlToDataUrl(img).then((imageDataUrl) => {
+      processImage(imageDataUrl).then((processedImage) => {
+        setUploadedImage(processedImage);
+      });
+    });
   };
   const handleScroll = (e) => {
     if (
@@ -436,8 +441,6 @@ const PublishPdfPost = ({ params }) => {
                       setUploadedImage={setUploadedImage}
                       edition={editionDetails}
                       handleLibraryImage={handleLibraryImage}
-                      libraryImages={libraryImages}
-                      setLibraryImages={setLibraryImages}
                     />
                   </Box>
                 </FormControl>
@@ -547,8 +550,7 @@ const PublishPdfPost = ({ params }) => {
                   handleTextBodyChange={handleTextBodyChange}
                   bodyRichText={formData.bodyRichText}
                   editionId={editionDetails._id}
-                  libraryImages={libraryImages}
-                  setLibraryImages={setLibraryImages}
+                  edition={editionDetails}
                 />
               </FormControl>
               <Button

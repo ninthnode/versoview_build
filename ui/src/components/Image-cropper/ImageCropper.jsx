@@ -195,6 +195,7 @@ const ImageCropper = ({
               libraryImages={libraryImages}
               setLibraryImages={setLibraryImages}
               editionId={edition._id}
+              edition={edition}
               handleLibraryImage={handleLibraryImage}
             />
           )}

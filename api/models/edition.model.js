@@ -20,7 +20,9 @@ const editionSchema = new mongoose.Schema(
     },
     libraryImages: {
       type: [String],
-      default: ["array"],
+    },
+    uploadImages: {
+      type: [String],
     },
     editionText: {
       type: String,

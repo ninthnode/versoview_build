@@ -271,7 +271,7 @@ const uploadFileToSignedUrl = (signedUrl, file, contentType,dispatch) => {
 };
 
   export const uploadLibraryImage = (key,content_type,image,editionId) => {
-    return async (dispatch) => {
+    return async (dispatch, getState) => {
       try {
         let newImageUrl
         if (image) {
@@ -298,13 +298,19 @@ const uploadFileToSignedUrl = (signedUrl, file, contentType,dispatch) => {
             },
           }
         );
+        const { publish } = getState();
+
+        let newObj = publish.singleEdition 
+        
+        
+        newObj.uploadImages= responsefile.data.uploadImages
+
         dispatch({
-          type: LIBRARY_IMAGE_SUCCESS
+          type: LIBRARY_IMAGE_SUCCESS,
+          payload: newObj
         });
-        return responsefile.data.libraryImages
 
       } catch (error) {
-        // dispatch(getPostsFailure(error.message));
-      }
++        console.log(error)}
     };
   };
