@@ -1,4 +1,4 @@
-.react-pdf__Page__canvas, .stf__item,.stf__wrapper,.stf__item img{
+.stf__item,.stf__wrapper,.stf__item img{
     width: 400px !important;
     height: 500px !important;
 }
