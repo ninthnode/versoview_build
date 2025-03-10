@@ -536,29 +536,32 @@ module.exports.getPostById = asyncHandler(async (req, res) => {
 module.exports.getPostByChannelId = asyncHandler(async (req, res) => {
   try {
     const channelId = req.params._id;
-    const userId = req.user._id;
+    const userId = req.user ? req.user._id : null;
 
-    const postData = await Post.find({ channelId: channelId }).populate(
-      "channelId"
-    );
+    const postData = await Post.find({ channelId: channelId }).populate("channelId");
+
+    if (!postData.length)
+      return res
+        .status(400)
+        .json({ message: `No Post Found for Channel id ${channelId}` });
 
     const postsWithBookmarkStatus = await Promise.all(
       postData.map(async (post) => {
-        const bookmark = await Bookmark.findOne({ userId, postId: post._id });
         const comments = await PostComment.find({ postId: post._id });
+
+        let isBookmarked = false;
+        if (userId) {
+          const bookmark = await Bookmark.findOne({ userId, postId: post._id });
+          isBookmarked = !!bookmark;
+        }
 
         return {
           ...post.toObject(),
-          isBookmarked: !!bookmark,
+          ...(userId && { isBookmarked }), // Only add if userId exists
           commentCount: comments.length,
         };
       })
     );
-
-    if (!postData)
-      return res
-        .status(400)
-        .json({ message: `No Post Found for Channel id ${channelId}` });
 
     res.status(200).json({ message: "Success", data: postsWithBookmarkStatus });
   } catch (error) {
@@ -566,6 +569,7 @@ module.exports.getPostByChannelId = asyncHandler(async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
 
 // Update post
 module.exports.updatePost = asyncHandler(async (req, res) => {

@@ -156,8 +156,8 @@ export default function Channel({
                 )}
               </TabPanel>
             ))}
-
-            {view == options.editions && userEditions && userEditions.length ? (
+           { view == options.editions && (
+            userEditions && userEditions.length ? (
               userEditions.map((edition) => (
                 <EditionCard
                   key={edition._id}
@@ -170,7 +170,7 @@ export default function Channel({
               <p className="mt-4 text-sm italic font-light text-center text-gray-600">
                 This channel has no Editions!
               </p>
-            )}
+            ))}
             <TabPanel>
               <PostCardShimmer />
             </TabPanel>

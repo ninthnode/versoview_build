@@ -7,3 +7,6 @@
  width: round(1* 651.969px, 1px);
     height: round(1* 878.74px, 1px);
 }
+.react-pdf__Page__textContent span{
+    transform: scale(1.1) !important; 
+}

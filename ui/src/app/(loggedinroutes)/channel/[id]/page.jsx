@@ -53,9 +53,9 @@ const Page = ({
   const [view, setView] = useState(options.posts);
 
   useEffect(() => {
-    if(user){
+    
       fetchChannel(id);
-    }
+    
     return () => {
       clearChannel()
       clearTitle()
@@ -64,7 +64,7 @@ const Page = ({
     }
   }, [id,user]);
   useEffect(() => {
-    if (channelData&& user) {
+    if (channelData) {
       fetchFollowings(channelData.userId._id);
       fetchFollowers(channelData._id);
       setNavTitle(

@@ -109,7 +109,7 @@ const About = ({
               size="lg"
               alt={channelName}
             />
-            {userId._id != user.id && (
+            {userId&&user&&userId._id != user.id && (
               <Link href={`/messages?id=${userId._id}`}>
               <Flex flexDirection="column" alignItems="center" mb={1} cursor='pointer'>
                 <FiMessageSquare size="18px" />

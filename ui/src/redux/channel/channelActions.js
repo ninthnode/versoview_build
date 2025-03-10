@@ -26,15 +26,9 @@ export const clearChannel = () => ({ type: CLEAR_CHANNEL });
 export const fetchChannel = (username) => async (dispatch) => {
   dispatch({ type: FETCH_CHANNEL_REQUEST });
   try {
+  
     const response = await axios.get(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/channel/getChannel/${username}`,
-      {
-        headers: {
-          authorization: `Bearer ${localStorage
-            .getItem("token")
-            .replace(/"/g, "")}`,
-        },
-      }
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/channel/getChannel/${username}`
     );
     dispatch({ type: FETCH_CHANNEL_SUCCESS, payload: response.data.data });
   } catch (error) {
@@ -65,14 +59,7 @@ export const fetchPosts = (channelId) => async (dispatch) => {
   dispatch({ type: FETCH_POSTS_REQUEST });
   try {
     const response = await axios.get(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/getPostByChannelId/${channelId}`,
-      {
-        headers: {
-          authorization: `Bearer ${localStorage
-            .getItem("token")
-            .replace(/"/g, "")}`,
-        },
-      }
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/getPostByChannelId/${channelId}`
     );
     dispatch({ type: FETCH_POSTS_SUCCESS, payload: response.data });
   } catch (error) {
@@ -84,14 +71,7 @@ export const fetchFollowers = (channelId) => async (dispatch) => {
   dispatch({ type: FETCH_FOLLOWERS_REQUEST });
   try {
     const response = await axios.get(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/channel/followersList/${channelId}`,
-      {
-        headers: {
-          authorization: `Bearer ${localStorage
-            .getItem("token")
-            .replace(/"/g, "")}`,
-        },
-      }
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/channel/followersList/${channelId}`
     );
     dispatch({ type: FETCH_FOLLOWERS_SUCCESS, payload: response.data.data });
   } catch (error) {
@@ -102,14 +82,7 @@ export const fetchFollowings = (userId) => async (dispatch) => {
   dispatch({ type: FETCH_FOLLOWERS_REQUEST });
   try {
     const response = await axios.get(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/channel/followingList/${userId}`,
-      {
-        headers: {
-          authorization: `Bearer ${localStorage
-            .getItem("token")
-            .replace(/"/g, "")}`,
-        },
-      }
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/channel/followingList/${userId}`
     );
     dispatch({ type: FETCH_FOLLOWINGS_SUCCESS, payload: response.data.data });
   } catch (error) {}

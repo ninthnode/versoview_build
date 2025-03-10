@@ -126,6 +126,7 @@ const CreateEdition = () => {
 
     if (typeof blobOrUrl === "string") {
       const response = await fetch(blobOrUrl);
+      if (!response.ok) throw new Error("Fetch failed");
       blob = await response.blob();
     } else if (blobOrUrl instanceof Blob) {
       blob = blobOrUrl;

@@ -278,7 +278,6 @@ module.exports.followChannelList = asyncHandler(async (req, res) => {
 // Followers Channel List
 module.exports.followersList = asyncHandler(async (req, res) => {
 	try {
-		const userId = req.user._id;
 		const channelId = req.params._id;
 		const channelData = await Follow.find({ channelId: channelId }).populate(
 			"channelId",
