@@ -197,8 +197,8 @@ const Dms = () => {
         </Button>
       )}
       <HStack spacing={0} overflow="hidden" alignItems="flex-start">
-      {loading &&
-        <Spinner mt='4' size='md'/>}
+   {loading &&
+    <Box width={deviceType != "phone" ? "30%" : "100%"}> <Spinner mt='4' size='md'/></Box>}
         {!loading && !showChats && (
           <Box
             width={deviceType != "phone" ? "30%" : "100%"}

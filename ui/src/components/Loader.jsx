@@ -7,8 +7,8 @@ const FullScreenLoader = ({ showtext,text }) => {
       position="fixed"
       overflowY="hidden"
       top='50%'
-      left='50%'
-      transform={{base:'translate(-50%,-50%)',md:'translate(-50%,-50%)'}}
+      left='40%'
+      transform={'translate(-50%,-25%)'}
       width="100px"
       height="100px"
       zIndex="9999"
