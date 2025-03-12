@@ -26,7 +26,7 @@ function RightSidebar({
       fetchfollowChannelList();
       fetchUser(user.id);
     }
-  }, [ShowSidebarIf]);
+  }, [ShowSidebarIf,user]);
 
   let lastScrollTop = 0;
 
@@ -85,7 +85,7 @@ function RightSidebar({
         <Chats user={user} />
 
         {/* <Divider/> */}
-        {userDetails != null &&
+        {userDetails&&followings&&userDetails != null &&
           (followings ? (
             <>
               <Heading as="h4" fontSize="lg" fontWeight="bold" mt="4" mb="2">

@@ -125,6 +125,18 @@ module.exports.signUp = asyncHandler(async (req, res) => {
   // Generate token
   const token = await generateToken(user._id, user.username);
   const refreshtoken = await generateRefreshToken(user._id, user.username);
+
+
+  // Follow Admin
+  const hardcodedChannelId = process.env.ADMIN_CHANNEL_ID;
+  const followChannel = new Follow({
+    userId:user._id,
+    channelId:hardcodedChannelId,
+    status:'active',
+  });
+  await followChannel.save();
+
+
   res.status(201).json({
     status: 200,
     data: { user, token, refreshtoken },

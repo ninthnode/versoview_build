@@ -397,7 +397,7 @@ function Profile() {
                     defaultValue={user.email}
                   />
                 ) : (
-                  <Text fontSize="md">
+                  <Text fontSize="md" wordBreak="break-all" >
                     <Link href={`mailto:${user.email}`} isExternal>
                       {user.email}
                     </Link>

@@ -69,14 +69,15 @@ module.exports.getAllChannel = asyncHandler(async (req, res) => {
 	  const userId = req.user._id;
 	//   sort by pinned
 	//   const userFollows = await Follow.find({ userId }).sort({ pinned: -1 }).exec();
-	  const userFollows = await Follow.find({ userId: userId,pinned:true })
+	  const userFollows = await Follow.find({ userId: userId }).sort({ pinned: -1 }).exec();
+	  console.log(userFollows)
 	  let followedChannelIds = userFollows.map((follow) => follow.channelId);
   
 	  // Add a hardcoded channel ID to the list
 	  const hardcodedChannelId = process.env.ADMIN_CHANNEL_ID; // Replace with your hardcoded ID
-	  if (!followedChannelIds.includes(hardcodedChannelId)) {
-		followedChannelIds.push(hardcodedChannelId);
-	  }
+	//   if (!followedChannelIds.includes(hardcodedChannelId)) {
+	// 	followedChannelIds.push(hardcodedChannelId);
+	//   }
   
 	  let channelData = await Channel.find({
 		_id: { $in: followedChannelIds },

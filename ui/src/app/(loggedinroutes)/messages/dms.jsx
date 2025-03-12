@@ -245,7 +245,7 @@ const Dms = () => {
                   >
                     <Avatar
                       name={user.username}
-                      src={user.channelIconImageUrl}
+                      src={user.profileImageUrl}
                     />
                     <Text fontWeight="bold">
                       {user.username}{" "}
@@ -296,7 +296,7 @@ const Dms = () => {
                   >
                     <Avatar
                       name={selectedUser.username}
-                      src={selectedUser.channelIconImageUrl}
+                      src={selectedUser.profileImageUrl}
                     />
                     <Text ml={2} fontWeight="bold">
                       {selectedUser.username}
