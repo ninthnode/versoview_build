@@ -88,16 +88,6 @@ const LibraryImageSharingTest = ({ editionId }) => {
           />
         </div>
       </div>
-      
-      <div className="mt-8 p-4 bg-gray-100 rounded-lg">
-        <h3 className="font-medium mb-2">How this works:</h3>
-        <ol className="list-decimal list-inside space-y-2">
-          <li>Both components use the same LibraryImageSelector component.</li>
-          <li>The selector uses a Redux store to manage the library images.</li>
-          <li>When you upload a new image in one component, it's available in both.</li>
-          <li>The useLibraryImages hook ensures data consistency.</li>
-        </ol>
-      </div>
     </div>
   );
 };
