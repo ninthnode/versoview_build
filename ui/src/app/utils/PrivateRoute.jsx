@@ -84,11 +84,14 @@ const PrivateRoute = ({ children }) => {
     }, []);
 
   const loaderImages = ["/assets/loader1.png", "/assets/loader2.png"];
+  if (path=='/messages') 
+  return !loading&& children;
 
-    if (verifyExeceptionRoutes.find((route) => path.startsWith(route)&&!showSplash)) {
+
+   else if (verifyExeceptionRoutes.find((route) => path.startsWith(route)&&!showSplash)) {
       return children;
     }
-      return userVerified&&!loading&&!userRedirecting &&!delay ? (
+    else   return userVerified&&!loading&&!userRedirecting &&!delay ? (
         children
       ) : (
         showSplash?
@@ -105,7 +108,7 @@ const PrivateRoute = ({ children }) => {
         bg="#0D1627"
         flexDir="column"
       >
-        <Image src={loaderImages[blinkIndex]} alt="preloaderLogo" objectFit="cover" height="500px" width="700px" />
+        <Image src={loaderImages[blinkIndex]} alt="preloaderLogo" objectFit="cover" height="250px" width="250px" />
       </Flex>
         :
        <Loader messages={null} showtext={false} />

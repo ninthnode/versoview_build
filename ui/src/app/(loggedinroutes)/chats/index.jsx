@@ -44,7 +44,7 @@ function Chats({ user }) {
       }
     }
     fetchComments();
-  }, [commentStateUpdateCount]);
+  }, [user, commentStateUpdateCount]);
 
   const upvoteComment = async (changeCommentId) => {
     await dispatch(updateCommentUpvote(changeCommentId));

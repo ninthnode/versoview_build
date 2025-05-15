@@ -196,8 +196,84 @@ const CreateEdition = () => {
           const pdf = await loadingTask.promise;
           const numPages = pdf.numPages;
 
+          // Add this new function for image compression
+          async function compressImage(file, maxSizeMB = 1) {
+            return new Promise((resolve, reject) => {
+              const reader = new FileReader();
+              reader.readAsDataURL(file);
+              reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                  // Start with original dimensions
+                  let width = img.width;
+                  let height = img.height;
+                  let quality = 0.85;
+                  const maxSize = maxSizeMB * 1024 * 1024; // Convert MB to bytes
+                  
+                  // If file is already small enough, just return it
+                  if (file.size <= maxSize) {
+                    resolve(file);
+                    return;
+                  }
+                  
+                  // Create canvas for compression
+                  const canvas = document.createElement('canvas');
+                  const ctx = canvas.getContext('2d');
+                  
+                  // If large image, reduce dimensions
+                  if (width > 2000 || height > 2000) {
+                    const scale = Math.min(2000 / width, 2000 / height);
+                    width = Math.floor(width * scale);
+                    height = Math.floor(height * scale);
+                  }
+                  
+                  canvas.width = width;
+                  canvas.height = height;
+                  
+                  // Draw image to canvas with new dimensions
+                  ctx.fillStyle = 'white';
+                  ctx.fillRect(0, 0, width, height);
+                  ctx.drawImage(img, 0, 0, width, height);
+                  
+                  // Convert to blob and check size
+                  canvas.toBlob(
+                    (blob) => {
+                      if (blob.size <= maxSize) {
+                        // Create a new file from the compressed blob
+                        const newFile = new File([blob], file.name, {
+                          type: 'image/png',
+                          lastModified: Date.now()
+                        });
+                        resolve(newFile);
+                      } else {
+                        // Further reduce quality if still too large
+                        quality = Math.max(0.6, quality - 0.1);
+                        canvas.toBlob(
+                          (blob) => {
+                            const newFile = new File([blob], file.name, {
+                              type: 'image/png',
+                              lastModified: Date.now()
+                            });
+                            resolve(newFile);
+                          },
+                          'image/png',
+                          quality
+                        );
+                      }
+                    },
+                    'image/png',
+                    quality
+                  );
+                };
+                img.onerror = reject;
+              };
+              reader.onerror = reject;
+            });
+          }
+
           // Function to render a single page as an image
-          const renderPage = async (pageNum, scale = 1) => {
+          const renderPage = async (pageNum, scale = 0.8) => {
             const page = await pdf.getPage(pageNum);
             const viewport = page.getViewport({ scale });
             const canvas = document.createElement("canvas");
@@ -216,13 +292,22 @@ const CreateEdition = () => {
                     `page${pageNum}_${Date.now()}.png`,
                     {
                       type: "image/png",
+                      quality: 0.85
                     }
                   );
-                  resolve(file);
+                  
+                  // Compress image if larger than 1MB
+                  if (file.size > 1024 * 1024) {
+                    compressImage(file, 1)
+                      .then(compressedFile => resolve(compressedFile))
+                      .catch(() => resolve(file)); // Fallback to original if compression fails
+                  } else {
+                    resolve(file);
+                  }
                 } else {
                   reject(new Error("Canvas toBlob failed"));
                 }
-              }, "image/png");
+              }, "image/png", 0.85);
             });
           };
 
@@ -283,7 +368,7 @@ const CreateEdition = () => {
     return pdfBytes;
   }
 
-  async function dividePdfFileIntoChunks(pdfFile, chunkSize = 10) {
+  async function dividePdfFileIntoChunks(pdfFile, initialChunkSize = 10) {
     let pdfBuffer;
 
     // Ensure the input is a File or Blob
@@ -299,20 +384,42 @@ const CreateEdition = () => {
     // Load the PDF document
     const pdfDoc = await PDFDocument.load(pdfBufferNode);
     const totalPages = pdfDoc.getPageCount();
+    
+    // Adjust chunk size based on total document size
+    // Smaller documents can use larger chunks, larger documents need smaller chunks
+    let chunkSize = initialChunkSize;
+    const fileSizeMB = pdfFile.size / (1024 * 1024);
+    
+    if (fileSizeMB > 20) {
+      // For larger documents, use smaller chunks
+      chunkSize = Math.max(5, Math.floor(initialChunkSize / 2));
+    } else if (fileSizeMB < 5) {
+      // For smaller documents, use larger chunks or even the entire document
+      chunkSize = Math.min(20, totalPages);
+    }
 
-    // Divide into chunks
-    const files = [];
+    // Create an array of chunk specifications
+    const chunkSpecs = [];
     for (let i = 0; i < totalPages; i += chunkSize) {
       const startPage = i + 1;
       const endPage = Math.min(i + chunkSize, totalPages);
+      chunkSpecs.push({ startPage, endPage });
+    }
 
-      // Extract pages for each chunk
-      const chunk = await extractPagesFromFile(pdfFile, startPage, endPage);
-
-      // Push the chunk details
-      if (chunk) {
-        files.push({ chunk, startPage, endPage });
-      }
+    // Process chunks with concurrency limit
+    const concurrencyLimit = 3; // Process up to 3 chunks at once
+    const files = [];
+    
+    // Process chunks in batches with controlled concurrency
+    for (let i = 0; i < chunkSpecs.length; i += concurrencyLimit) {
+      const batch = chunkSpecs.slice(i, i + concurrencyLimit);
+      const batchResults = await Promise.all(
+        batch.map(async ({ startPage, endPage }) => {
+          const chunk = await extractPagesFromFile(pdfFile, startPage, endPage);
+          return { chunk, startPage, endPage };
+        })
+      );
+      files.push(...batchResults);
     }
 
     return files;

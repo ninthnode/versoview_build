@@ -16,6 +16,8 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <head>
         <title>Versoview</title>
+        <link rel="icon" href="/assets/fav.png" />
+        <link rel="apple-touch-icon" href="/assets/fav.png" />
       </head>
       <body>
         <ChakraProvider theme={customTheme}>

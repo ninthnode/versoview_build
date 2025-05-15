@@ -133,7 +133,7 @@ const Comment = ({
                 }}
                 style={{ width: "100%" }}
               >
-                <Link href={`post/${postSlug}`} disabled={!link}>
+                <Link href={`/post/${parentComment.userId.username}/${postSlug}`} disabled={!link}>
                   <Box p="4" bg="lightblue" borderRadius="md" w="100%">
                     <Text fontSize="md">{commentText}</Text>
                   </Box>

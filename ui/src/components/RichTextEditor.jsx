@@ -15,12 +15,20 @@ const RichTextEditor = forwardRef(
       placeholderText = "",
       showExtraButtons = false,
       handleTextBodyChange,
+      bodyRichText,
     },
     ref
   ) => {
     const editorRef = useRef(null);
     const cursorPositionRef = useRef(null); // Store cursor position
     const { isOpen, onOpen, onClose } = useDisclosure();
+
+    // Add effect to handle bodyRichText if passed directly
+    useEffect(() => {
+      if (bodyRichText && editorRef.current && editorRef.current.value !== bodyRichText) {
+        editorRef.current.value = bodyRichText;
+      }
+    }, [bodyRichText]);
 
     const saveCursorPosition = () => {
       const editorInstance = editorRef.current;
@@ -156,7 +164,7 @@ const RichTextEditor = forwardRef(
         <JoditEditor
           ref={editorRef}
           config={config}
-          value={initialValue}
+          value={bodyRichText || initialValue}
           tabIndex={1}
           onChange={(newContent) => {
             saveCursorPosition();

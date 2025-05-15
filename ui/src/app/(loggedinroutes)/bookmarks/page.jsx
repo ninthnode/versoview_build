@@ -55,7 +55,7 @@ const Comment = ({
         <div
           onClick={()=>handleClick(singleComment)}
         >
-          <Link href={`post/${postId.slug}`}>
+          <Link href={`post/${singleComment.userId.username}/${postId.slug}`}>
             <HStack spacing={4} alignItems="flex-start">
               <Avatar name={singleComment.userId.channelName} src={singleComment.userId.profileImageUrl} />
               <VStack align="start" spacing={1}>
@@ -86,9 +86,9 @@ const Comment = ({
             onClick={() => submitBookmark("comment", id)}
           />
         </Box>
-        <HStack spacing={2}>
+        <HStack spacing={2} ml='8'>
           <Text mt="3"></Text>
-          <Text mt="3">{commentText}</Text>
+          <Text mt="3" bg="lightblue" borderRadius="md" w='100%' p='2'>{commentText}</Text>
         </HStack>
       </Box>
            <Divider />

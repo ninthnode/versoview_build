@@ -153,7 +153,7 @@ const PostCard = ({
                   }}
                   style={{ cursor: "pointer" }}
                 >
-                  <Link href={`/post/${post.slug}`}>
+                  <Link href={`/post/${post.channelId.username}/${post.slug}`}>
                     <Flex alignItems="center" mx="2" flexShrink={0}>
                       <Image
                         src="/assets/chat-icon.png"
@@ -193,7 +193,7 @@ const PostCard = ({
           </Button> */}
           </Text>
 
-          <Link href={`/post/${post.slug}`}>
+          <Link href={`/post/${post.channelId.username}/${post.slug}`}>
             <Heading
               py="1"
               mb="1"

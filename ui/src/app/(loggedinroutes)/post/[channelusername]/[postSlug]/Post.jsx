@@ -91,9 +91,9 @@ function SinglePost({
   }, [isModalCommentsOpen]);
   useEffect(() => {
     clearPost();
-    getCommentAndRepliesCount(params.id);
-    getPostById(params.id);
-  }, [getPostById, params.id]);
+    getCommentAndRepliesCount(params.postSlug);
+    getPostById(params.postSlug);
+  }, [getPostById, params.postSlug]);
 
   const handleChangeComment = (text) => {
     setCommentText(text);
@@ -104,8 +104,8 @@ function SinglePost({
       excerpt: selectedText,
       commentText: commentText,
     };
-    await addCommentToPost(params.id, commentObj);
-    await getCommentByPostId(params.id);
+    await addCommentToPost(params.postSlug, commentObj);
+    await getCommentByPostId(params.postSlug);
     setCommentText("");
     setSelectedText("");
     onClose();
@@ -113,7 +113,7 @@ function SinglePost({
 
   const submitBookmarkPost = async (type, postId) => {
     const res = await addRemoveBookmarks(type, postId);
-    getPostById(params.id);
+    getPostById(params.postSlug);
   };
 
   const handleSelection = (text) => {
@@ -178,7 +178,7 @@ function SinglePost({
                 </Flex>
                 <Flex>
                   <PostMenu
-                    url={`${process.env.NEXT_PUBLIC_FRONTEND_URL}/post/${postState.post.slug}`}
+                    url={`${process.env.NEXT_PUBLIC_FRONTEND_URL}/post/${postState.channel.username}/${postState.post.slug}`}
                     title={postState.post.header}
                   />
                   <IconButton
@@ -294,8 +294,8 @@ function SinglePost({
                     }
                     isDisabled={!isAuthenticated}
                     onClick={() => {
-                      updatePostUpvote(params.id);
-                      getPostById(params.id);
+                      updatePostUpvote(params.postSlug);
+                      getPostById(params.postSlug);
                     }}
                   >
                     <Text color={"green.500"}>{postState.votes.trueCount}</Text>
@@ -313,8 +313,8 @@ function SinglePost({
                     }
                     isDisabled={!isAuthenticated}
                     onClick={() => {
-                      updatePostDownvote(params.id);
-                      getPostById(params.id);
+                      updatePostDownvote(params.postSlug);
+                      getPostById(params.postSlug);
                     }}
                   >
                     <Text color={"red.500"}>{postState.votes.falseCount}</Text>
@@ -322,7 +322,7 @@ function SinglePost({
                 </Flex>
                 <Flex w="100%" justify="flex-end">
                   <ShareButton
-                    url={`${process.env.NEXT_PUBLIC_FRONTEND_URL}/post/${postState.post.slug}`}
+                    url={`${process.env.NEXT_PUBLIC_FRONTEND_URL}/post/${postState.channel.username}/post/${postState.post.slug}`}
                     title={postState.post.header}
                     shareButton={true}
                   />
@@ -387,7 +387,7 @@ function SinglePost({
               <Divider mt={4} />
               <Comments
                 postTitle={postState.post.header}
-                id={params.id}
+                id={params.postSlug}
                 isOpenCommentModal={isOpenCommentModal}
                 isModalCommentsOpen={isModalCommentsOpen}
                 onToggleCommentModal={onToggleCommentModal}

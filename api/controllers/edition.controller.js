@@ -3,6 +3,7 @@ const { Post } = require("../models/post.model");
 const { Edition } = require("../models/edition.model");
 const { Channel } = require("../models/channel.model");
 const { Bookmark } = require("../models/bookmark.model");
+const { LibraryImage } = require("../models/libraryImage.model");
 
 module.exports.createEdition = asyncHandler(async (req, res) => {
   try {
@@ -19,14 +20,37 @@ module.exports.createEdition = asyncHandler(async (req, res) => {
       subGenre: data.subGenre,
       size: data.size,
     };
+    
+    // Create and save the edition
     const newEdition = new Edition(editionData);
     await newEdition.save();
+    
+    // Save library images to the LibraryImage collection as well
+    if (data.libraryImages && data.libraryImages.length > 0) {
+      console.log(`Saving ${data.libraryImages.length} library images to LibraryImage collection`);
+      
+      const libraryImagePromises = data.libraryImages.map(imageUrl => {
+        const libraryImage = new LibraryImage({
+          editionId: newEdition._id,
+          userId: userId,
+          imageUrl: imageUrl,
+          title: "", // Default empty title
+          description: "", // Default empty description
+          tags: [] // Default empty tags array
+        });
+        return libraryImage.save();
+      });
+      
+      await Promise.all(libraryImagePromises);
+      console.log(`Successfully saved ${data.libraryImages.length} library images`);
+    }
+    
     res.json({
       status: 201,
       message: "Edition created successfully",
     });
   } catch (error) {
-    console.error(error);
+    console.error("Error creating edition:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
@@ -189,22 +213,102 @@ module.exports.deleteEdition = async (req, res) => {
 };
 module.exports.uploadLibraryImage = async (req, res) => {
   try {
+    // Check if request has the required data
+    if (!req.body.url) {
+      return res.status(400).json({ 
+        success: false,
+        message: "Image URL is required" 
+      });
+    }
+    
     let url = req.body.url; // The new URL to be added
     let editionId = req.params._id; // The Edition ID from the request params
 
-    const edition = await Edition.findById(editionId); // Find the edition by its ID
+    
+    console.log(req.user);
+    const userId = req.user._id; // Get user ID from auth middleware
+  
+    // Find the edition
+    const edition = await Edition.findById(editionId);
     if (!edition) {
-      return res.status(404).json({ message: "Edition not found" }); // Return 404 if the edition is not found
+      console.error(`Edition not found with ID: ${editionId}`);
+      return res.status(404).json({ 
+        success: false,
+        message: "Edition not found" 
+      });
     }
-    // Add the new URL to the start of the array and shift other elements
+    
+    // Initialize uploadImages array if it doesn't exist
+    if (!edition.uploadImages) {
+      edition.uploadImages = [];
+    }
+    
+    // Add the new URL to the start of the uploadImages array
     edition.uploadImages.unshift(url);
-
-    // Save the updated edition document
     await edition.save();
+    console.log(`Updated edition ${editionId} with new image in uploadImages`);
+    
+    // Also add to the LibraryImage collection for consistency
+    console.log(`Creating new LibraryImage document with URL: ${url}`);
+    const libraryImage = new LibraryImage({
+      editionId,
+      userId,
+      imageUrl: url,
+      title: req.body.title || "",
+      description: req.body.description || "",
+      tags: req.body.tags || []
+    });
+    
+    await libraryImage.save();
+    console.log(`Successfully saved new library image with ID: ${libraryImage._id}`);
+    
+    // Fetch updated library images for the response
+    const libraryImages = await LibraryImage.find({ editionId }).sort({ createdAt: -1 });
+    console.log(`Found ${libraryImages.length} library images for edition ${editionId}`);
+    const imageUrls = libraryImages.map(img => img.imageUrl);
 
-    res.status(200).json({ message: "Library image uploaded successfully", uploadImages: edition.uploadImages });
+    res.status(200).json({ 
+      success: true,
+      message: "Library image uploaded successfully", 
+      uploadImages: edition.uploadImages,
+      libraryImages: imageUrls,
+      fullData: libraryImages
+    });
   } catch (error) {
     console.error("Error uploading library image:", error);
-    res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({ 
+      success: false,
+      message: "Internal Server Error",
+      error: error.message 
+    });
   }
 };
+
+module.exports.getLibraryImagesByEditionId = asyncHandler(async (req, res) => {
+  try {
+    const editionId = req.params._id;
+    
+    // Check if edition exists
+    const edition = await Edition.findById(editionId);
+    if (!edition) {
+      return res.status(404).json({ message: "Edition not found" });
+    }
+    
+    // Get library images from the LibraryImage model
+    const libraryImages = await LibraryImage.find({ editionId }).sort({ createdAt: -1 });
+    
+    // Extract just the image URLs for compatibility with existing code
+    const imageUrls = libraryImages.map(img => img.imageUrl);
+    
+    res.status(200).json({
+      success: true,
+      data: imageUrls,
+      fullData: libraryImages,
+      message: "Library images fetched successfully",
+    });
+  } catch (error) {
+    console.error("Error fetching library images:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+

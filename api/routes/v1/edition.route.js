@@ -7,7 +7,9 @@ const {
 	deleteEdition,
 	getPdf,
 	uploadLibraryImage,
-	getEditionsSize
+	getEditionsSize,
+	getLibraryImagesByEditionId,
+	uploadNewLibraryImage
 } = require("../../controllers/edition.controller");
 const { protectUser } = require("../../middlewares/authMiddleware");
 
@@ -19,7 +21,8 @@ router.get("/getEditionById/:_id", protectUser, getEditionById);
 router.get("/getPdf/:_id", getPdf);
 router.get("/getEditionsByUserId/:_id", getEditionsByUserId);
 router.delete("/deleteEdition/:_id", deleteEdition);
-router.post("/uploadLibraryImage/:_id", uploadLibraryImage);
+router.post("/uploadLibraryImage/:_id",protectUser, uploadLibraryImage);
 router.get("/getEditionsSize",protectUser, getEditionsSize);
+router.get("/getLibraryImages/:_id", protectUser, getLibraryImagesByEditionId);
  
 module.exports = router;

@@ -33,6 +33,7 @@ const Dms = () => {
   const deviceType = useDeviceType();
   const [showChats, setShowChats] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loadingChats, setChatsLoading] = useState(true);
   const searchParams = useSearchParams();
 
   const paramsUserId = searchParams.get("id");
@@ -122,7 +123,6 @@ const Dms = () => {
       if (authState && selectedUser) {
         try {
           const token = localStorage.getItem("token").replaceAll('"', "");
-
           const response = await axios.get(
             `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/messages/chat/${authState.id}/${selectedUser._id}`,
             {
@@ -132,28 +132,35 @@ const Dms = () => {
             }
           );
           if (response.status === 200) {
-            const data = await response.data;
-            setMessages(data);
-            deviceType == "phone" && setShowChats(true);
+            setMessages(response.data);
+            deviceType === "phone" && setShowChats(true);
             setTimeout(() => {
-              setLoading(false);
-            },1200)
-          } else {
-            console.error("Failed to fetch previous messages");
+              setChatsLoading(false);
+            }, 1200);
           }
         } catch (error) {
           console.error("Error:", error);
         }
       }
     }
-    fetchMessages();
+    if (!messages.length || messages[0]?.senderId !== selectedUser?._id) {
+      fetchMessages();
+    }
   }, [selectedUser]);
+  
 
   const handleClick = (user) => {
-    user.unreadCount = 0;
-    setSelectedUser(user);
-    setSearch("");
-    router.push(`/messages?id=${user._id}`);
+    if (selectedUser?._id !== user._id) {
+      user.unreadCount = 0;
+      setSelectedUser(user);
+      setSearch("");
+  
+      const params = new URLSearchParams(window.location.search);
+      params.set("id", user._id);
+  
+      // Update URL without triggering a re-render
+      window.history.replaceState(null, "", `/messages?${params.toString()}`);
+    }
   };
 
   const handleSendMessage = () => {
@@ -283,6 +290,7 @@ const Dms = () => {
             border="1px solid #e5e5e5"
             borderRadius="md"
           >
+            
             <Box height="80vh" display="flex" flexDirection="column">
               {selectedUser ? (
                 <>
@@ -358,6 +366,10 @@ const Dms = () => {
                     </Button>
                   </HStack>
                 </>
+              ) : loadingChats ? (
+                <Box width={deviceType != "phone" ? "30%" : "100%"}>
+                  <Spinner mt="4" size="md" />
+                </Box>
               ) : (
                 <Text textAlign="center" mt="20">
                   Select a user to start chatting

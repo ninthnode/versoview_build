@@ -18,7 +18,7 @@ function RelatedArticleList({ channelPosts }) {
           py={3}
         >
           <Flex flexDir="column" justifyContent="space-between">
-          <Link href={`/post/${article.slug}`}>
+          <Link href={`/post/${article.channelId.username}/${article.slug}`}>
             <Text fontSize="1.2rem" fontWeight="semibold">
               {article.header}
             </Text>
