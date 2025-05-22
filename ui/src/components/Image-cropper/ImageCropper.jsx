@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import Cropper from "react-easy-crop";
 import { getCroppedImg } from "./utils";
 import { FaCheck, FaTimes } from "react-icons/fa";
@@ -12,8 +12,6 @@ import {
 } from "@chakra-ui/react";
 import { FaUpload, FaCamera } from "react-icons/fa";
 import { MdLibraryAdd } from "react-icons/md";
-import LibraryModal from "@/components/publish/LibraryModal";
-const axios = require("axios");
 
 const ImageCropper = ({
   onCropComplete,
@@ -23,40 +21,13 @@ const ImageCropper = ({
   setCroppedImage,
   setUploadedImage,
   edition,
-  handleLibraryImage,
-  libraryImages = [],
-  setLibraryImages = () => {},
+  setIsLibraryModalOpen
 }) => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
   const [isEditing, setIsEditing] = useState(true);
-  const { isOpen, onOpen, onClose } = useDisclosure();
   
-  useEffect(() => {
-    console.log("ImageCropper rendered with edition:", edition);
-    console.log("Uploaded image:", uploadedImage);
-    console.log("Cropped image:", croppedImage);
-  }, [edition, uploadedImage, croppedImage]);
-
-  useEffect(() => {
-    if (edition) {
-      console.log("ImageCropper: Edition object:", edition);
-      console.log("ImageCropper: Edition ID:", edition._id);
-    } else {
-      console.log("ImageCropper: No edition provided");
-    }
-  }, [edition]);
-
-  useEffect(() => {
-    if (libraryImages && libraryImages.length > 0) {
-      console.log(`ImageCropper: Library images updated, count: ${libraryImages.length}`);
-      if (libraryImages.length > 0) {
-        console.log(`First image in library: ${libraryImages[0]}`);
-      }
-    }
-  }, [libraryImages]);
-
   const onCropCompleteCallback = useCallback(
     (croppedArea, croppedAreaPixels) => {
       setCroppedAreaPixels(croppedAreaPixels);
@@ -66,9 +37,7 @@ const ImageCropper = ({
 
   const handleCrop = async () => {
     try {
-      console.log("Starting crop with:", uploadedImage);
       const croppedImg = await getCroppedImg(uploadedImage, croppedAreaPixels);
-      console.log("Crop complete, result:", croppedImg);
       onCropComplete(croppedImg);
       setIsEditing(false);
     } catch (e) {
@@ -81,40 +50,6 @@ const ImageCropper = ({
     setCroppedImage(null);
   };
 
-  const handleLibrarySelection = (imageUrl) => {
-    console.log(`===== LIBRARY IMAGE SELECTED IN IMAGECROPPER =====`);
-    console.log(`Image URL: ${imageUrl}`);
-    
-    if (!imageUrl) {
-      console.error(`No image URL provided to ImageCropper's handleLibrarySelection`);
-      return;
-    }
-    
-    // Pass the URL to the parent component
-    console.log(`Calling parent handleLibraryImage function`);
-    handleLibraryImage(imageUrl);
-    
-    // Close the modal
-    console.log(`Closing modal`);
-    onClose();
-  };
-
-  // Add a handler for image upload completed with better logging
-  const handleImageUploadCompleted = (result) => {
-    console.log(`===== Image upload completed in LibraryModal =====`);
-    console.log(`Upload result:`, result);
-    
-    // Check if we have new library images in the result
-    if (result && result.libraryImages) {
-      console.log(`Result contains ${result.libraryImages.length} library images`);
-      
-      // If we have new library images from the upload result, update our state
-      if (result.libraryImages.length > 0) {
-        console.log(`Updating ImageCropper's libraryImages state`);
-        setLibraryImages(result.libraryImages);
-      }
-    }
-  };
 
   return (
     <div>
@@ -236,8 +171,9 @@ const ImageCropper = ({
             </Tooltip>
             {edition && (
               <Tooltip label="Choose from Library">
-                <Text onClick={onOpen}>
+                <Text>
                   <MdLibraryAdd
+                  onClick={() => setIsLibraryModalOpen(true)}
                     fontSize="3rem"
                     style={{
                       backgroundColor: "#cccc",
@@ -250,23 +186,6 @@ const ImageCropper = ({
             )}
           </Flex>
           <Text>{imageSizeError}</Text>
-          
-          {/* Use the enhanced LibraryModal */}
-          {edition && (
-            <>
-              {console.log("ImageCropper: Rendering LibraryModal with editionId:", edition._id)}
-              <LibraryModal
-                isOpen={isOpen}
-                onClose={onClose}
-                libraryImages={libraryImages}
-                setLibraryImages={setLibraryImages}
-                editionId={edition._id}
-                edition={edition}
-                handleLibraryImage={handleLibrarySelection}
-                onImageUpload={handleImageUploadCompleted}
-              />
-            </>
-          )}
         </Flex>
       )}
     </div>

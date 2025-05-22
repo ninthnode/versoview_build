@@ -21,8 +21,10 @@ import {
 import { FaExpand, FaCompress, FaDesktop, FaWindowRestore } from "react-icons/fa";
 import "./style.css";
 import useDeviceType from "@/components/useDeviceType";
+import {getLibraryImagesByEditionId} from "../../redux/publish/publishActions";
+import { useDispatch,useSelector } from "react-redux";
 
-const PdfFlipBookModal = ({ images, title }) => {
+const PdfFlipBookModal = ({ title,editionId }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const deviceType = useDeviceType();
   const [isFullScreen, setIsFullScreen] = useState(false);
@@ -37,7 +39,7 @@ const PdfFlipBookModal = ({ images, title }) => {
   const flipBookRef = useRef(null);
   const modalBodyRef = useRef(null);
   const flipBookContainerRef = useRef(null);
-  
+  const dispatch = useDispatch();  
   // Update window dimensions on resize
   useEffect(() => {
     const updateWindowDimensions = () => {
@@ -203,16 +205,23 @@ const PdfFlipBookModal = ({ images, title }) => {
     return baseBreakpointDimensions || { width: 500, height: 650 };
   }, [isFullScreen, modalDimensions, windowDimensions, baseBreakpointDimensions]);
 
+  const loadImages = () => {
+    dispatch(getLibraryImagesByEditionId(editionId));
+  }
+
+    const { 
+    libraryImages, 
+  } = useSelector((state) => state.publish);
   return (
     <Box>
       <Flex 
         cursor="pointer" 
-        onClick={onOpen} 
+        onClick={()=>{loadImages(); onOpen();}} 
         alignItems="center"
         _hover={{ opacity: 0.8 }}
         transition="opacity 0.2s"
       >
-        <Image src="../assets/book.svg" h="1.2rem" w="1.4rem" mr={2} />
+        <Image src="/assets/book.svg" h="1.2rem" w="1.4rem" mr={2} />
       </Flex>
       
       <Modal 
@@ -296,7 +305,7 @@ const PdfFlipBookModal = ({ images, title }) => {
               width="100%"
               transition="all 0.3s ease"
             >
-              {images && images.length > 0 ? (
+              {libraryImages && libraryImages.length > 0 ? (
                 <HTMLFlipBook
                   ref={flipBookRef}
                   maxWidth={finalBookDimensions.width}
@@ -321,7 +330,7 @@ const PdfFlipBookModal = ({ images, title }) => {
                   maxShadowOpacity={0.5}
                   isClickFlip={true}
                 >
-                  {images.map((image, index) => (
+                  {libraryImages.map((image, index) => (
                     <div key={index} className="pdf-page">
                       <Image 
                         src={image} 

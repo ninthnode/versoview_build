@@ -10,14 +10,12 @@ import {
     GET_USER_EDITION_SUCCESS,
     UPLOAD_PDF_PROGRESS,
     CLEAN_EDITION,
-    LIBRARY_IMAGE_PROGRESS,
-    LIBRARY_IMAGE_SUCCESS,
     GET_LIBRARY_IMAGES_REQUEST,
     GET_LIBRARY_IMAGES_SUCCESS,
+    UPLOAD_LIBRARY_IMAGE_REQUEST,
+    UPLOAD_LIBRARY_IMAGE_SUCCESS,
     GET_LIBRARY_IMAGES_FAILURE,
-    UPLOAD_NEW_LIBRARY_IMAGE_REQUEST,
-    UPLOAD_NEW_LIBRARY_IMAGE_SUCCESS,
-    UPLOAD_NEW_LIBRARY_IMAGE_FAILURE
+    UPLOAD_LIBRARY_IMAGE_FAILURE
   } from './publishTypes';
   import { toast } from 'react-toastify';
 
@@ -279,294 +277,74 @@ import {
   };
 
 
-  
-const uploadFileToSignedUrl = (signedUrl, file, contentType,dispatch) => {
-  return axios.put(signedUrl, file, {
-    onUploadProgress: (progressEvent)=>{
-      const { loaded, total } = progressEvent;
-      const uploadProgress = Math.round((loaded / total) * 100);
-      dispatch({
-        type: LIBRARY_IMAGE_PROGRESS,
-        payload: uploadProgress,
-      });
-    },
-    headers: {
-      "Content-Type": contentType,
-    },
-  });
-};
 
-  export const uploadLibraryImage = (key, content_type, image, editionId) => {
-    return async (dispatch, getState) => {
-      try {
-        console.log(`===== UPLOAD LIBRARY IMAGE =====`);
-        console.log(`Uploading image with editionId: ${editionId}`);
-        
-        // Validate required parameters
-        if (!editionId) {
-          console.error("Missing editionId in uploadLibraryImage");
-          dispatch({
-            type: LIBRARY_IMAGE_FAILURE,
-            payload: "Edition ID is required"
-          });
-          throw new Error("Edition ID is required");
+  export const getLibraryImages = (editionId) => async (dispatch) => {
+    try {
+      dispatch({ type: GET_LIBRARY_IMAGES_REQUEST });
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/editions/getLibraryImages/${editionId}`,
+        {
+          headers: {
+            authorization: `Bearer ${localStorage.getItem("token").replaceAll('"', "")}`,
+          },
         }
-        
-        // Get authentication token
-        const token = localStorage.getItem("token");
-        if (!token) {
-          console.error("No authentication token found");
-          dispatch({
-            type: LIBRARY_IMAGE_FAILURE,
-            payload: "Authentication required"
-          });
-          throw new Error("Authentication required");
-        }
-        
-        // Start loading state - use LIBRARY_IMAGE_PROGRESS with 1% to indicate start
-        dispatch({ 
-          type: LIBRARY_IMAGE_PROGRESS,
-          payload: 1 
-        });
-        
-        let newImageUrl;
-        if (image) {
-          console.log(`Getting signed URL for file: ${key}`);
-          const signedUrlResponse = await getSignedUrl({ key, content_type });
-          
-          console.log(`Uploading file to S3...`);
-          const uploadResponse = await uploadFileToSignedUrl(
-            signedUrlResponse.data.signedUrl,
-            image,
-            content_type,
-            dispatch
-          );
-          
-          newImageUrl = extractImageUrl(uploadResponse.config.url);
-          console.log(`File uploaded, image URL: ${newImageUrl}`);
-        } else {
-          console.error("No image provided for upload");
-          dispatch({
-            type: LIBRARY_IMAGE_FAILURE,
-            payload: "Image file is required"
-          });
-          throw new Error("Image file is required");
-        }
-        
-        // Update progress to indicate backend processing
-        dispatch({ 
-          type: LIBRARY_IMAGE_PROGRESS,
-          payload: 95 
-        });
-        
-        // Send the image URL to the backend
-        console.log(`Saving image URL to backend for edition: ${editionId}`);
-        let response;
-        try {
-          response = await axios.post(
-            `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/editions/uploadLibraryImage/${editionId}`,
-            {url: newImageUrl},
-            {
-              headers: {
-                Authorization: `Bearer ${token.replaceAll('"', "")}`,
-              },
-              timeout: 10000 // 10 second timeout to prevent hanging
-            }
-          );
-        } catch (apiError) {
-          console.error(`Backend API error:`, apiError);
-          dispatch({
-            type: LIBRARY_IMAGE_FAILURE,
-            payload: apiError.message || "Failed to save image to backend"
-          });
-          throw apiError;
-        }
-        
-        // Check if the request was successful
-        if (!response.data.success && response.status !== 200) {
-          console.error(`Backend responded with error:`, response.data);
-          dispatch({
-            type: LIBRARY_IMAGE_FAILURE,
-            payload: response.data.message || "Failed to upload image"
-          });
-          throw new Error(response.data.message || "Failed to upload image");
-        }
-        
-        console.log(`Backend response:`, response.data);
-        
-        const { publish } = getState();
-        let newObj = {...publish.singleEdition};
-        
-        // Update edition object with new upload images
-        newObj.uploadImages = response.data.uploadImages || [];
-        
-        // First update the edition
-        dispatch({
-          type: LIBRARY_IMAGE_SUCCESS,
-          payload: {
-            edition: newObj,
-            libraryImages: response.data.libraryImages || []
-          }
-        });
-        
-        console.log(`Upload successful`);
-        
-        return response.data;
-      } catch (error) {
-        console.error(`Error uploading library image:`, error);
-        
-        // Ensure loading state is reset on any error
-        dispatch({
-          type: LIBRARY_IMAGE_FAILURE,
-          payload: error.message || "An unknown error occurred"
-        });
-        
-        // Re-throw the error for component-level handling
-        throw error;
-      }
-    };
+      );
+      dispatch({
+        type: GET_LIBRARY_IMAGES_SUCCESS,
+        payload: response?.data?.data,
+      });
+    } catch (error) {
+      console.error("Error fetching library images:", error);
+      dispatch({
+        type: GET_LIBRARY_IMAGES_FAILURE,
+        payload: error.response?.data?.message || "Failed to fetch library images",
+      });
+    }
   };
 
-export const getLibraryImagesByEditionId = (editionId) => async (dispatch) => {
-  try {
-    console.log(`===== REDUX: getLibraryImagesByEditionId =====`);
-    console.log(`Action called with editionId: ${editionId}`);
-    
-    if (!editionId) {
-      console.log(`REDUX: Missing editionId, aborting API call`);
-      return dispatch({
-        type: GET_LIBRARY_IMAGES_FAILURE,
-        payload: "Edition ID is required",
-      });
-    }
-    
-    dispatch({ type: GET_LIBRARY_IMAGES_REQUEST });
-    console.log(`REDUX: Dispatched GET_LIBRARY_IMAGES_REQUEST`);
-    
-    // Get token from localStorage
-    const token = localStorage.getItem("token")?.replaceAll('"', "") || '';
-    console.log(`REDUX: Token available: ${!!token}, length: ${token.length}`);
-    
-    const apiUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/editions/getLibraryImages/${editionId}`;
-    console.log(`REDUX: API URL: ${apiUrl}`);
-    
-    let response;
+  export const uploadLibraryImage = (key, content_type, file, editionId) => async (dispatch) => {
     try {
-      response = await axios.get(apiUrl, {
-        headers: {
-          authorization: `Bearer ${token}`,
-        },
-        timeout: 10000 // 10 second timeout to prevent hanging requests
-      });
-    } catch (apiError) {
-      console.error(`REDUX: API request failed:`, apiError);
+      dispatch({ type: UPLOAD_LIBRARY_IMAGE_REQUEST });
       
-      // Ensure loading state is reset on API error
-      dispatch({
-        type: GET_LIBRARY_IMAGES_FAILURE,
-        payload: apiError.message || "API request failed"
-      });
-      
-      return;
-    }
-    
-    console.log(`REDUX: API response status: ${response.status}`);
-    
-    // Process response in the correct format
-    dispatch({
-      type: GET_LIBRARY_IMAGES_SUCCESS,
-      payload: {
-        data: response.data.data || [],
-        fullData: response.data.fullData || []
-      },
-    });
-    console.log(`REDUX: Dispatched GET_LIBRARY_IMAGES_SUCCESS with data array length: ${response.data.data?.length || 0}`);
-  } catch (error) {
-    console.error(`REDUX: Library images fetch error: ${error.message}`);
-    
-    // Ensure loading state is reset on any error
-    dispatch({
-      type: GET_LIBRARY_IMAGES_FAILURE,
-      payload: error.message || "An unknown error occurred"
-    });
-  }
-};
+      // Get signed URL
+      const signedUrlResponse = await axios.post(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/s3/signed_url`,
+        { key, content_type }
+      );
 
-export const uploadNewLibraryImage = (key, content_type, image, editionId, imageData = {}) => async (dispatch) => {
-  try {
-    dispatch({ type: UPLOAD_NEW_LIBRARY_IMAGE_REQUEST });
-    
-    // Track upload progress
-    let newImageUrl;
-    if (image) {
-      const signedUrlResponse = await getSignedUrl({ key, content_type });
-
-      // Upload file and track progress
-      await axios.put(signedUrlResponse.data.signedUrl, image, {
+      // Upload to S3
+      await axios.put(signedUrlResponse.data.data.signedUrl, file, {
         headers: { "Content-Type": content_type },
-        onUploadProgress: (progressEvent) => {
-          const { loaded, total } = progressEvent;
-          const uploadProgress = Math.round((loaded / total) * 100);
-          dispatch({
-            type: LIBRARY_IMAGE_PROGRESS,
-            payload: uploadProgress,
-          });
-        },
       });
 
-      newImageUrl = extractImageUrl(signedUrlResponse.data.signedUrl);
+      // Extract the base URL from the signed URL
+      const signedUrl = new URL(signedUrlResponse.data.data.signedUrl);
+      const baseUrl = `${signedUrl.protocol}//${signedUrl.host}${signedUrl.pathname}`;
+
+      // Save to backend
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/editions/uploadLibraryImage/${editionId}`,
+        { url: baseUrl },
+        {
+          headers: {
+            authorization: `Bearer ${localStorage.getItem("token").replaceAll('"', "")}`,
+          },
+        }
+      );
+      dispatch({
+        type: UPLOAD_LIBRARY_IMAGE_SUCCESS,
+        payload: response.data.libraryImages,
+      });
+
+      return response.data.libraryImages;
+    } catch (error) {
+      console.error("Error uploading library image:", error);
+      dispatch({
+        type: UPLOAD_LIBRARY_IMAGE_FAILURE,
+        payload: error.response?.data?.message || "Failed to upload library image",
+      });
+      throw error;
     }
+  };
 
-    // Send the URL to the backend to update the edition
-    const token = localStorage.getItem("token").replaceAll('"', "");
-    const response = await axios.post(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/editions/uploadNewLibraryImage/${editionId}`,
-      { 
-        url: newImageUrl,
-        title: imageData.title || '',
-        description: imageData.description || '',
-        tags: imageData.tags || []
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
 
-    // Update the Redux store with the updated library images
-    dispatch({
-      type: UPLOAD_NEW_LIBRARY_IMAGE_SUCCESS,
-      payload: {
-        libraryImages: response.data.libraryImages,
-        fullData: response.data.fullData
-      },
-    });
-
-    // Reset progress
-    dispatch({
-      type: LIBRARY_IMAGE_PROGRESS,
-      payload: 0,
-    });
-
-    // Success notification
-    toast.success("Library image uploaded successfully", {
-      autoClose: 3000
-    });
-    
-    return response.data;
-  } catch (error) {
-    console.error("Error uploading new library image:", error);
-    
-    // Error notification
-    toast.error("Failed to upload image", {
-      autoClose: 3000
-    });
-    
-    dispatch({ 
-      type: UPLOAD_NEW_LIBRARY_IMAGE_FAILURE, 
-      payload: error.message 
-    });
-    throw error;
-  }
-};

@@ -236,7 +236,7 @@ function SinglePost({
                     onClick={() => isAuthenticated && onToggleCommentModal()}
                   >
                     <Image
-                      src="../assets/chat-icon.png"
+                      src="/assets/chat-icon.png"
                       h="1.2rem"
                       w="1.4rem"
                     />
@@ -255,7 +255,9 @@ function SinglePost({
                           " " +
                           postState.post.editionId?.editionDate
                         }
-                        pdfFiles={postState.post.editionId?.pdfUrls}
+                        editionId ={
+                          postState.post.editionId?._id
+                        }
                       />
                     )}
                 </Box>

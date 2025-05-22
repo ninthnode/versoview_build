@@ -10,15 +10,12 @@ import {
     GET_USER_EDITION_SUCCESS,
     UPLOAD_PDF_PROGRESS,
     CLEAN_EDITION,
-    LIBRARY_IMAGE_PROGRESS,
-    LIBRARY_IMAGE_SUCCESS,
-    LIBRARY_IMAGE_FAILURE,
     GET_LIBRARY_IMAGES_REQUEST,
     GET_LIBRARY_IMAGES_SUCCESS,
+    UPLOAD_LIBRARY_IMAGE_REQUEST,
+    UPLOAD_LIBRARY_IMAGE_SUCCESS,
     GET_LIBRARY_IMAGES_FAILURE,
-    UPLOAD_NEW_LIBRARY_IMAGE_REQUEST,
-    UPLOAD_NEW_LIBRARY_IMAGE_SUCCESS,
-    UPLOAD_NEW_LIBRARY_IMAGE_FAILURE
+    UPLOAD_LIBRARY_IMAGE_FAILURE
   } from './publishTypes';
   
   const initialState = {
@@ -31,12 +28,11 @@ import {
     userEditions: {},
     uploadProgress:0,
     uploadSteps:0,
-    libraryImageProgress:0,
     libraryImages: [],
-    fullLibraryImages: [],
-    libraryImagesLoading: false,
-    libraryImagesError: null,
-    uploadingLibraryImage: false
+    libraryLoading: false,
+    libraryError: null,
+    libraryUploadLoading: false,
+    libraryUploadError: null,
   };
   
  const publishReducer = (state = initialState, action) => {
@@ -51,18 +47,11 @@ import {
           loading: true,
           error: null,
         };
-      case UPLOAD_NEW_LIBRARY_IMAGE_REQUEST:
-        return {
-          ...state,
-          uploadingLibraryImage: true,
-          error: null,
-        };
       case GET_LIBRARY_IMAGES_REQUEST:
-        console.log(`REDUCER: GET_LIBRARY_IMAGES_REQUEST - Setting loading to true`);
         return {
           ...state,
-          libraryImagesLoading: true,
-          libraryImagesError: null,
+          libraryLoading: true,
+          libraryError: null,
         };
       case UPLOAD_PDF_PROGRESS:
         return {
@@ -70,71 +59,37 @@ import {
           uploadSteps: 1,
           uploadProgress: action.payload,
         };
-      case LIBRARY_IMAGE_PROGRESS:
-        return {
-          ...state,
-          libraryImageProgress: action.payload,
-        }
-      case LIBRARY_IMAGE_SUCCESS:
-        console.log(`REDUCER: LIBRARY_IMAGE_SUCCESS`);
-        console.log(`Updated payload:`, action.payload);
-        
-        // Get edition and library images from payload
-        const edition = action.payload.edition || action.payload;
-        const newLibraryImages = action.payload.libraryImages || [];
-        
-        console.log(`Edition:`, edition);
-        console.log(`New library images count:`, newLibraryImages.length);
-        
-        return {
-          ...state,
-          libraryImageProgress: 0,
-          libraryImagesLoading: false,
-          uploadingLibraryImage: false,
-          singleEdition: edition,
-          // Update libraryImages array with the new images if they're provided
-          libraryImages: newLibraryImages.length > 0 
-            ? newLibraryImages 
-            : [
-                ...(edition.uploadImages || []),
-                ...(state.libraryImages || []).filter(img => 
-                  !(edition.uploadImages || []).includes(img)
-                )
-              ]
-        };
-      case UPLOAD_NEW_LIBRARY_IMAGE_SUCCESS:
-        console.log(`REDUCER: UPLOAD_NEW_LIBRARY_IMAGE_SUCCESS`);
-        return {
-          ...state,
-          uploadingLibraryImage: false,
-          libraryImagesLoading: false,
-          libraryImageProgress: 0,
-          libraryImages: action.payload.libraryImages,
-          fullLibraryImages: action.payload.fullData || [],
-        };
-      case UPLOAD_NEW_LIBRARY_IMAGE_FAILURE:
-        return {
-          ...state,
-          uploadingLibraryImage: false,
-          error: action.payload,
-        };
       case GET_LIBRARY_IMAGES_SUCCESS:
-        console.log(`REDUCER: GET_LIBRARY_IMAGES_SUCCESS - Received data`);
-        console.log(`REDUCER: Library images count: ${(action.payload.data || []).length}`);
-        console.log(`REDUCER: Full library images count: ${(action.payload.fullData || []).length}`);
         return {
           ...state,
-          libraryImages: action.payload.data || [],
-          fullLibraryImages: action.payload.fullData || [],
-          libraryImagesLoading: false,
-          libraryImagesError: null,
+          libraryLoading: false,
+          libraryImages: action.payload,
+          libraryError: null,
         };
       case GET_LIBRARY_IMAGES_FAILURE:
-        console.log(`REDUCER: GET_LIBRARY_IMAGES_FAILURE - Error: ${action.payload}`);
         return {
           ...state,
-          libraryImagesLoading: false,
-          libraryImagesError: action.payload,
+          libraryLoading: false,
+          libraryError: action.payload,
+        };
+      case UPLOAD_LIBRARY_IMAGE_REQUEST:
+        return {
+          ...state,
+          libraryUploadLoading: true,
+          libraryUploadError: null,
+        };
+      case UPLOAD_LIBRARY_IMAGE_SUCCESS:
+        return {
+          ...state,
+          libraryUploadLoading: false,
+          libraryImages: action.payload,
+          libraryUploadError: null,
+        };
+      case UPLOAD_LIBRARY_IMAGE_FAILURE:
+        return {
+          ...state,
+          libraryUploadLoading: false,
+          libraryUploadError: action.payload,
         };
       case CREATE_EDITION_SUCCESS:
         return {
@@ -168,19 +123,16 @@ import {
           singleEdition: {},
           singleEditionPosts: [],
           libraryImages: [],
+          libraryLoading: false,
+          libraryError: null,
+          libraryUploadLoading: false,
+          libraryUploadError: null,
         };
       case GET_USER_EDITION_SUCCESS:
         return {
           ...state,
           loading: false,
           userEditions: action.payload,
-        };
-      case LIBRARY_IMAGE_FAILURE:
-        console.log(`REDUCER: LIBRARY_IMAGE_FAILURE - ${action.payload}`);
-        return {
-          ...state,
-          libraryImageProgress: 0,
-          error: action.payload
         };
       default:
         return state;

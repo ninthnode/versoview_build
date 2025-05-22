@@ -90,7 +90,7 @@ const PdfCards = ({ editions, getAllEditions, deletePost, deleteEdition }) => {
                   }}
                   onClick={() => push(`/publish/edition/${edition._id}`)}
                 >
-                  <Image src={edition.libraryImages[0]} alt="PDF" />
+                  <Image src={edition?.firstImage?.imageUrl} alt="PDF" />
                 </div>
                 <Box w="100%">
                   <Text fontSize="sm" noOfLines={3}>
@@ -143,10 +143,10 @@ const PdfCards = ({ editions, getAllEditions, deletePost, deleteEdition }) => {
                     borderWidth="2px"
                     zIndex="99"
                   >
-                    {edition.postId.length <= 0 && (
+                    {edition?.postId.length <= 0 && (
                       <Text fontSize="sm">Post not found!</Text>
                     )}
-                    {edition.postId.map((item, i) => (
+                    {edition?.postId.map((item, i) => (
                       <Flex
                         key={index}
                         display="flex"

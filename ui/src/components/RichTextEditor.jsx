@@ -1,14 +1,11 @@
-import React, { useRef, forwardRef, useMemo, useEffect } from "react";
+import React, { useRef, forwardRef, useMemo, useEffect,useState } from "react";
 import JoditEditor,{Jodit} from "jodit-react";
-import LibraryModal from "@/components/publish/LibraryModal";
 import { useDisclosure } from "@chakra-ui/react";
+import LibraryImageSelector from "./publish/LibraryImageSelector";
 
 const RichTextEditor = forwardRef(
   (
     {
-      edition,
-      editionId,
-      value = "",
       initialValue = "",
       onChange = () => {},
       name = "",
@@ -16,12 +13,14 @@ const RichTextEditor = forwardRef(
       showExtraButtons = false,
       handleTextBodyChange,
       bodyRichText,
+      editionId
     },
     ref
   ) => {
     const editorRef = useRef(null);
     const cursorPositionRef = useRef(null); // Store cursor position
     const { isOpen, onOpen, onClose } = useDisclosure();
+  const [isLibraryModalOpen, setIsLibraryModalOpen] = useState(false);
 
     // Add effect to handle bodyRichText if passed directly
     useEffect(() => {
@@ -49,6 +48,7 @@ const RichTextEditor = forwardRef(
     };
 
     const handleLibraryImage = (img) => {
+      console.log(img)
       injectImage(img);
       onClose();
     };
@@ -77,10 +77,9 @@ const RichTextEditor = forwardRef(
         // Focus the editor and save the cursor position
         editor.selection.focus();
         saveCursorPosition();
-
         // Slightly delay opening the modal to ensure focus is set
         setTimeout(() => {
-          onOpen();
+          setIsLibraryModalOpen(true);
         }, 0);
       },
     };
@@ -154,13 +153,6 @@ const RichTextEditor = forwardRef(
 
     return (
       <div className="text-editor-container">
-        <LibraryModal
-          isOpen={isOpen}
-          onClose={onClose}
-          editionId={editionId}
-          handleLibraryImage={handleLibraryImage}
-        />
-
         <JoditEditor
           ref={editorRef}
           config={config}
@@ -172,6 +164,13 @@ const RichTextEditor = forwardRef(
           onBlur={newContent => {handleTextBodyChange(newContent)}}
           placeholder={placeholderText || "Write something..."}
         />
+        <LibraryImageSelector
+            isOpen={isLibraryModalOpen}
+            onClose={() => setIsLibraryModalOpen(false)}
+            editionId={editionId}
+            onImageSelect={handleLibraryImage}
+            mergeImages={false}
+          />  
       </div>
     );
   }

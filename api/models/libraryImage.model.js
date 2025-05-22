@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { boolean } = require("valibot");
 
 const libraryImageSchema = new mongoose.Schema(
   {
@@ -16,17 +17,13 @@ const libraryImageSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    title: {
-      type: String,
-      default: "",
+    isDefault: {
+      type: boolean,
+      default: false,
     },
-    description: {
-      type: String,
-      default: "",
-    },
-    tags: {
-      type: [String],
-      default: [],
+    order: {
+      type: Number,
+      required: true,
     },
   },
   {

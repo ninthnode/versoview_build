@@ -19,7 +19,7 @@ import { useToast } from "@chakra-ui/react";
 import ImageCropper from "@/components/Image-cropper/ImageCropper";
 import useDeviceType from "@/components/useDeviceType";
 import genres from "@/static-data/genres";
-
+import LibraryImageSelector from "../publish/LibraryImageSelector";
 const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), {
   ssr: false,
 });
@@ -45,6 +45,7 @@ const PostForm = ({
   const toast = useToast();
   const [imageSizeError, setImageSizeError] = useState("");
   const [libraryImages, setLibraryImages] = useState([]);
+  const [isLibraryModalOpen, setIsLibraryModalOpen] = useState(false);
 
   useEffect(() => {
     // Debug log to check editionDetails
@@ -301,6 +302,7 @@ const PostForm = ({
                 handleLibraryImage={handleLibraryImage}
                 libraryImages={libraryImages}
                 setLibraryImages={setLibraryImages}
+                setIsLibraryModalOpen={setIsLibraryModalOpen}
               />
             </Box>
           </FormControl>
@@ -425,6 +427,14 @@ const PostForm = ({
           {postLoading ? (isEditMode ? "Updating Post..." : "Creating Post...") : "Save & Preview"}
         </Button>
       </Stack>
+
+
+       <LibraryImageSelector
+        isOpen={isLibraryModalOpen}
+        onClose={() => setIsLibraryModalOpen(false)}
+        editionId={editionDetails?._id}
+        onImageSelect={handleLibraryImage}
+      />
     </Box>
   );
 };

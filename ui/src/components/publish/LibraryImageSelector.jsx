@@ -1,149 +1,378 @@
-import React, { useState } from 'react';
-import Image from 'next/image';
-import useLibraryImages from '../../hooks/useLibraryImages';
-import LibraryImageUploader from './LibraryImageUploader';
+import React, { useEffect, useState } from "react";
+import {
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalCloseButton,
+  Image as ChakraImage,
+  Flex,
+  Input,
+  Box,
+  Button,
+  Text,
+  IconButton,
+  Skeleton,
+  Spinner,
+  useToast,
+} from "@chakra-ui/react";
+import { FaUpload, FaTimes } from "react-icons/fa";
+import { FiImage } from "react-icons/fi";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  getLibraryImages,
+  uploadLibraryImage,
+} from "@/redux/publish/publishActions";
 
-/**
- * A modal component for selecting library images
- * @param {Object} props - Component props
- * @param {string} props.editionId - Edition ID to fetch images for
- * @param {boolean} props.isOpen - Whether the modal is open
- * @param {function} props.onClose - Function to call when the modal is closed
- * @param {function} props.onSelect - Function to call when an image is selected
- * @param {boolean} props.showUploader - Whether to show the image uploader
- */
-const LibraryImageSelector = ({ 
-  editionId, 
-  isOpen, 
-  onClose, 
-  onSelect,
-  showUploader = true
+const LibraryImageSelector = ({
+  isOpen,
+  onClose,
+  editionId,
+  onImageSelect,
+  mergeImages = true,
 }) => {
-  const { libraryImages, fullLibraryImages, isLoading, error, refreshLibraryImages } = useLibraryImages(editionId);
-  const [searchTerm, setSearchTerm] = useState('');
-  
-  // If the modal is not open, don't render anything
-  if (!isOpen) return null;
-  
-  // Handle image selection
-  const handleSelectImage = (imageUrl) => {
-    onSelect(imageUrl);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [imageSizeError, setImageSizeError] = useState("");
+  const [imageLoaded, setImageLoaded] = useState({});
+  const [mergedImages, setMergedImages] = useState([]);
+
+  const [isMerging, setIsMerging] = useState(false);
+
+  const dispatch = useDispatch();
+  const toast = useToast();
+  const {
+    libraryImages,
+    libraryLoading,
+    libraryError,
+    libraryUploadLoading,
+    libraryUploadError,
+  } = useSelector((state) => state.publish);
+
+  const mergeImagesFromUrls = async (imageUrls) => {
+    const combinedImages = [];
+
+    if (imageUrls.length === 0) return combinedImages;
+
+    // Keep the first image as a standalone
+    combinedImages.push(imageUrls[0]);
+
+    // Function to load an image
+    const loadImage = (url) => {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous"; // Avoid CORS issues
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error(`Failed to load image: ${url}`));
+        img.src = url;
+      });
+    };
+
+    // Function to combine two images side by side
+    const combineTwoImages = async (url1, url2) => {
+      const [img1, img2] = await Promise.all([
+        loadImage(url1),
+        loadImage(url2),
+      ]);
+
+      return new Promise((resolve, reject) => {
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+
+        canvas.width = img1.width + img2.width;
+        canvas.height = Math.max(img1.height, img2.height);
+
+        // Draw both images side by side
+        context.drawImage(img1, 0, 0);
+        context.drawImage(img2, img1.width, 0);
+
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const mergedFile = new File([blob], `merged_${Date.now()}.png`, {
+              type: "image/png",
+            });
+            resolve(URL.createObjectURL(mergedFile)); // Convert File to URL for display
+          } else {
+            reject(new Error("Canvas toBlob failed"));
+          }
+        }, "image/png");
+      });
+    };
+
+    // Process the remaining images in pairs (starting from the second image)
+    for (let i = 1; i < imageUrls.length; i += 2) {
+      if (i + 1 < imageUrls.length) {
+        // Merge two images
+        combinedImages.push(
+          await combineTwoImages(imageUrls[i], imageUrls[i + 1])
+        );
+      } else {
+        // Keep the last single image
+        combinedImages.push(imageUrls[i]);
+      }
+    }
+    return combinedImages;
+  };
+
+  useEffect(() => {
+    if (isOpen && editionId) {
+      dispatch(getLibraryImages(editionId));
+    }
+  }, [isOpen, editionId, dispatch]);
+
+  useEffect(() => {
+    if (libraryError) {
+      toast({
+        title: "Error loading images",
+        description: libraryError,
+        status: "error",
+        duration: 3000,
+      });
+    }
+  }, [libraryError, toast]);
+
+  useEffect(() => {
+    if (libraryUploadError) {
+      toast({
+        title: "Error uploading image",
+        description: libraryUploadError,
+        status: "error",
+        duration: 3000,
+      });
+    }
+  }, [libraryUploadError, toast]);
+
+  useEffect(() => {
+    if (libraryImages && libraryImages.length > 0) {
+      if (mergeImages) {
+        const defaultImages = libraryImages
+          .filter((img) => img.isDefault)
+          .map((img) => img.imageUrl);
+        const nonDefaultImages = libraryImages
+          .filter((img) => !img.isDefault)
+          .map((img) => img.imageUrl);
+
+        setIsMerging(true);
+        mergeImagesFromUrls(defaultImages)
+          .then((merged) => {
+            setMergedImages([...nonDefaultImages, ...merged]);
+          })
+          .finally(() => {
+            setIsMerging(false);
+          });
+      } else {
+        setMergedImages(libraryImages.map((img) => img.imageUrl));
+      }
+    }
+  }, [libraryImages]);
+
+  const handleFileSelection = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        setImageSizeError(
+          "File size exceeds the 5MB limit. Select a smaller file."
+        );
+      } else {
+        setImageSizeError("");
+      }
+      setSelectedFile(file);
+      event.target.value = null;
+    }
+  };
+
+  const handleFileUpload = async () => {
+    if (!selectedFile) return;
+    try {
+      const key = `library/${editionId}/${selectedFile.name}`;
+      const content_type = selectedFile.type;
+      let resp = await dispatch(
+        uploadLibraryImage(key, content_type, selectedFile, editionId)
+      );
+      setSelectedFile(null);
+      toast({
+        title: "Image uploaded successfully",
+        status: "success",
+        duration: 3000,
+      });
+    } catch (error) {
+      toast({
+        title: "Error uploading image",
+        description: error.message,
+        status: "error",
+        duration: 3000,
+      });
+    }
+  };
+
+  const handleDeselectFile = () => {
+    setSelectedFile(null);
+  };
+
+  const handleImageClick = (image) => {
+    onImageSelect(image);
     onClose();
   };
-  
-  // Filter images based on search term
-  const filteredImages = searchTerm && fullLibraryImages 
-    ? fullLibraryImages.filter(img => 
-        (img.title && img.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (img.description && img.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (img.tags && img.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())))
-      )
-    : fullLibraryImages || [];
-  
-  // Extract URLs for backwards compatibility
-  const imageUrls = searchTerm && fullLibraryImages 
-    ? filteredImages.map(img => img.imageUrl)
-    : libraryImages || [];
 
-  // Handle successful upload
-  const handleUploadSuccess = () => {
-    refreshLibraryImages();
+  const renderImage = (image, index) => {
+    return (
+      <Box key={index} boxSize="25%" maxW="200px" position="relative">
+        <Skeleton
+          boxSize="100%"
+          isLoaded={!!imageLoaded[image]}
+          borderRadius="md"
+        >
+          <ChakraImage
+            src={image}
+            alt={`Image ${index + 1}`}
+            boxSize="100%"
+            objectFit="cover"
+            borderRadius="md"
+            maxH="200px"
+            minH="200px"
+            minW="200px"
+            objectPosition="top center"
+            onLoad={() =>
+              setImageLoaded((prev) => ({ ...prev, [image]: true }))
+            }
+            onClick={() => handleImageClick(image)}
+            _hover={{
+              cursor: "pointer",
+              transform: "scale(1.05)",
+              transition: "transform 0.2s ease-in-out",
+              boxShadow: "lg",
+            }}
+          />
+        </Skeleton>
+      </Box>
+    );
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] flex flex-col">
-        {/* Header */}
-        <div className="px-6 py-4 border-b flex justify-between items-center">
-          <h2 className="text-xl font-bold">Library Images</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-800"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-        
-        {/* Search */}
-        <div className="px-6 py-3 border-b">
-          <input
-            type="text"
-            placeholder="Search by title, description, or tags..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-2 border rounded-md"
-          />
-        </div>
-        
-        {/* Images Grid */}
-        <div className="p-6 overflow-y-auto flex-grow">
-          {isLoading ? (
-            <div className="flex justify-center items-center h-40">
-              <p>Loading library images...</p>
-            </div>
-          ) : error ? (
-            <div className="text-red-500">Error: {error}</div>
-          ) : imageUrls.length === 0 ? (
-            <div className="text-gray-500 text-center py-10">
-              {searchTerm ? 'No images match your search.' : 'No library images available.'}
-            </div>
+    <Modal mx="2" size="6xl" isOpen={isOpen} onClose={onClose}>
+      <ModalOverlay />
+      <ModalContent>
+        <ModalHeader fontSize="lg" lineHeight="2.5rem">
+          Choose Image from Library
+        </ModalHeader>
+        <ModalCloseButton />
+        <ModalBody>
+          {/* Upload Box */}
+          <Box mb={4}>
+            <Flex
+              align="center"
+              gap={4}
+              border="1px dashed #CBD5E0"
+              borderRadius="md"
+              p={4}
+              justifyContent="space-between"
+              backgroundColor="#F7FAFC"
+              w="100%"
+            >
+              {selectedFile ? (
+                <Flex
+                  w="100%"
+                  mt={3}
+                  align="center"
+                  justifyContent="space-between"
+                >
+                  <Text fontSize="sm" color="gray.600">
+                    <ChakraImage
+                      src={URL.createObjectURL(selectedFile)}
+                      alt={`Uploading`}
+                      boxSize="80px"
+                      objectFit="cover"
+                      borderRadius="md"
+                    />
+                    Selected File: {selectedFile.name}
+                  </Text>
+                  <Box>
+                    <Flex justify="flex-end" align="center" w={"100%"} gap={2}>
+                      <Button
+                        size="md"
+                        colorScheme="teal"
+                        onClick={handleFileUpload}
+                        isDisabled={!!imageSizeError || libraryUploadLoading}
+                        isLoading={libraryUploadLoading}
+                      >
+                        Upload
+                      </Button>
+                      <IconButton
+                        aria-label="Deselect file"
+                        icon={<FaTimes />}
+                        size="sm"
+                        colorScheme="red"
+                        onClick={handleDeselectFile}
+                        isDisabled={libraryUploadLoading}
+                      />
+                    </Flex>
+                    {imageSizeError && (
+                      <Text color="red.500">{imageSizeError}</Text>
+                    )}
+                  </Box>
+                </Flex>
+              ) : (
+                <Flex
+                  w="100%"
+                  mt={3}
+                  align="center"
+                  justifyContent="space-between"
+                >
+                  <Flex align="center" gap={3}>
+                    <FiImage size={24} color="#4A5568" />
+                    <Text color="#4A5568">Select an image to upload</Text>
+                  </Flex>
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileSelection}
+                    display="none"
+                    id="file-upload"
+                    disabled={libraryUploadLoading}
+                  />
+                  <Button
+                    as="label"
+                    htmlFor="file-upload"
+                    size="sm"
+                    leftIcon={<FaUpload />}
+                    colorScheme="teal"
+                    variant="outline"
+                    isDisabled={libraryUploadLoading}
+                  >
+                    Browse
+                  </Button>
+                </Flex>
+              )}
+            </Flex>
+          </Box>
+
+          {/* Library Images Grid */}
+          {libraryLoading || isMerging ? (
+            <Flex justifyContent="center" alignItems="center" minHeight="80vh">
+              <Spinner size="xl" />
+            </Flex>
+          ) : mergedImages && mergedImages.length > 0 ? (
+            <Flex
+              wrap="wrap"
+              justifyContent="center"
+              gap={4}
+              mt={4}
+              minHeight="80vh"
+              maxW="860px"
+              mx="auto"
+            >
+              {mergedImages.map((image, index) => renderImage(image, index))}
+            </Flex>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {fullLibraryImages && fullLibraryImages.length > 0
-                ? filteredImages.map((image) => (
-                    <div
-                      key={image._id}
-                      className="relative h-48 border rounded-md overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
-                      onClick={() => handleSelectImage(image.imageUrl)}
-                    >
-                      <Image
-                        src={image.imageUrl}
-                        alt={image.title || "Library image"}
-                        fill
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        className="object-cover"
-                      />
-                      {image.title && (
-                        <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-60 text-white p-1 text-sm truncate">
-                          {image.title}
-                        </div>
-                      )}
-                    </div>
-                  ))
-                : imageUrls.map((imageUrl, index) => (
-                    <div
-                      key={index}
-                      className="relative h-48 border rounded-md overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
-                      onClick={() => handleSelectImage(imageUrl)}
-                    >
-                      <Image
-                        src={imageUrl}
-                        alt={`Library image ${index + 1}`}
-                        fill
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        className="object-cover"
-                      />
-                    </div>
-                  ))
-              }
-            </div>
+            <Flex justifyContent="center" alignItems="center" minHeight="80vh">
+              <Text color="gray.500">No images found in library</Text>
+            </Flex>
           )}
-        </div>
-        
-        {/* Uploader (Optional) */}
-        {showUploader && (
-          <div className="px-6 py-4 border-t">
-            <LibraryImageUploader 
-              editionId={editionId} 
-              onUploadSuccess={handleUploadSuccess}
-            />
-          </div>
-        )}
-      </div>
-    </div>
+        </ModalBody>
+      </ModalContent>
+    </Modal>
   );
 };
 
-export default LibraryImageSelector; 
+export default LibraryImageSelector;

@@ -15,7 +15,6 @@ module.exports.createEdition = asyncHandler(async (req, res) => {
       editionDescription: data.about,
       editionDate: data.date,
       pdfUrls: data.pdfUrls,
-      libraryImages: data.libraryImages,
       genre: data.genre,
       subGenre: data.subGenre,
       size: data.size,
@@ -27,22 +26,19 @@ module.exports.createEdition = asyncHandler(async (req, res) => {
     
     // Save library images to the LibraryImage collection as well
     if (data.libraryImages && data.libraryImages.length > 0) {
-      console.log(`Saving ${data.libraryImages.length} library images to LibraryImage collection`);
-      
-      const libraryImagePromises = data.libraryImages.map(imageUrl => {
+      const libraryImagePromises = data.libraryImages.map((imageUrl, index) => {
+      const order = data.libraryImages.length - 1 - index; // reverse the order
         const libraryImage = new LibraryImage({
           editionId: newEdition._id,
           userId: userId,
           imageUrl: imageUrl,
-          title: "", // Default empty title
-          description: "", // Default empty description
-          tags: [] // Default empty tags array
+          order: order, // store the index
+          isDefault: true, // optional flag if needed
         });
         return libraryImage.save();
       });
-      
+
       await Promise.all(libraryImagePromises);
-      console.log(`Successfully saved ${data.libraryImages.length} library images`);
     }
     
     res.json({
@@ -59,12 +55,25 @@ module.exports.getAllEdition = asyncHandler(async (req, res) => {
   try {
     const userId = req.user._id;
     const userEditions = await Edition.find({ userId: userId })
-      .populate("postId").sort({ createdAt: -1 })
-      .exec();
+      .populate("postId")
+      .sort({ createdAt: -1 })
+      .lean();
+  const editionsWithImage = await Promise.all(
+      userEditions.map(async (edition) => {
+        const firstImage = await LibraryImage.findOne({ editionId: edition._id })
+          .sort({ createdAt: 1 }) // earliest image
+          .lean();
+
+        return {
+          ...edition,
+          firstImage: firstImage || null, // add image object or null if none
+        };
+      })
+    );
 
     res.status(200).json({
       message: "Success",
-      data: userEditions,
+      data: editionsWithImage,
     });
   } catch (error) {
     console.error(error);
@@ -213,66 +222,53 @@ module.exports.deleteEdition = async (req, res) => {
 };
 module.exports.uploadLibraryImage = async (req, res) => {
   try {
-    // Check if request has the required data
     if (!req.body.url) {
       return res.status(400).json({ 
         success: false,
         message: "Image URL is required" 
       });
     }
-    
-    let url = req.body.url; // The new URL to be added
-    let editionId = req.params._id; // The Edition ID from the request params
 
-    
-    console.log(req.user);
-    const userId = req.user._id; // Get user ID from auth middleware
-  
-    // Find the edition
+    const url = req.body.url;
+    const editionId = req.params._id;
+    const userId = req.user._id;
+
     const edition = await Edition.findById(editionId);
     if (!edition) {
-      console.error(`Edition not found with ID: ${editionId}`);
       return res.status(404).json({ 
         success: false,
         message: "Edition not found" 
       });
     }
-    
-    // Initialize uploadImages array if it doesn't exist
+
+    // --- 🆕 Find the next order index ---
+    const lastImage = await LibraryImage.find({ editionId })
+    console.log(lastImage);
+
+    // Add the new image URL to edition (if needed)
     if (!edition.uploadImages) {
       edition.uploadImages = [];
     }
-    
-    // Add the new URL to the start of the uploadImages array
     edition.uploadImages.unshift(url);
     await edition.save();
-    console.log(`Updated edition ${editionId} with new image in uploadImages`);
-    
-    // Also add to the LibraryImage collection for consistency
-    console.log(`Creating new LibraryImage document with URL: ${url}`);
+
+    // --- Create LibraryImage with order field ---
     const libraryImage = new LibraryImage({
       editionId,
       userId,
       imageUrl: url,
-      title: req.body.title || "",
-      description: req.body.description || "",
-      tags: req.body.tags || []
+      order: lastImage.length, // ✅ Save with order
     });
-    
+
     await libraryImage.save();
-    console.log(`Successfully saved new library image with ID: ${libraryImage._id}`);
-    
-    // Fetch updated library images for the response
-    const libraryImages = await LibraryImage.find({ editionId }).sort({ createdAt: -1 });
-    console.log(`Found ${libraryImages.length} library images for edition ${editionId}`);
-    const imageUrls = libraryImages.map(img => img.imageUrl);
+
+    // --- Sort by order for consistent response ---
+    const libraryImages = await LibraryImage.find({ editionId }).sort({ order: -1 });
 
     res.status(200).json({ 
       success: true,
       message: "Library image uploaded successfully", 
-      uploadImages: edition.uploadImages,
-      libraryImages: imageUrls,
-      fullData: libraryImages
+      libraryImages: libraryImages,
     });
   } catch (error) {
     console.error("Error uploading library image:", error);
@@ -284,6 +280,7 @@ module.exports.uploadLibraryImage = async (req, res) => {
   }
 };
 
+
 module.exports.getLibraryImagesByEditionId = asyncHandler(async (req, res) => {
   try {
     const editionId = req.params._id;
@@ -293,17 +290,12 @@ module.exports.getLibraryImagesByEditionId = asyncHandler(async (req, res) => {
     if (!edition) {
       return res.status(404).json({ message: "Edition not found" });
     }
-    
-    // Get library images from the LibraryImage model
-    const libraryImages = await LibraryImage.find({ editionId }).sort({ createdAt: -1 });
-    
-    // Extract just the image URLs for compatibility with existing code
-    const imageUrls = libraryImages.map(img => img.imageUrl);
+      // Get library images from the LibraryImage model
+    const libraryImages = await LibraryImage.find({ editionId }).sort({ order: -1 });
     
     res.status(200).json({
       success: true,
-      data: imageUrls,
-      fullData: libraryImages,
+      data: libraryImages,
       message: "Library images fetched successfully",
     });
   } catch (error) {
