@@ -291,11 +291,35 @@ module.exports.getLibraryImagesByEditionId = asyncHandler(async (req, res) => {
       return res.status(404).json({ message: "Edition not found" });
     }
       // Get library images from the LibraryImage model
-    const libraryImages = await LibraryImage.find({ editionId }).sort({ order: -1 });
-    
+    const libraryImages = await LibraryImage.find({ editionId}).sort({ order: -1 });
+
     res.status(200).json({
       success: true,
       data: libraryImages,
+      message: "Library images fetched successfully",
+    });
+  } catch (error) {
+    console.error("Error fetching library images:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+module.exports.getLibraryImagesForPageTurner = asyncHandler(async (req, res) => {
+  try {
+    const editionId = req.params._id;
+    
+    // Check if edition exists
+    const edition = await Edition.findById(editionId);
+    if (!edition) {
+      return res.status(404).json({ message: "Edition not found" });
+    }
+      // Get library images from the LibraryImage model
+    const libraryImages = await LibraryImage.find({ editionId, isDefault: true }).sort({ order: -1 });
+    const imageUrls = libraryImages.map(img => img.imageUrl);
+
+    res.status(200).json({
+      success: true,
+      data: imageUrls,
       message: "Library images fetched successfully",
     });
   } catch (error) {

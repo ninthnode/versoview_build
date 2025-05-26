@@ -21,7 +21,7 @@ import {
 import { FaExpand, FaCompress, FaDesktop, FaWindowRestore } from "react-icons/fa";
 import "./style.css";
 import useDeviceType from "@/components/useDeviceType";
-import {getLibraryImagesByEditionId} from "../../redux/publish/publishActions";
+import {getLibraryImagesForPageTurner} from "../../redux/publish/publishActions";
 import { useDispatch,useSelector } from "react-redux";
 
 const PdfFlipBookModal = ({ title,editionId }) => {
@@ -206,7 +206,7 @@ const PdfFlipBookModal = ({ title,editionId }) => {
   }, [isFullScreen, modalDimensions, windowDimensions, baseBreakpointDimensions]);
 
   const loadImages = () => {
-    dispatch(getLibraryImagesByEditionId(editionId));
+    dispatch(getLibraryImagesForPageTurner(editionId));
   }
 
     const { 

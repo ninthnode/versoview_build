@@ -21,7 +21,9 @@ const PdfViewer = ({ pdfUrls }) => {
     setPdfLoading(true);
     
     if (pdfUrls && pdfUrls.length > 0) {
-      loadInitialPdf();
+      // Load the first PDF immediately
+      setPdfPages([pdfUrls[0]]);
+      setPageStart(0); // Start at index 0
     }
     
     return () => {
@@ -29,17 +31,12 @@ const PdfViewer = ({ pdfUrls }) => {
     };
   }, [pdfUrls]);
 
+  // Separate effect for loading additional PDFs when pageStart changes
   useEffect(() => {
-    if (pdfUrls && pdfUrls.length > 0 && pageStart < pdfUrls.length) {
+    if (pdfUrls && pdfUrls.length > 0 && pageStart > 0 && pageStart < pdfUrls.length) {
       setPdfPages((prev) => [...prev, pdfUrls[pageStart]]);
     }
   }, [pageStart, pdfUrls]);
-
-  const loadInitialPdf = () => {
-    if (pdfUrls && pdfUrls.length > 0) {
-      setPdfPages([pdfUrls[0]]);
-    }
-  };
 
   const handleScroll = (e) => {
     if (
@@ -55,7 +52,11 @@ const PdfViewer = ({ pdfUrls }) => {
   const onLoadSuccess = (pdf, index) => {
     setNumPages((prev) => ({ ...prev, [index]: pdf.numPages }));
     setPdfLoading(false);
-    if (pdfUrls && pdfPages.length < pdfUrls.length) loadNextPdf();
+    
+    // Only load next PDF if we have more PDFs to load
+    if (pdfUrls && pdfPages.length < pdfUrls.length) {
+      loadNextPdf();
+    }
   };
 
   const loadNextPdf = () => {
@@ -78,7 +79,7 @@ const PdfViewer = ({ pdfUrls }) => {
       <Box border="1px solid #e2e8f0" h="100vh">
         <Flex align="flex-start" justifyContent="center" w="100%" h="full">
           <div
-            style={{ width: "100%", height: "80vh", overflowY: "scroll" }}
+            style={{ width: "100%", height: "80vh", overflowY: "scroll", overflowX: "hidden" }}
             onScroll={handleScroll}
           >
             {pdfPages &&
@@ -113,4 +114,4 @@ const PdfViewer = ({ pdfUrls }) => {
   );
 };
 
-export default PdfViewer; 
+export default PdfViewer;

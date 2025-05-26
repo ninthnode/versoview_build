@@ -301,6 +301,29 @@ import {
       });
     }
   };
+  export const getLibraryImagesForPageTurner = (editionId) => async (dispatch) => {
+    try {
+      dispatch({ type: GET_LIBRARY_IMAGES_REQUEST });
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/editions/getLibraryImagesForPageTurner/${editionId}`,
+        {
+          headers: {
+            authorization: `Bearer ${localStorage.getItem("token").replaceAll('"', "")}`,
+          },
+        }
+      );
+      dispatch({
+        type: GET_LIBRARY_IMAGES_SUCCESS,
+        payload: response?.data?.data,
+      });
+    } catch (error) {
+      console.error("Error fetching library images:", error);
+      dispatch({
+        type: GET_LIBRARY_IMAGES_FAILURE,
+        payload: error.response?.data?.message || "Failed to fetch library images",
+      });
+    }
+  };
 
   export const uploadLibraryImage = (key, content_type, file, editionId) => async (dispatch) => {
     try {

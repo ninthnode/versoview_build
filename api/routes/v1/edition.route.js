@@ -9,7 +9,7 @@ const {
 	uploadLibraryImage,
 	getEditionsSize,
 	getLibraryImagesByEditionId,
-	uploadNewLibraryImage
+	getLibraryImagesForPageTurner
 } = require("../../controllers/edition.controller");
 const { protectUser } = require("../../middlewares/authMiddleware");
 
@@ -24,5 +24,6 @@ router.delete("/deleteEdition/:_id", deleteEdition);
 router.post("/uploadLibraryImage/:_id",protectUser, uploadLibraryImage);
 router.get("/getEditionsSize",protectUser, getEditionsSize);
 router.get("/getLibraryImages/:_id", protectUser, getLibraryImagesByEditionId);
+router.get("/getLibraryImagesForPageTurner/:_id", protectUser, getLibraryImagesForPageTurner);
  
 module.exports = router;

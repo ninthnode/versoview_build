@@ -163,8 +163,8 @@ const PublishPost = () => {
         content_type = image.type;
         key = `test/image/${image.name}`;
       }
-      formData.section = genres[selectedSection].genre;
-      formData.subSection = selectedSubSection;
+      formData.section = genres[selectedSection]?.genre ||"";
+      formData.subSection = selectedSubSection||"";
       formData.editionId = "";
       dispatch(createNewPost(key, content_type, image, formData));
     } catch (error) {
@@ -186,8 +186,8 @@ const PublishPost = () => {
         content_type = image.type;
         key = `test/image/${image.name}`;
       }
-      formData.section = genres[selectedSection].genre;
-      formData.subSection = selectedSubSection;
+      formData.section = genres[selectedSection]?.genre ||"";
+      formData.subSection = selectedSubSection||"";
       dispatch(editPost(key, content_type, image, formData, editPostId));
     } catch (error) {
       console.error("Error submitting form:", error);
@@ -421,8 +421,8 @@ const PublishPost = () => {
               post={formData}
               croppedImage={croppedImage}
               uploadedImage={uploadedImage}
-              selectedSection={genres[selectedSection].genre}
-              selectedSubSection={selectedSubSection}
+              selectedSection={genres[selectedSection]?.genre || ""}
+              selectedSubSection={selectedSubSection || ""}
               userChannel={userChannel}
               postLoading={postLoading}
               handleSubmit={handleSubmit}

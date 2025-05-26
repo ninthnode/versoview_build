@@ -49,71 +49,158 @@ const LibraryImageSelector = ({
     libraryUploadError,
   } = useSelector((state) => state.publish);
 
-  const mergeImagesFromUrls = async (imageUrls) => {
-    const combinedImages = [];
+// Fixed loadImage function with better error handling and CORS handling
+const loadImage = (url) => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    
+    // Add timeout to prevent hanging
+    const timeout = setTimeout(() => {
+      reject(new Error(`Image loading timeout: ${url}`));
+    }, 10000); // 10 second timeout
+    
+    img.onload = () => {
+      clearTimeout(timeout);
+      resolve(img);
+    };
+    
+    img.onerror = (error) => {
+      clearTimeout(timeout);
+      console.error('Image loading error:', error, 'URL:', url);
+      reject(new Error(`Failed to load image: ${url}`));
+    };
+    
+    // Try loading without crossOrigin first (for same-origin images)
+    // Only set crossOrigin if the image is from a different origin
+    try {
+      const imageUrl = new URL(url, window.location.origin);
+      const currentOrigin = new URL(window.location.origin);
+      
+      if (imageUrl.origin !== currentOrigin.origin) {
+        img.crossOrigin = "anonymous";
+      }
+    } catch (e) {
+      // If URL parsing fails, assume it's a relative URL (same origin)
+      console.warn('URL parsing failed, assuming same origin:', url);
+    }
+    
+    img.src = url;
+  });
+};
 
-    if (imageUrls.length === 0) return combinedImages;
+// Alternative approach - if CORS is still an issue, use fetch with proxy
+const loadImageWithFetch = async (url) => {
+  try {
+    // First try to load normally
+    return await loadImage(url);
+  } catch (error) {
+    console.warn('Normal image loading failed, trying fetch approach:', error);
+    
+    // Fallback: use fetch to get the image as blob, then create object URL
+    try {
+      const response = await fetch(url, { mode: 'cors' });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+          // Clean up the object URL after loading
+          URL.revokeObjectURL(objectUrl);
+          resolve(img);
+        };
+        img.onerror = () => {
+          URL.revokeObjectURL(objectUrl);
+          reject(new Error(`Failed to load image from blob: ${url}`));
+        };
+        img.src = objectUrl;
+      });
+    } catch (fetchError) {
+      throw new Error(`All loading methods failed for: ${url} - ${fetchError.message}`);
+    }
+  }
+};
 
+// Updated mergeImagesFromUrls function with better error handling
+const mergeImagesFromUrls = async (imageUrls) => {
+  const combinedImages = [];
+
+  if (imageUrls.length === 0) return combinedImages;
+
+  try {
     // Keep the first image as a standalone
     combinedImages.push(imageUrls[0]);
 
-    // Function to load an image
-    const loadImage = (url) => {
-      return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.crossOrigin = "anonymous"; // Avoid CORS issues
-        img.onload = () => resolve(img);
-        img.onerror = () => reject(new Error(`Failed to load image: ${url}`));
-        img.src = url;
-      });
-    };
-
     // Function to combine two images side by side
     const combineTwoImages = async (url1, url2) => {
-      const [img1, img2] = await Promise.all([
-        loadImage(url1),
-        loadImage(url2),
-      ]);
+      try {
+        const [img1, img2] = await Promise.all([
+          loadImageWithFetch(url1),
+          loadImageWithFetch(url2),
+        ]);
 
-      return new Promise((resolve, reject) => {
-        const canvas = document.createElement("canvas");
-        const context = canvas.getContext("2d");
+        return new Promise((resolve, reject) => {
+          const canvas = document.createElement("canvas");
+          const context = canvas.getContext("2d");
 
-        canvas.width = img1.width + img2.width;
-        canvas.height = Math.max(img1.height, img2.height);
+          canvas.width = img1.width + img2.width;
+          canvas.height = Math.max(img1.height, img2.height);
 
-        // Draw both images side by side
-        context.drawImage(img1, 0, 0);
-        context.drawImage(img2, img1.width, 0);
+          // Draw both images side by side
+          context.drawImage(img1, 0, 0);
+          context.drawImage(img2, img1.width, 0);
 
-        canvas.toBlob((blob) => {
-          if (blob) {
-            const mergedFile = new File([blob], `merged_${Date.now()}.png`, {
-              type: "image/png",
-            });
-            resolve(URL.createObjectURL(mergedFile)); // Convert File to URL for display
-          } else {
-            reject(new Error("Canvas toBlob failed"));
-          }
-        }, "image/png");
-      });
+          canvas.toBlob((blob) => {
+            if (blob) {
+              const mergedFile = new File([blob], `merged_${Date.now()}.png`, {
+                type: "image/png",
+              });
+              resolve(URL.createObjectURL(mergedFile));
+            } else {
+              reject(new Error("Canvas toBlob failed"));
+            }
+          }, "image/png");
+        });
+      } catch (error) {
+        console.error('Error combining images:', error);
+        throw error;
+      }
     };
 
     // Process the remaining images in pairs (starting from the second image)
     for (let i = 1; i < imageUrls.length; i += 2) {
-      if (i + 1 < imageUrls.length) {
-        // Merge two images
-        combinedImages.push(
-          await combineTwoImages(imageUrls[i], imageUrls[i + 1])
-        );
-      } else {
-        // Keep the last single image
-        combinedImages.push(imageUrls[i]);
+      try {
+        if (i + 1 < imageUrls.length) {
+          // Merge two images
+          const mergedImage = await combineTwoImages(imageUrls[i], imageUrls[i + 1]);
+          combinedImages.push(mergedImage);
+        } else {
+          // Keep the last single image
+          combinedImages.push(imageUrls[i]);
+        }
+      } catch (error) {
+        console.error(`Error processing images at index ${i}:`, error);
+        // Continue with the remaining images even if one pair fails
+        if (i + 1 < imageUrls.length) {
+          // Add both images individually if merging fails
+          combinedImages.push(imageUrls[i], imageUrls[i + 1]);
+        } else {
+          combinedImages.push(imageUrls[i]);
+        }
       }
     }
+    
     return combinedImages;
-  };
-
+  } catch (error) {
+    console.error('Error in mergeImagesFromUrls:', error);
+    // Fallback: return original URLs if merging completely fails
+    return imageUrls;
+  }
+};
   useEffect(() => {
     if (isOpen && editionId) {
       dispatch(getLibraryImages(editionId));
@@ -227,12 +314,13 @@ const LibraryImageSelector = ({
             src={image}
             alt={`Image ${index + 1}`}
             boxSize="100%"
-            objectFit="cover"
+            objectFit="contain"
             borderRadius="md"
             maxH="200px"
             minH="200px"
             minW="200px"
-            objectPosition="top center"
+            objectPosition="center center"
+            border="2px solid #e5e5e5"
             onLoad={() =>
               setImageLoaded((prev) => ({ ...prev, [image]: true }))
             }
