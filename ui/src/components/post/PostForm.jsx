@@ -293,7 +293,7 @@ const PostForm = ({
             >
               <ImageCropper
                 croppedImage={croppedImage}
-                uploadedImage={uploadedImage}
+                uploadedImage={uploadedImage ||formData?.mainImageURL}
                 onCropComplete={setCroppedImage}
                 imageSizeError={imageSizeError}
                 setCroppedImage={setCroppedImage}

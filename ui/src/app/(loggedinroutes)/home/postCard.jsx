@@ -144,7 +144,7 @@ const PostCard = ({
                 flexWrap="nowrap"
               >
                 <Text overflow="hidden" textOverflow="ellipsis" flexShrink={1}>
-                  {post.section} &bull; {post.subSection} &bull;{" "}
+                  {post.section} {post.section&& "●"} {post.subSection} {post.subSection&& "●"}{" "}
                   {formatDate(post.createdAt)} &bull; {post.readingTime} read
                 </Text>
                 <div

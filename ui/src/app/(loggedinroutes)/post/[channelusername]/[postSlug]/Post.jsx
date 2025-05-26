@@ -224,8 +224,8 @@ function SinglePost({
                     textOverflow="ellipsis"
                     flexShrink={1}
                   >
-                    {postState.post.section} &bull; {postState.post.subSection}{" "}
-                    &bull; {formatDate(postState.post.createdAt)} &bull;{" "}
+                    {postState.post.section}  {postState.post.section&& "●"} {postState.post.subSection}{" "}
+                     {postState.post.subSection&& "●"}  {formatDate(postState.post.createdAt)} &bull;{" "}
                     {postState.readingTime} read
                   </Text>
                   <Flex
