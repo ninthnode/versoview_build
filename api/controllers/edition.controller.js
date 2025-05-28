@@ -60,8 +60,8 @@ module.exports.getAllEdition = asyncHandler(async (req, res) => {
       .lean();
   const editionsWithImage = await Promise.all(
       userEditions.map(async (edition) => {
-        const firstImage = await LibraryImage.findOne({ editionId: edition._id })
-          .sort({ createdAt: 1 }) // earliest image
+        const firstImage = await LibraryImage.findOne({ editionId: edition._id,isDefault: true })
+          .sort({ order: -1 }) // earliest image
           .lean();
 
         return {

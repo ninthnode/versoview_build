@@ -208,7 +208,7 @@ const CreateEdition = () => {
                   // Start with original dimensions
                   let width = img.width;
                   let height = img.height;
-                  let quality = 0.85;
+                  let quality = 1.0;
                   const maxSize = maxSizeMB * 1024 * 1024; // Convert MB to bytes
                   
                   // If file is already small enough, just return it
@@ -273,7 +273,7 @@ const CreateEdition = () => {
           }
 
           // Function to render a single page as an image
-          const renderPage = async (pageNum, scale = 0.8) => {
+          const renderPage = async (pageNum, scale = 2.0) => {
             const page = await pdf.getPage(pageNum);
             const viewport = page.getViewport({ scale });
             const canvas = document.createElement("canvas");

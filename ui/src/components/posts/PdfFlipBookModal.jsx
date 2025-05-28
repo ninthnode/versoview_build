@@ -18,7 +18,7 @@ import {
   HStack,
   Button,
 } from "@chakra-ui/react";
-import { FaExpand, FaCompress, FaDesktop, FaWindowRestore } from "react-icons/fa";
+import { FaExpand, FaCompress, FaDesktop, FaWindowRestore, FaSearchPlus, FaSearchMinus, FaUndo, FaBook, FaSearch } from "react-icons/fa";
 import "./style.css";
 import useDeviceType from "@/components/useDeviceType";
 import {getLibraryImagesForPageTurner} from "../../redux/publish/publishActions";
@@ -28,6 +28,7 @@ const PdfFlipBookModal = ({ title,editionId }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const deviceType = useDeviceType();
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
   const [modalDimensions, setModalDimensions] = useState({
     width: 0,
     height: 0
@@ -36,18 +37,37 @@ const PdfFlipBookModal = ({ title,editionId }) => {
     width: typeof window !== 'undefined' ? window.innerWidth : 1024,
     height: typeof window !== 'undefined' ? window.innerHeight : 768
   });
+  
+  // Mode state - NEW: Toggle between zoom and page turner mode
+  const [isZoomMode, setIsZoomMode] = useState(false);
+  
+  // Zoom state
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [lastPanOffset, setLastPanOffset] = useState({ x: 0, y: 0 });
+  
   const flipBookRef = useRef(null);
   const modalBodyRef = useRef(null);
   const flipBookContainerRef = useRef(null);
-  const dispatch = useDispatch();  
-  // Update window dimensions on resize
+  const dispatch = useDispatch();
+
+  const MIN_ZOOM = 0.5;
+  const MAX_ZOOM = 3;
+  const ZOOM_STEP = 0.25;
+  
+  // Update window dimensions and device type on resize
   useEffect(() => {
     const updateWindowDimensions = () => {
-      setWindowDimensions({
-        width: window.innerWidth,
-        height: window.innerHeight
-      });
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      setWindowDimensions({ width, height });
+      setIsDesktop(width >= 768); // Desktop if width >= 768px
     };
+    
+    // Set initial state
+    updateWindowDimensions();
     
     window.addEventListener('resize', updateWindowDimensions);
     return () => window.removeEventListener('resize', updateWindowDimensions);
@@ -73,6 +93,76 @@ const PdfFlipBookModal = ({ title,editionId }) => {
       };
     }
   }, [isOpen]);
+
+  // Mouse wheel zoom handling - only in zoom mode
+  useEffect(() => {
+    const handleWheel = (e) => {
+      if (isZoomMode && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
+        handleZoom(delta);
+      }
+    };
+
+    if (isOpen && flipBookContainerRef.current) {
+      const container = flipBookContainerRef.current;
+      container.addEventListener('wheel', handleWheel, { passive: false });
+      
+      return () => {
+        container.removeEventListener('wheel', handleWheel);
+      };
+    }
+  }, [isOpen, zoomLevel, isZoomMode]);
+
+  // Mouse drag handling for panning - only in zoom mode
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (isDragging && zoomLevel > 1 && isZoomMode) {
+        const deltaX = e.clientX - dragStart.x;
+        const deltaY = e.clientY - dragStart.y;
+        
+        setPanOffset({
+          x: lastPanOffset.x + deltaX,
+          y: lastPanOffset.y + deltaY
+        });
+      }
+    };
+
+    const handleMouseUp = () => {
+      if (isDragging) {
+        setIsDragging(false);
+        setLastPanOffset(panOffset);
+      }
+    };
+
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isDragging, dragStart, lastPanOffset, panOffset, zoomLevel, isZoomMode]);
+
+  // Reset zoom and pan when modal opens/closes or mode changes
+  useEffect(() => {
+    if (isOpen) {
+      setZoomLevel(1);
+      setPanOffset({ x: 0, y: 0 });
+      setLastPanOffset({ x: 0, y: 0 });
+      setIsDragging(false);
+      setIsZoomMode(false); // Default to page turner mode
+    }
+  }, [isOpen]);
+
+  // Stop dragging when switching modes, but maintain zoom level
+  useEffect(() => {
+    if (!isZoomMode) {
+      setIsDragging(false);
+    }
+  }, [isZoomMode]);
 
   // Browser full-screen handling
   useEffect(() => {
@@ -102,6 +192,41 @@ const PdfFlipBookModal = ({ title,editionId }) => {
       document.removeEventListener('MSFullscreenChange', fullScreenChange);
     };
   }, []);
+
+  const handleZoom = (delta) => {
+    if (!isZoomMode) return;
+    
+    const newZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoomLevel + delta));
+    setZoomLevel(newZoom);
+    
+    // Reset pan when zooming out to 1x or less
+    if (newZoom <= 1) {
+      setPanOffset({ x: 0, y: 0 });
+      setLastPanOffset({ x: 0, y: 0 });
+    }
+  };
+
+  const handleZoomIn = () => handleZoom(ZOOM_STEP);
+  const handleZoomOut = () => handleZoom(-ZOOM_STEP);
+  
+  const handleResetZoom = () => {
+    setZoomLevel(1);
+    setPanOffset({ x: 0, y: 0 });
+    setLastPanOffset({ x: 0, y: 0 });
+  };
+
+  const handleMouseDown = (e) => {
+    if (zoomLevel > 1 && isZoomMode) {
+      e.preventDefault();
+      setIsDragging(true);
+      setDragStart({ x: e.clientX, y: e.clientY });
+    }
+  };
+
+  // NEW: Toggle between zoom and page turner mode
+  const toggleMode = () => {
+    setIsZoomMode(!isZoomMode);
+  };
 
   const toggleFullScreen = () => {
     if (!isFullScreen) {
@@ -146,72 +271,111 @@ const PdfFlipBookModal = ({ title,editionId }) => {
     lg: { width: 500, height: 650 },
   });
   
-  // Calculate optimal book dimensions based on screen size
+  // Calculate optimal book dimensions based on screen size and device type
   const finalBookDimensions = React.useMemo(() => {
+    const isMobile = !isDesktop;
+    
     // Always use maximum possible size, whether in full screen or not
     if (isFullScreen) {
       // Use browser full screen dimensions
       const screenWidth = windowDimensions.width;
       const screenHeight = windowDimensions.height - 60; // Allow space for header
       
-      // Calculate optimal size based on screen orientation
-      if (screenWidth > screenHeight) {
-        // Landscape orientation
-        const optimalHeight = screenHeight * 0.9;
-        const optimalWidth = screenWidth * 0.8 / 2; // Two pages
-        
-        return {
-          width: Math.min(optimalWidth, optimalHeight * 0.75),
-          height: optimalHeight
-        };
-      } else {
-        // Portrait orientation
-        const optimalWidth = screenWidth * 0.9 / 2; // Two pages side by side
+      if (isMobile) {
+        // Mobile: single page layout
+        const optimalWidth = screenWidth * 0.9;
         const optimalHeight = screenHeight * 0.9;
         
         return {
-          width: optimalWidth,
+          width: Math.min(optimalWidth, optimalHeight * 0.7),
           height: Math.min(optimalHeight, optimalWidth / 0.7)
         };
+      } else {
+        // Desktop: dual page layout
+        // Calculate optimal size based on screen orientation
+        if (screenWidth > screenHeight) {
+          // Landscape orientation
+          const optimalHeight = screenHeight * 0.9;
+          const optimalWidth = screenWidth * 0.8 / 2; // Two pages
+          
+          return {
+            width: Math.min(optimalWidth, optimalHeight * 0.75),
+            height: optimalHeight
+          };
+        } else {
+          // Portrait orientation
+          const optimalWidth = screenWidth * 0.9 / 2; // Two pages side by side
+          const optimalHeight = screenHeight * 0.9;
+          
+          return {
+            width: optimalWidth,
+            height: Math.min(optimalHeight, optimalWidth / 0.7)
+          };
+        }
       }
     } else if (modalDimensions.width > 0 && modalDimensions.height > 0) {
       // Use maximum modal dimensions
       const availableWidth = modalDimensions.width - 10;
       const availableHeight = modalDimensions.height - 10;
       
-      // Calculate optimal size based on modal orientation
-      if (availableWidth > availableHeight) {
-        // Landscape orientation
-        const optimalHeight = availableHeight;
-        const optimalWidth = availableWidth / 2; // Two pages side by side
-        
-        return {
-          width: Math.min(optimalWidth, optimalHeight * 0.75),
-          height: optimalHeight
-        };
-      } else {
-        // Portrait orientation
-        const optimalWidth = availableWidth / 2; // Two pages side by side
+      if (isMobile) {
+        // Mobile: single page layout
+        const optimalWidth = availableWidth;
         const optimalHeight = availableHeight;
         
         return {
-          width: optimalWidth,
+          width: Math.min(optimalWidth, optimalHeight * 0.7),
           height: Math.min(optimalHeight, optimalWidth / 0.7)
         };
+      } else {
+        // Desktop: dual page layout
+        // Calculate optimal size based on modal orientation
+        if (availableWidth > availableHeight) {
+          // Landscape orientation
+          const optimalHeight = availableHeight;
+          const optimalWidth = availableWidth / 2; // Two pages side by side
+          
+          return {
+            width: Math.min(optimalWidth, optimalHeight * 0.75),
+            height: optimalHeight
+          };
+        } else {
+          // Portrait orientation
+          const optimalWidth = availableWidth / 2; // Two pages side by side
+          const optimalHeight = availableHeight;
+          
+          return {
+            width: optimalWidth,
+            height: Math.min(optimalHeight, optimalWidth / 0.7)
+          };
+        }
       }
     }
     
-    // Default dimensions
-    return baseBreakpointDimensions || { width: 500, height: 650 };
-  }, [isFullScreen, modalDimensions, windowDimensions, baseBreakpointDimensions]);
+    // Default dimensions based on device type
+    const defaultDimensions = baseBreakpointDimensions || { width: 500, height: 650 };
+    
+    if (isMobile) {
+      return {
+        width: defaultDimensions.width,
+        height: defaultDimensions.height
+      };
+    } else {
+      return {
+        width: defaultDimensions.width,
+        height: defaultDimensions.height
+      };
+    }
+  }, [isFullScreen, modalDimensions, windowDimensions, baseBreakpointDimensions, isDesktop]);
 
   const loadImages = () => {
     dispatch(getLibraryImagesForPageTurner(editionId));
   }
 
-    const { 
+  const { 
     libraryImages, 
   } = useSelector((state) => state.publish);
+
   return (
     <Box>
       <Flex 
@@ -260,6 +424,58 @@ const PdfFlipBookModal = ({ title,editionId }) => {
               {title}
             </Text>
             <HStack spacing={2}>
+              {/* NEW: Mode Toggle Button */}
+              <Tooltip label={isZoomMode ? "Switch to Page Turner Mode" : "Switch to Zoom Mode"}>
+                <Button
+                  leftIcon={isZoomMode ? <FaBook /> : <FaSearch />}
+                  onClick={toggleMode}
+                  size="sm"
+                  colorScheme={isZoomMode ? "blue" : "green"}
+                  variant={isZoomMode ? "solid" : "outline"}
+                >
+                  {isZoomMode ? "Turner" : "Zoom"}
+                </Button>
+              </Tooltip>
+              
+              {/* Zoom Controls - only show in zoom mode */}
+              {isZoomMode && (
+                <>
+                  <Tooltip label="Zoom In">
+                    <IconButton
+                      icon={<FaSearchPlus />}
+                      onClick={handleZoomIn}
+                      variant="ghost"
+                      size="sm"
+                      isDisabled={zoomLevel >= MAX_ZOOM}
+                      aria-label="Zoom In"
+                    />
+                  </Tooltip>
+                  <Text fontSize="xs" minW="3rem" textAlign="center">
+                    {Math.round(zoomLevel * 100)}%
+                  </Text>
+                  <Tooltip label="Zoom Out">
+                    <IconButton
+                      icon={<FaSearchMinus />}
+                      onClick={handleZoomOut}
+                      variant="ghost"
+                      size="sm"
+                      isDisabled={zoomLevel <= MIN_ZOOM}
+                      aria-label="Zoom Out"
+                    />
+                  </Tooltip>
+                  <Tooltip label="Reset Zoom">
+                    <IconButton
+                      icon={<FaUndo />}
+                      onClick={handleResetZoom}
+                      variant="ghost"
+                      size="sm"
+                      isDisabled={zoomLevel === 1 && panOffset.x === 0 && panOffset.y === 0}
+                      aria-label="Reset Zoom"
+                    />
+                  </Tooltip>
+                </>
+              )}
+              
               <Tooltip label={isFullScreen ? "Exit Full Screen" : "Full Screen"}>
                 <IconButton
                   icon={isFullScreen ? <FaCompress /> : <FaExpand />}
@@ -269,6 +485,7 @@ const PdfFlipBookModal = ({ title,editionId }) => {
                   aria-label={isFullScreen ? "Exit Full Screen" : "Full Screen"}
                 />
               </Tooltip>
+              
               <Tooltip label="Close">
                 <IconButton
                   icon={<Text fontSize="md">✖</Text>}
@@ -304,48 +521,119 @@ const PdfFlipBookModal = ({ title,editionId }) => {
               height="100%"
               width="100%"
               transition="all 0.3s ease"
+              overflow="hidden"
+              cursor={
+                isZoomMode && zoomLevel > 1 
+                  ? (isDragging ? 'grabbing' : 'grab') 
+                  : 'default'
+              }
+              onMouseDown={handleMouseDown}
+              style={{
+                userSelect: 'none',
+                WebkitUserSelect: 'none',
+                MozUserSelect: 'none',
+                msUserSelect: 'none'
+              }}
             >
-              {libraryImages && libraryImages.length > 0 ? (
-                <HTMLFlipBook
-                  ref={flipBookRef}
-                  maxWidth={finalBookDimensions.width}
-                  maxHeight={finalBookDimensions.height}
-                  height={finalBookDimensions.height}
-                  width={finalBookDimensions.width}
-                  size="stretch"
-                  minWidth={300}
-                  minHeight={400}
-                  enableBackground={true}
-                  pageBackground="#333"
-                  autoSize={true}
-                  showCover={true}
-                  usePortrait={true}
-                  mobileScrollSupport={true}
-                  flippingTime={800}
-                  startPage={0}
-                  clickEventForward={false}
-                  useMouseEvents={true}
-                  style={{ margin: "auto" }}
-                  drawShadow={true}
-                  maxShadowOpacity={0.5}
-                  isClickFlip={true}
-                >
-                  {libraryImages.map((image, index) => (
-                    <div key={index} className="pdf-page">
-                      <Image 
-                        src={image} 
-                        alt={`Page ${index + 1}`} 
-                        objectFit="contain"
-                        loading={index < 2 ? "eager" : "lazy"}
-                      />
-                    </div>
-                  ))}
-                </HTMLFlipBook>
-              ) : (
-                <Text textAlign="center" color={{ base: "gray.800", md: "white" }}>
-                  No images found.
-                </Text>
-              )}
+              {/* Mode indicator and instructions */}
+              <Box
+                position="absolute"
+                top="10px"
+                left="10px"
+                bg={isZoomMode ? "rgba(59, 130, 246, 0.9)" : "rgba(34, 197, 94, 0.9)"}
+                color="white"
+                px={3}
+                py={2}
+                borderRadius="md"
+                fontSize="sm"
+                zIndex="1"
+                opacity="0.9"
+                _hover={{ opacity: 1 }}
+                display="flex"
+                alignItems="center"
+                gap={2}
+              >
+                {isZoomMode ? <FaSearch /> : <FaBook />}
+                <Box>
+                  <Text fontWeight="semibold">
+                    {isZoomMode ? "Zoom Mode" : "Page Turner Mode"}
+                  </Text>
+                  <Text fontSize="xs">
+                    {isZoomMode 
+                      ? (zoomLevel > 1 ? "Click and drag to pan" : "Hold Ctrl/Cmd + scroll to zoom")
+                      : "Click pages to turn, swipe on mobile"
+                    }
+                  </Text>
+                </Box>
+              </Box>
+
+              <Box
+                transform={`scale(${zoomLevel}) translate(${panOffset.x / zoomLevel}px, ${panOffset.y / zoomLevel}px)`}
+                transformOrigin="center center"
+                transition={isDragging ? 'none' : 'transform 0.2s ease'}
+              >
+                {libraryImages && libraryImages.length > 0 ? (
+                  <HTMLFlipBook
+                    ref={flipBookRef}
+                    maxWidth={finalBookDimensions.width}
+                    maxHeight={finalBookDimensions.height}
+                    height={finalBookDimensions.height}
+                    width={finalBookDimensions.width}
+                    size="stretch"
+                    minWidth={300}
+                    minHeight={400}
+                    enableBackground={true}
+                    pageBackground="#333"
+                    autoSize={true}
+                    showCover={true}
+                    usePortrait={!isDesktop} // Portrait mode for mobile, landscape for desktop
+                    mobileScrollSupport={true}
+                    flippingTime={800}
+                    startPage={0}
+                    clickEventForward={false}
+                    useMouseEvents={!isZoomMode} // Always enable mouse events in page turner mode
+                    style={{ 
+                      margin: "auto", 
+                      pointerEvents: !isZoomMode ? 'auto' : 'none' // Always allow interaction in page turner mode
+                    }}
+                    drawShadow={true}
+                    maxShadowOpacity={0.5}
+                    isClickFlip={!isZoomMode} // Always enable click flip in page turner mode
+                  >
+                    {/* Cover page - always single */}
+                    {libraryImages.length > 0 && (
+                      <div key="cover" className="pdf-page">
+                        <Image 
+                          src={libraryImages[0]} 
+                          alt="Cover"
+                          objectFit="contain"
+                          loading="eager"
+                          draggable={false}
+                          style={{ userSelect: 'none' }}
+                        />
+                      </div>
+                    )}
+                    
+                    {/* Content pages */}
+                    {libraryImages.slice(1).map((image, index) => (
+                      <div key={`page-${index + 1}`} className="pdf-page">
+                        <Image 
+                          src={image} 
+                          alt={`Page ${index + 2}`}
+                          objectFit="contain"
+                          loading={index < 4 ? "eager" : "lazy"}
+                          draggable={false}
+                          style={{ userSelect: 'none' }}
+                        />
+                      </div>
+                    ))}
+                  </HTMLFlipBook>
+                ) : (
+                  <Text textAlign="center" color={{ base: "gray.800", md: "white" }}>
+                    No images found.
+                  </Text>
+                )}
+              </Box>
             </Box>
           </ModalBody>
         </ModalContent>
