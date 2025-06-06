@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import {
   Modal,
   ModalOverlay,
@@ -45,6 +45,11 @@ const LibraryImageSelector = ({
   const [isMerging, setIsMerging] = useState(false);
   const [mergingProgress, setMergingProgress] = useState({ current: 0, total: 0 });
 
+  // Cache for processed images per edition
+  const processedImagesCache = useRef({});
+  const lastFetchedEdition = useRef(null);
+  const hasInitiallyLoaded = useRef(false);
+
   const dispatch = useDispatch();
   const toast = useToast();
   const {
@@ -73,6 +78,34 @@ const LibraryImageSelector = ({
       hasPrevPage: currentPage > 1,
     };
   }, [mergedImages, currentPage]);
+
+  // Check if we need to fetch images
+  const shouldFetchImages = useCallback(() => {
+    if (!editionId) return false;
+    
+    // Fetch if:
+    // 1. Edition changed
+    // 2. No images loaded for this edition
+    // 3. There was an error and we need to retry
+    return (
+      lastFetchedEdition.current !== editionId ||
+      !libraryImages ||
+      libraryImages.length === 0 ||
+      libraryError
+    );
+  }, [editionId, libraryImages, libraryError]);
+
+  // Check if we have cached processed images for this edition
+  const getCachedProcessedImages = useCallback(() => {
+    if (!editionId) return null;
+    return processedImagesCache.current[editionId] || null;
+  }, [editionId]);
+
+  // Cache processed images for this edition
+  const setCachedProcessedImages = useCallback((images) => {
+    if (!editionId) return;
+    processedImagesCache.current[editionId] = images;
+  }, [editionId]);
 
   // Optimized image loading with better error handling
   const loadImage = useCallback((url) => {
@@ -237,16 +270,27 @@ const LibraryImageSelector = ({
   useEffect(() => {
     if (isOpen) {
       setCurrentPage(1);
-      setMergedImages([]);
       setImageLoaded({});
+      
+      // Check if we have cached processed images for this edition
+      const cachedImages = getCachedProcessedImages();
+      if (cachedImages) {
+        setMergedImages(cachedImages);
+      } else {
+        setMergedImages([]);
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, getCachedProcessedImages]);
 
+  // Fetch images only when necessary
   useEffect(() => {
-    if (isOpen && editionId) {
+    if (isOpen && editionId && shouldFetchImages()) {
+      console.log('Fetching library images for edition:', editionId);
       dispatch(getLibraryImages(editionId));
+      lastFetchedEdition.current = editionId;
+      hasInitiallyLoaded.current = true;
     }
-  }, [isOpen, editionId, dispatch]);
+  }, [isOpen, editionId, shouldFetchImages, dispatch]);
 
   useEffect(() => {
     if (libraryError) {
@@ -272,7 +316,15 @@ const LibraryImageSelector = ({
 
   // Process images when library data changes
   useEffect(() => {
-    if (libraryImages && libraryImages.length > 0) {
+    if (libraryImages && libraryImages.length > 0 && editionId) {
+      // Check if we already have cached processed images
+      const cachedImages = getCachedProcessedImages();
+      if (cachedImages) {
+        setMergedImages(cachedImages);
+        return;
+      }
+
+      // Process images if not cached
       if (mergeImages) {
         const defaultImages = libraryImages
           .filter((img) => img.isDefault)
@@ -285,7 +337,9 @@ const LibraryImageSelector = ({
           setIsMerging(true);
           mergeImagesInBatches(defaultImages)
             .then((merged) => {
-              setMergedImages([...nonDefaultImages, ...merged]);
+              const processedImages = [...nonDefaultImages, ...merged];
+              setMergedImages(processedImages);
+              setCachedProcessedImages(processedImages);
             })
             .finally(() => {
               setIsMerging(false);
@@ -293,12 +347,15 @@ const LibraryImageSelector = ({
             });
         } else {
           setMergedImages(nonDefaultImages);
+          setCachedProcessedImages(nonDefaultImages);
         }
       } else {
-        setMergedImages(libraryImages.map((img) => img.imageUrl));
+        const processedImages = libraryImages.map((img) => img.imageUrl);
+        setMergedImages(processedImages);
+        setCachedProcessedImages(processedImages);
       }
     }
-  }, [libraryImages, mergeImages, mergeImagesInBatches]);
+  }, [libraryImages, mergeImages, mergeImagesInBatches, editionId, getCachedProcessedImages, setCachedProcessedImages]);
 
   const handleFileSelection = (event) => {
     const file = event.target.files[0];
@@ -325,6 +382,12 @@ const LibraryImageSelector = ({
         uploadLibraryImage(key, content_type, selectedFile, editionId)
       );
       setSelectedFile(null);
+      
+      // Clear cache for this edition since we uploaded a new image
+      if (editionId) {
+        delete processedImagesCache.current[editionId];
+      }
+      
       toast({
         title: "Image uploaded successfully",
         status: "success",

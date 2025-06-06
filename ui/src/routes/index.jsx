@@ -111,6 +111,13 @@ const PublicRoutes = [
     showTitle: false,
     url: "/channel",
   },
+  {
+    name: "Policies",
+    icon: "",
+    isprivate: true,
+    showTitle: false,
+    url: "/policies",
+  },
 ]
 
 

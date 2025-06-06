@@ -273,7 +273,7 @@ const CreateEdition = () => {
           }
 
           // Function to render a single page as an image
-          const renderPage = async (pageNum, scale = 2.0) => {
+          const renderPage = async (pageNum, scale = 3.0) => {
             const page = await pdf.getPage(pageNum);
             const viewport = page.getViewport({ scale });
             const canvas = document.createElement("canvas");

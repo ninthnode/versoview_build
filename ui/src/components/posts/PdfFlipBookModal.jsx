@@ -17,8 +17,15 @@ import {
   useBreakpointValue,
   HStack,
   Button,
+  ButtonGroup,
+  Slider,
+  SliderTrack,
+  SliderFilledTrack,
+  SliderThumb,
+  VStack,
+  Divider,
 } from "@chakra-ui/react";
-import { FaExpand, FaCompress, FaDesktop, FaWindowRestore, FaSearchPlus, FaSearchMinus, FaUndo, FaBook, FaSearch } from "react-icons/fa";
+import { FaExpand, FaCompress, FaSearchPlus, FaSearchMinus, FaUndo, FaBook, FaSearch, FaMousePointer } from "react-icons/fa";
 import "./style.css";
 import useDeviceType from "@/components/useDeviceType";
 import {getLibraryImagesForPageTurner} from "../../redux/publish/publishActions";
@@ -38,11 +45,11 @@ const PdfFlipBookModal = ({ title,editionId }) => {
     height: typeof window !== 'undefined' ? window.innerHeight : 768
   });
   
-  // Mode state - NEW: Toggle between zoom and page turner mode
-  const [isZoomMode, setIsZoomMode] = useState(false);
+  // Mode state - IMPROVED: Separate mode states
+  const [currentMode, setCurrentMode] = useState('turner'); // 'turner', 'zoom', 'pan'
   
-  // Zoom state
-  const [zoomLevel, setZoomLevel] = useState(1);
+  // Zoom state - CHANGED: Default zoom to 175% (1.75)
+  const [zoomLevel, setZoomLevel] = useState(1.75);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
@@ -56,6 +63,7 @@ const PdfFlipBookModal = ({ title,editionId }) => {
   const MIN_ZOOM = 0.5;
   const MAX_ZOOM = 3;
   const ZOOM_STEP = 0.25;
+  const DEFAULT_ZOOM = 1.75; // 175%
   
   // Update window dimensions and device type on resize
   useEffect(() => {
@@ -97,7 +105,7 @@ const PdfFlipBookModal = ({ title,editionId }) => {
   // Mouse wheel zoom handling - only in zoom mode
   useEffect(() => {
     const handleWheel = (e) => {
-      if (isZoomMode && (e.ctrlKey || e.metaKey)) {
+      if (currentMode === 'zoom' && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
         const delta = e.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
         handleZoom(delta);
@@ -112,12 +120,12 @@ const PdfFlipBookModal = ({ title,editionId }) => {
         container.removeEventListener('wheel', handleWheel);
       };
     }
-  }, [isOpen, zoomLevel, isZoomMode]);
+  }, [isOpen, zoomLevel, currentMode]);
 
-  // Mouse drag handling for panning - only in zoom mode
+  // Mouse drag handling for panning - only in pan mode
   useEffect(() => {
     const handleMouseMove = (e) => {
-      if (isDragging && zoomLevel > 1 && isZoomMode) {
+      if (isDragging && zoomLevel > 1 && currentMode === 'pan') {
         const deltaX = e.clientX - dragStart.x;
         const deltaY = e.clientY - dragStart.y;
         
@@ -144,25 +152,25 @@ const PdfFlipBookModal = ({ title,editionId }) => {
         document.removeEventListener('mouseup', handleMouseUp);
       };
     }
-  }, [isDragging, dragStart, lastPanOffset, panOffset, zoomLevel, isZoomMode]);
+  }, [isDragging, dragStart, lastPanOffset, panOffset, zoomLevel, currentMode]);
 
-  // Reset zoom and pan when modal opens/closes or mode changes
+  // Reset zoom and pan when modal opens/closes
   useEffect(() => {
     if (isOpen) {
-      setZoomLevel(1);
+      setZoomLevel(DEFAULT_ZOOM); // Set to 175% by default
       setPanOffset({ x: 0, y: 0 });
       setLastPanOffset({ x: 0, y: 0 });
       setIsDragging(false);
-      setIsZoomMode(false); // Default to page turner mode
+      setCurrentMode('turner'); // Default to page turner mode
     }
   }, [isOpen]);
 
-  // Stop dragging when switching modes, but maintain zoom level
+  // Stop dragging when switching modes
   useEffect(() => {
-    if (!isZoomMode) {
+    if (currentMode !== 'pan') {
       setIsDragging(false);
     }
-  }, [isZoomMode]);
+  }, [currentMode]);
 
   // Browser full-screen handling
   useEffect(() => {
@@ -194,13 +202,23 @@ const PdfFlipBookModal = ({ title,editionId }) => {
   }, []);
 
   const handleZoom = (delta) => {
-    if (!isZoomMode) return;
+    if (currentMode !== 'zoom') return;
     
     const newZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoomLevel + delta));
     setZoomLevel(newZoom);
     
-    // Reset pan when zooming out to 1x or less
-    if (newZoom <= 1) {
+    // Reset pan when zooming out to default or less
+    if (newZoom <= DEFAULT_ZOOM) {
+      setPanOffset({ x: 0, y: 0 });
+      setLastPanOffset({ x: 0, y: 0 });
+    }
+  };
+
+  const handleZoomSlider = (value) => {
+    setZoomLevel(value);
+    
+    // Reset pan when zooming out to default or less
+    if (value <= DEFAULT_ZOOM) {
       setPanOffset({ x: 0, y: 0 });
       setLastPanOffset({ x: 0, y: 0 });
     }
@@ -210,23 +228,23 @@ const PdfFlipBookModal = ({ title,editionId }) => {
   const handleZoomOut = () => handleZoom(-ZOOM_STEP);
   
   const handleResetZoom = () => {
-    setZoomLevel(1);
+    setZoomLevel(DEFAULT_ZOOM);
     setPanOffset({ x: 0, y: 0 });
     setLastPanOffset({ x: 0, y: 0 });
   };
 
   const handleMouseDown = (e) => {
-    if (zoomLevel > 1 && isZoomMode) {
+    if (zoomLevel > 1 && currentMode === 'pan') {
       e.preventDefault();
       setIsDragging(true);
       setDragStart({ x: e.clientX, y: e.clientY });
     }
   };
 
-  // NEW: Toggle between zoom and page turner mode
-  const toggleMode = () => {
-    setIsZoomMode(!isZoomMode);
-  };
+  // IMPROVED: Separate mode functions
+  const setTurnerMode = () => setCurrentMode('turner');
+  const setZoomMode = () => setCurrentMode('zoom');
+  const setPanMode = () => setCurrentMode('pan');
 
   const toggleFullScreen = () => {
     if (!isFullScreen) {
@@ -423,36 +441,47 @@ const PdfFlipBookModal = ({ title,editionId }) => {
             <Text fontSize={{ base: "md", md: "lg" }} fontWeight="semibold" noOfLines={1}>
               {title}
             </Text>
-            <HStack spacing={2}>
-              {/* NEW: Mode Toggle Button */}
-              <Tooltip label={isZoomMode ? "Switch to Page Turner Mode" : "Switch to Zoom Mode"}>
-                <Button
-                  leftIcon={isZoomMode ? <FaBook /> : <FaSearch />}
-                  onClick={toggleMode}
-                  size="sm"
-                  colorScheme={isZoomMode ? "blue" : "green"}
-                  variant={isZoomMode ? "solid" : "outline"}
-                >
-                  {isZoomMode ? "Turner" : "Zoom"}
-                </Button>
-              </Tooltip>
+            <HStack spacing={4}>
+              {/* IMPROVED: Mode Selection Buttons */}
+              <ButtonGroup size="sm" isAttached variant="outline">
+                <Tooltip label="Page Turner Mode">
+                  <Button
+                    leftIcon={<FaBook />}
+                    onClick={setTurnerMode}
+                    colorScheme={currentMode === 'turner' ? "blue" : "gray"}
+                    variant={currentMode === 'turner' ? "solid" : "outline"}
+                  >
+                    Turner
+                  </Button>
+                </Tooltip>
+                <Tooltip label="Zoom Mode">
+                  <Button
+                    leftIcon={<FaSearch />}
+                    onClick={setZoomMode}
+                    colorScheme={currentMode === 'zoom' ? "green" : "gray"}
+                    variant={currentMode === 'zoom' ? "solid" : "outline"}
+                  >
+                    Zoom
+                  </Button>
+                </Tooltip>
+                <Tooltip label="Pan Mode">
+                  <Button
+                    leftIcon={<FaMousePointer />}
+                    onClick={setPanMode}
+                    colorScheme={currentMode === 'pan' ? "purple" : "gray"}
+                    variant={currentMode === 'pan' ? "solid" : "outline"}
+                  >
+                    Pan
+                  </Button>
+                </Tooltip>
+              </ButtonGroup>
               
-              {/* Zoom Controls - only show in zoom mode */}
-              {isZoomMode && (
-                <>
-                  <Tooltip label="Zoom In">
-                    <IconButton
-                      icon={<FaSearchPlus />}
-                      onClick={handleZoomIn}
-                      variant="ghost"
-                      size="sm"
-                      isDisabled={zoomLevel >= MAX_ZOOM}
-                      aria-label="Zoom In"
-                    />
-                  </Tooltip>
-                  <Text fontSize="xs" minW="3rem" textAlign="center">
-                    {Math.round(zoomLevel * 100)}%
-                  </Text>
+              {/* Divider */}
+              <Divider orientation="vertical" h="2rem" />
+              
+              {/* Zoom Controls - show when in zoom or pan mode */}
+              {(currentMode === 'zoom' || currentMode === 'pan') && (
+                <HStack spacing={2}>
                   <Tooltip label="Zoom Out">
                     <IconButton
                       icon={<FaSearchMinus />}
@@ -463,18 +492,53 @@ const PdfFlipBookModal = ({ title,editionId }) => {
                       aria-label="Zoom Out"
                     />
                   </Tooltip>
+                  
+                  {/* Zoom Slider */}
+                  <Box w="100px" display={{ base: "none", md: "block" }}>
+                    <Slider
+                      value={zoomLevel}
+                      min={MIN_ZOOM}
+                      max={MAX_ZOOM}
+                      step={0.1}
+                      onChange={handleZoomSlider}
+                      focusThumbOnChange={false}
+                    >
+                      <SliderTrack bg="gray.300">
+                        <SliderFilledTrack bg="blue.400" />
+                      </SliderTrack>
+                      <SliderThumb boxSize={4} />
+                    </Slider>
+                  </Box>
+                  
+                  <Text fontSize="xs" minW="3rem" textAlign="center" fontWeight="semibold">
+                    {Math.round(zoomLevel * 100)}%
+                  </Text>
+                  
+                  <Tooltip label="Zoom In">
+                    <IconButton
+                      icon={<FaSearchPlus />}
+                      onClick={handleZoomIn}
+                      variant="ghost"
+                      size="sm"
+                      isDisabled={zoomLevel >= MAX_ZOOM}
+                      aria-label="Zoom In"
+                    />
+                  </Tooltip>
+                  
                   <Tooltip label="Reset Zoom">
                     <IconButton
                       icon={<FaUndo />}
                       onClick={handleResetZoom}
                       variant="ghost"
                       size="sm"
-                      isDisabled={zoomLevel === 1 && panOffset.x === 0 && panOffset.y === 0}
+                      isDisabled={zoomLevel === DEFAULT_ZOOM && panOffset.x === 0 && panOffset.y === 0}
                       aria-label="Reset Zoom"
                     />
                   </Tooltip>
-                </>
+                </HStack>
               )}
+              
+              <Divider orientation="vertical" h="2rem" />
               
               <Tooltip label={isFullScreen ? "Exit Full Screen" : "Full Screen"}>
                 <IconButton
@@ -523,7 +587,7 @@ const PdfFlipBookModal = ({ title,editionId }) => {
               transition="all 0.3s ease"
               overflow="hidden"
               cursor={
-                isZoomMode && zoomLevel > 1 
+                currentMode === 'pan' && zoomLevel > 1 
                   ? (isDragging ? 'grabbing' : 'grab') 
                   : 'default'
               }
@@ -535,36 +599,43 @@ const PdfFlipBookModal = ({ title,editionId }) => {
                 msUserSelect: 'none'
               }}
             >
-              {/* Mode indicator and instructions */}
+              {/* IMPROVED: Mode indicator with better styling */}
               <Box
                 position="absolute"
                 top="10px"
                 left="10px"
-                bg={isZoomMode ? "rgba(59, 130, 246, 0.9)" : "rgba(34, 197, 94, 0.9)"}
+                bg={
+                  currentMode === 'turner' ? "rgba(59, 130, 246, 0.95)" :
+                  currentMode === 'zoom' ? "rgba(34, 197, 94, 0.95)" :
+                  "rgba(147, 51, 234, 0.95)"
+                }
                 color="white"
-                px={3}
-                py={2}
-                borderRadius="md"
+                px={4}
+                py={3}
+                borderRadius="lg"
                 fontSize="sm"
                 zIndex="1"
                 opacity="0.9"
                 _hover={{ opacity: 1 }}
                 display="flex"
                 alignItems="center"
-                gap={2}
+                gap={3}
+                backdropFilter="blur(10px)"
+                boxShadow="lg"
               >
-                {isZoomMode ? <FaSearch /> : <FaBook />}
-                <Box>
-                  <Text fontWeight="semibold">
-                    {isZoomMode ? "Zoom Mode" : "Page Turner Mode"}
+                {currentMode === 'turner' ? <FaBook /> : 
+                 currentMode === 'zoom' ? <FaSearch /> : <FaMousePointer />}
+                <VStack align="start" spacing={1}>
+                  <Text fontWeight="bold" fontSize="sm">
+                    {currentMode === 'turner' ? "Page Turner Mode" : 
+                     currentMode === 'zoom' ? "Zoom Mode" : "Pan Mode"}
                   </Text>
-                  <Text fontSize="xs">
-                    {isZoomMode 
-                      ? (zoomLevel > 1 ? "Click and drag to pan" : "Hold Ctrl/Cmd + scroll to zoom")
-                      : "Click pages to turn, swipe on mobile"
-                    }
+                  <Text fontSize="xs" opacity="0.9">
+                    {currentMode === 'turner' ? "Click pages to turn, swipe on mobile" :
+                     currentMode === 'zoom' ? "Hold Ctrl/Cmd + scroll to zoom" :
+                     zoomLevel > 1 ? "Click and drag to pan around" : "Zoom in first to enable panning"}
                   </Text>
-                </Box>
+                </VStack>
               </Box>
 
               <Box
@@ -591,14 +662,14 @@ const PdfFlipBookModal = ({ title,editionId }) => {
                     flippingTime={800}
                     startPage={0}
                     clickEventForward={false}
-                    useMouseEvents={!isZoomMode} // Always enable mouse events in page turner mode
+                    useMouseEvents={currentMode === 'turner'} // Only enable mouse events in turner mode
                     style={{ 
                       margin: "auto", 
-                      pointerEvents: !isZoomMode ? 'auto' : 'none' // Always allow interaction in page turner mode
+                      pointerEvents: currentMode === 'turner' ? 'auto' : 'none' // Only allow interaction in turner mode
                     }}
                     drawShadow={true}
                     maxShadowOpacity={0.5}
-                    isClickFlip={!isZoomMode} // Always enable click flip in page turner mode
+                    isClickFlip={currentMode === 'turner'} // Only enable click flip in turner mode
                   >
                     {/* Cover page - always single */}
                     {libraryImages.length > 0 && (

@@ -434,6 +434,7 @@ const PostForm = ({
         onClose={() => setIsLibraryModalOpen(false)}
         editionId={editionDetails?._id}
         onImageSelect={handleLibraryImage}
+        mergeImages={true}
       />
     </Box>
   );
