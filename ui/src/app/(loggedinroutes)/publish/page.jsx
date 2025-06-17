@@ -16,7 +16,7 @@ function Publish() {
   return (
     <Box mt='4'>
       {deviceType == "desktop"&&!isCreateEditPost ? (
-        <Flex gap={4}>
+        <Flex gap={4}  px={4}>
           <PdfCards setIsCreateEditPost={setIsCreateEditPost}
           setSelectedEdition={setSelectedEdition}
           />

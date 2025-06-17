@@ -145,7 +145,7 @@ function SinglePost({
   }, [postState.post]);
 
   return (
-    <Box>
+    <Box px={4}>
       {!postState.post && <Loader />}
       {postState.post ? (
         <>
@@ -324,7 +324,7 @@ function SinglePost({
                 </Flex>
                 <Flex w="100%" justify="flex-end">
                   <ShareButton
-                    url={`${process.env.NEXT_PUBLIC_FRONTEND_URL}/post/${postState.channel.username}/post/${postState.post.slug}`}
+                    url={`${process.env.NEXT_PUBLIC_FRONTEND_URL}/post/${postState.channel.username}/${postState.post.slug}`}
                     title={postState.post.header}
                     shareButton={true}
                   />

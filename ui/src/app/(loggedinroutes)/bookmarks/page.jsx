@@ -42,7 +42,7 @@ const Comment = ({
   };
   return (
     <Box my="4">
-      <Box p={2} bg="#fff">
+      <Box bg="#fff">
         <PostCard
           key={postId._id || crypto.randomUUID()}
           post={postId}

@@ -71,9 +71,9 @@ const Page = ({
         channelData.channelName,
         channelData.channelIconImageUrl 
       );
-      if(view==options.posts)
+      // if(view==options.posts)
         fetchPosts(channelData._id);
-      if(view==options.editions)
+      // if(view==options.editions)
         getEditionsByUserID(channelData.userId._id);
     }
   }, [channelData,user,view]);

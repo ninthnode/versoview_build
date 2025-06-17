@@ -78,6 +78,7 @@ const About = ({
   profileBgColor: backgroundColor,
   _id,
   postsCount = 0,
+  editionsCount = 0,
   followersCount = 0,
   followingCount = 0,
   getFollowingStatus,
@@ -92,7 +93,7 @@ const About = ({
       py={4}
       display="flex"
       flexDirection="row"
-      minWidth="full"
+      // minWidth="full"
       bg="lightgray"
       borderRadius="md"
     >
@@ -171,7 +172,7 @@ const About = ({
               </Flex>
               <Flex fontSize="sm" flexDirection="column" alignItems="left">
                 <Text fontWeight="bold" lineHeight={1}>
-                  0
+                  {editionsCount}
                 </Text>
                 <Text fontSize="12px">Editions</Text>
               </Flex>

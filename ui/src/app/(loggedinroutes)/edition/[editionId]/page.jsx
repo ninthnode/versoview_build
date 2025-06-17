@@ -61,6 +61,7 @@ const Home = ({
           edition={edition}
           channel={edition.channelData}
           submitBookmarkEdition={submitBookmarkEdition}
+          isLinkDisabled={true}
         />
       )}
       {postList&&postList.length>0&&postList.map?.((post) => (

@@ -117,7 +117,7 @@ const StatusSlider = () => {
       overflowY="hidden"
       paddingRight={0}
     >
-      <HStack spacing={4} mb={2}>
+      <HStack spacing={4} mb={2}  px={4}>
         {pinnedChannelData.map((status) => (
           <StatusItem key={status._id} status={status} />
         ))}

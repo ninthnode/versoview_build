@@ -82,7 +82,7 @@ export default function Channel({
     <Box>
       <Box>
         <Tabs>
-        <TabList gap={2} w="100%" mb={1}>
+        <TabList px={2} gap={2} w="100%">
             <Box
               display={"flex"}
               alignItems="flex-end"
@@ -104,7 +104,7 @@ export default function Channel({
             >
               <Tab pl="0">Latest</Tab>
               {uniqueSections.map((section) => (
-                <Tab key={section} pl="0">
+                <Tab key={section} pl="0" fontSize={"sm"}>
                   {section}
                 </Tab>
               ))}
@@ -112,6 +112,7 @@ export default function Channel({
           </TabList>
           <About
             postsCount={posts?.length}
+            editionsCount={userEditions?.length}
             followersCount={followers?.length}
             followingCount={followings?.length}
             {...channelDetail}

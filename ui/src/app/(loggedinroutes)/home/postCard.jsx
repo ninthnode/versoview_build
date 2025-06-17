@@ -51,7 +51,7 @@ const PostCard = ({
   };
   return (
     <Box>
-      <Card mb={4} boxShadow="none">
+      <Card mb={4} boxShadow="none" px={4}>
         <CardHeader p={1}>
           <Flex
             spacing="4"
@@ -84,7 +84,7 @@ const PostCard = ({
             <Flex>
               {!small && (
                 <PostMenu
-                  url={`${process.env.NEXT_PUBLIC_FRONTEND_URL}/post/${post.slug}`}
+                  url={`${process.env.NEXT_PUBLIC_FRONTEND_URL}/post/${post.channelId?.username}/${post.slug}`}
                   title={post.header}
                 />
               )}

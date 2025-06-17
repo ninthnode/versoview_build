@@ -83,7 +83,7 @@ const Home = ({
   return (
     <Box>
       <Tabs index={tabIndex} onChange={(index) => setTabIndex(index)}>
-        <TabList gap={2} h="3rem" borderColor='lightgray'>
+        <TabList  px={4} gap={2} h="3rem" borderColor='lightgray'>
           <Tab pl="0">Latest</Tab>
           <Tab pl="1" isDisabled={!user}>Recently viewed</Tab>
           {deviceType!='desktop'&&

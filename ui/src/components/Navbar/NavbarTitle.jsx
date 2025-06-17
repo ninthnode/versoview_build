@@ -32,14 +32,14 @@ const NavbarTitle = ({ navtitle, navicon }) => {
   return (
     <nav>
       {getRouteName(pathname) ? (
-        <Flex alignItems='center'>
+        <Flex alignItems='center' px={4}>
           <Image src={"/assets/logo.svg"} alt="logo" mr={2} h='1.6rem'/>
           <Heading as="h5" fontSize="xl" fontWeight='extrabold'>
            {getRouteName(pathname)}
           </Heading>
         </Flex>
       ) : (
-        <Flex alignItems="center" mb={2}>
+        <Flex alignItems="center" mb={2} px={4}>
           <Button ml='-10px' pr='2' pl="0" variant="ghost" onClick={() => router.back()}>
             <Image m="0" src={"/assets/back.svg"} />
           </Button>

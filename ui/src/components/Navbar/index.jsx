@@ -73,7 +73,7 @@ const Navbar = ({ children }) => {
                 w={{
                   base: "100%",
                 }}
-                px={4}
+                // px={4}
                 borderRightWidth="2px"
                 borderColor="#f5f5f5"
                 minH={!RightSidebarRoutes?'150vh':""}
