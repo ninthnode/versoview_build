@@ -9,9 +9,11 @@ import {
   Flex,
   Tooltip,
   useDisclosure,
+  Spinner,
 } from "@chakra-ui/react";
 import { FaUpload, FaCamera } from "react-icons/fa";
 import { MdLibraryAdd } from "react-icons/md";
+import Loader from "../Loader";
 
 const ImageCropper = ({
   onCropComplete,
@@ -21,13 +23,14 @@ const ImageCropper = ({
   setCroppedImage,
   setUploadedImage,
   edition,
-  setIsLibraryModalOpen
+  setIsLibraryModalOpen,
+  isLoadingFeatureImage,
 }) => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
   const [isEditing, setIsEditing] = useState(true);
-  
+
   const onCropCompleteCallback = useCallback(
     (croppedArea, croppedAreaPixels) => {
       setCroppedAreaPixels(croppedAreaPixels);
@@ -49,7 +52,6 @@ const ImageCropper = ({
     setIsEditing(true);
     setCroppedImage(null);
   };
-
 
   return (
     <div>
@@ -145,44 +147,50 @@ const ImageCropper = ({
       ) : (
         <Flex flexDirection={"column"} alignItems="center">
           <Flex gap="4" pos="relative">
-            <Tooltip label="Upload Image">
-              <label htmlFor="files" className="btn">
-                <FaUpload
-                  fontSize="3rem"
-                  style={{
-                    backgroundColor: "#cccc",
-                    padding: "10px",
-                    cursor: "pointer",
-                  }}
-                />
-              </label>
-            </Tooltip>
-            <Tooltip label="Take Photo">
-              <label htmlFor="cameras" className="btn">
-                <FaCamera
-                  fontSize="3rem"
-                  style={{
-                    backgroundColor: "#cccc",
-                    padding: "10px",
-                    cursor: "pointer",
-                  }}
-                />
-              </label>
-            </Tooltip>
-            {edition && (
-              <Tooltip label="Choose from Library">
-                <Text>
-                  <MdLibraryAdd
-                  onClick={() => setIsLibraryModalOpen(true)}
-                    fontSize="3rem"
-                    style={{
-                      backgroundColor: "#cccc",
-                      padding: "10px",
-                      cursor: "pointer",
-                    }}
-                  />
-                </Text>
-              </Tooltip>
+            {isLoadingFeatureImage ? (
+              <Spinner size={"xl"} />
+            ) : (
+              <>
+                <Tooltip label="Upload Image">
+                  <label htmlFor="files" className="btn">
+                    <FaUpload
+                      fontSize="3rem"
+                      style={{
+                        backgroundColor: "#cccc",
+                        padding: "10px",
+                        cursor: "pointer",
+                      }}
+                    />
+                  </label>
+                </Tooltip>
+                <Tooltip label="Take Photo">
+                  <label htmlFor="cameras" className="btn">
+                    <FaCamera
+                      fontSize="3rem"
+                      style={{
+                        backgroundColor: "#cccc",
+                        padding: "10px",
+                        cursor: "pointer",
+                      }}
+                    />
+                  </label>
+                </Tooltip>
+                {edition && (
+                  <Tooltip label="Choose from Library">
+                    <Text>
+                      <MdLibraryAdd
+                        onClick={() => setIsLibraryModalOpen(true)}
+                        fontSize="3rem"
+                        style={{
+                          backgroundColor: "#cccc",
+                          padding: "10px",
+                          cursor: "pointer",
+                        }}
+                      />
+                    </Text>
+                  </Tooltip>
+                )}
+              </>
             )}
           </Flex>
           <Text>{imageSizeError}</Text>

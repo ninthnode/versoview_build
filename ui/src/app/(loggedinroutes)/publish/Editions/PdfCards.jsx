@@ -90,7 +90,7 @@ const PdfCards = ({ editions, getAllEditions, deletePost, deleteEdition }) => {
                   }}
                   onClick={() => push(`/publish/edition/${edition._id}`)}
                 >
-                  <Image src={edition?.firstImage?.imageUrl} alt="PDF" />
+                  <Image src={edition?.firstImage} alt="PDF" />
                 </div>
                 <Box w="100%">
                   <Text fontSize="sm" noOfLines={3}>

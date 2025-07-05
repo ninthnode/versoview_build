@@ -13,18 +13,15 @@ const libraryImageSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    imageUrl: {
-      type: String,
-      required: true,
+    mergedImages: {
+      type: [String],
     },
-    isDefault: {
-      type: boolean,
-      default: false,
-    },
-    order: {
-      type: Number,
-      required: true,
-    },
+    allImages: [
+      {
+        url: { type: String, required: true },
+        isDefault: { type: Boolean, default: false },
+      },
+    ],
   },
   {
     timestamps: true,

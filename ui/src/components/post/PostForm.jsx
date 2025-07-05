@@ -46,6 +46,7 @@ const PostForm = ({
   const [imageSizeError, setImageSizeError] = useState("");
   const [libraryImages, setLibraryImages] = useState([]);
   const [isLibraryModalOpen, setIsLibraryModalOpen] = useState(false);
+  const [isLoadingFeatureImage, setIsLoadingFeatureImage] = useState(false);
 
   useEffect(() => {
     // Debug log to check editionDetails
@@ -157,22 +158,16 @@ const PostForm = ({
     handlePreview();
   };
 
-  const blobUrlToDataUrl = async (blobUrl) => {
-    try {
-      console.log("Converting blob URL to data URL:", blobUrl);
-      const response = await fetch(blobUrl);
-      const blob = await response.blob();
-      
-      return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result);
-        reader.readAsDataURL(blob);
-      });
-    } catch (error) {
-      console.error("Error converting blob URL to data URL:", error);
-      return null;
-    }
-  };
+const imageUrlToDataUrl = async (url) => {
+  const proxiedUrl = "http://localhost:5001/image-proxy?url=" + encodeURIComponent(url);
+  const response = await fetch(proxiedUrl, { mode: 'cors' }); // might fail due to CORS
+  const blob = await response.blob();
+  return await new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.readAsDataURL(blob);
+  });
+};
 
   const isValidUrl = (string) => {
     try {
@@ -184,9 +179,7 @@ const PostForm = ({
   };
 
   const handleLibraryImage = async (img) => {
-    console.log("===== LIBRARY IMAGE SELECTED IN POST FORM =====");
-    console.log("Image URL or data:", img);
-    
+    setIsLoadingFeatureImage(true)    
     try {
       if (!img) {
         console.error("No image data provided to handleLibraryImage");
@@ -199,11 +192,12 @@ const PostForm = ({
       // Process image based on type
       if (isValidUrl(img)) {
         console.log("Processing as URL:", img);
-        const imageDataUrl = await blobUrlToDataUrl(img);
+        const imageDataUrl = await imageUrlToDataUrl(img);
         if (imageDataUrl) {
           console.log("Successfully converted to data URL");
           const processedImage = await processImage(imageDataUrl);
           console.log("Image processed, setting as uploaded image");
+          setIsLoadingFeatureImage(false)    
           setUploadedImage(processedImage);
           // Make sure cropped image is cleared so user can crop the new image
           setCroppedImage(null);
@@ -292,6 +286,7 @@ const PostForm = ({
               }
             >
               <ImageCropper
+              isLoadingFeatureImage={isLoadingFeatureImage}
                 croppedImage={croppedImage}
                 uploadedImage={uploadedImage ||formData?.mainImageURL}
                 onCropComplete={setCroppedImage}

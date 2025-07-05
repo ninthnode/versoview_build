@@ -124,14 +124,14 @@ import {
     return fileUrls;
   }
   
-  export const createEdition = (chunkPdfFiles, capturedPdfImages, editionData,totalSizeInMB) => async (dispatch) => {
+  export const createEdition = (chunkPdfFiles, capturedPdfImages, mergedImages, editionData,totalSizeInMB) => async (dispatch) => {
     try {
       dispatch({ type: CREATE_EDITION_REQUEST });
   
       // Separate progress states for PDFs and images
       let pdfProgress = 0;
       let imageProgress = 0;
-  
+      let mergedImageProgress = 0;
       const setPdfProgress = (progress) => {
         pdfProgress = progress;
         updateAggregateProgress(); // Update combined progress
@@ -141,24 +141,35 @@ import {
         imageProgress = progress;
         updateAggregateProgress(); // Update combined progress
       };
-  
+      const setMergedImageProgress = (progress) => {
+        mergedImageProgress = progress;
+        updateAggregateProgress();
+      };
       const updateAggregateProgress = () => {
-        const aggregateProgress = (pdfProgress * 0.5) + (imageProgress * 0.5); // Combine progress (50% each)
+        const aggregateProgress = (
+          (pdfProgress * 0.4) +  // 40% weight
+          (imageProgress * 0.4) + // 40% weight
+          (mergedImageProgress * 0.2)  // 20% weight
+        );
+
         dispatch({
           type: UPLOAD_PDF_PROGRESS,
           payload: aggregateProgress,
         });
       };
   
-      // Process PDF files (50% weight)
+      // Process PDF files (40% weight)
       const processedPdfs = await processFiles(chunkPdfFiles, setPdfProgress, "pdf");
       editionData.pdfUrls = processedPdfs;
   
-      // Process Image files (50% weight)
+      // Process Image files (40% weight)
       const processedImages = await processFiles(capturedPdfImages, setImageProgress, "images");
       editionData.libraryImages = processedImages;
 
-      
+      // Process merged images (20% weight)
+      const processedMergedImages = await processFiles(mergedImages, setMergedImageProgress, "images");
+      editionData.mergedImages = processedMergedImages;
+
       editionData.size = totalSizeInMB;
   
       // Send final edition data
@@ -291,7 +302,7 @@ import {
       );
       dispatch({
         type: GET_LIBRARY_IMAGES_SUCCESS,
-        payload: response?.data?.data,
+        payload: response?.data?.images,
       });
     } catch (error) {
       console.error("Error fetching library images:", error);
@@ -354,6 +365,7 @@ import {
           },
         }
       );
+      console.log(response.data.libraryImages)
       dispatch({
         type: UPLOAD_LIBRARY_IMAGE_SUCCESS,
         payload: response.data.libraryImages,

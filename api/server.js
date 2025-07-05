@@ -28,6 +28,7 @@ const limiter = rateLimit({
 	legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
 const { User } = require("./models/user.model");
+const fetch = require("node-fetch");
 
 
 // fs.chmod(folderPath, 0o700, (err) => {
@@ -222,7 +223,18 @@ app.use("/api/v1/s3", s3Router);
 app.get("/", (req, res) => {
 	res.send("Server is running....");
 });
+app.get("/image-proxy", async (req, res) => {
+  const imageUrl = req.query.url;
+  try {
+    const response = await fetch(imageUrl);
+    const buffer = await response.arrayBuffer();
 
+    res.set("Content-Type", response.headers.get("content-type"));
+    res.send(Buffer.from(buffer));
+  } catch (err) {
+    res.status(500).send("Failed to fetch image");
+  }
+});
 // Serve static files from the static directory
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -237,6 +249,7 @@ app.use("/api/v1/search", searchRouter);
 app.use("/api/v1/verso-rewards", versoRewardsRouter);
 app.use(notFoundError);
 app.use(errorHandler);
+
 
 
 const PORT = process.env.PORT || 5000;

@@ -21,6 +21,9 @@ const editionSchema = new mongoose.Schema(
     uploadImages: {
       type: [String],
     },
+    mergedImages: {
+      type: [String],
+    },
     editionText: {
       type: String,
     },

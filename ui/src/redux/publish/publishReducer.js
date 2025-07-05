@@ -36,7 +36,6 @@ import {
   };
   
  const publishReducer = (state = initialState, action) => {
-    console.log(`REDUCER: Action type received: ${action.type}`);
     switch (action.type) {
       case CREATE_EDITION_REQUEST:
       case GET_EDITIONS_REQUEST:

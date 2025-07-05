@@ -18,7 +18,7 @@ function MassagesPage() {
       const authState = useSelector((s) => s.auth?.user?.user);
 
   return (
-    <div>
+    <Box px={4}>
        <Tabs index={tabIndex} onChange={(index) => setTabIndex(index)}>
         <TabList gap={2} h="3rem" borderColor='lightgray' display={{ base: "flex", md: "none" }}>
           <Tab pl="0">Dms</Tab>
@@ -35,7 +35,7 @@ function MassagesPage() {
           </TabPanel>
         </TabPanels>
       </Tabs>
-    </div>
+    </Box>
   )
 }
 
