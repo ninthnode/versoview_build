@@ -164,6 +164,7 @@ const EditPdfPost = ({ params }) => {
             postLoading={postLoading}
             isEditMode={true}
             handlePreview={handlePreview}
+            postId={editPostId}
           />
         ) : (
           <Box

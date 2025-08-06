@@ -10,65 +10,109 @@ import {getAllPinnedChannels} from "@/redux/channel/channelActions";
 
 const StatusItem = ({ status }) => {
   const authState = useSelector((s) => s.auth?.user?.user);
- 
-  const [unread, setUnread] = useState(null);
+  const [unread, setUnread] = useState(0); // Initialize with 0 instead of null
   const [isLoading, setIsLoading] = useState(true);
-  const getUnread = () => {
-    return get(`post/getAllUnreadPost/${status._id}`)
-      .then((r) => r.data?.length)
-      .catch(() => 0);
+
+  const getUnread = async () => {
+    try {
+      const response = await get(`post/getAllUnreadPost/${status._id}`);
+      console.log('Unread response:', status); // Debug log
+      return response.data?.length || 0;
+    } catch (error) {
+      console.error('Error fetching unread count:', error); // Better error handling
+      return 0;
+    }
   };
-  const setReadPost = () => {
-    return get(`post/setReadPost/${status._id}`)
-      .then((r) => r.data?.length)
-      .catch(() => 0);
+
+  const setReadPost = async () => {
+    try {
+      const response = await get(`post/setReadPost/${status._id}`);
+      console.log('Set read response:', response); // Debug log
+      return response;
+    } catch (error) {
+      console.error('Error setting post as read:', error);
+      return null;
+    }
   };
 
   useEffect(() => {
-    if (authState) {
-      getUnread().then((count) => {
+    const fetchUnread = async () => {
+      if (authState && status._id) {
+        setIsLoading(true);
+        const count = await getUnread();
+        console.log('Fetched unread count:', count); // Debug log
         setUnread(count);
         setIsLoading(false);
-      });
-    } else {
-      setIsLoading(false);
+      } else {
+        setIsLoading(false);
+        setUnread(0);
+      }
+    };
+
+    fetchUnread();
+  }, [status._id, authState]); // Added authState as dependency
+
+  const handleClick = async () => {
+    if (!authState) return;
+    
+    try {
+      await setReadPost();
+      // Refresh unread count after marking as read
+      const newCount = await getUnread();
+      setUnread(newCount);
+    } catch (error) {
+      console.error('Error handling click:', error);
     }
-  }, [status.id]);
+  };
+
   return (
-    <Flex direction="column" alignItems="center" position="relative">
-    <div onClick={() => setReadPost()} >
-      <Link href={`/channel/${status.username}`}>
-        <Avatar
-          size="lg"
-          borderRadius={10}
-          src={status.channelIconImageUrl}
-        />
-        {!isLoading ? (
-          unread > 0 && (
-            <Box
-              zIndex="10"
-              alignSelf="end"
-              mt="-4"
-              fontSize="xs"
-              color="white"
-              bg="#333"
-              borderRadius="xl"
-              px={2}
-              w="min-content"
-              position="absolute"
-              right={0}
-            >
-              {unread}
-            </Box>
-          )
-        ) : (
-          <Spinner size="sm" />
+    <Flex direction="column" alignItems="center" position="relative" pt={2}>
+      <Box position="relative" onClick={handleClick}>
+        <Link href={`/channel/${status.username}`}>
+          <Avatar
+            size="lg"
+            borderRadius={10}
+            src={status.channelIconImageUrl}
+          />
+        </Link>
+        
+        {/* Moved badge inside the Box for better positioning */}
+        {!isLoading && unread > 0 && (
+          <Box
+            position="absolute"
+            top="-2"
+            right="-2"
+            zIndex="10"
+            fontSize="xs"
+            color="white"
+            bg="red.500" // Changed to red.500 for better visibility
+            borderRadius="full"
+            minW="20px"
+            h="20px"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            border="2px solid white" // Added white border
+          >
+            {unread}
+          </Box>
         )}
-      </Link>
-      </div>
+        
+        {isLoading && (
+          <Box
+            position="absolute"
+            top="-2"
+            right="-2"
+            zIndex="10"
+          >
+            <Spinner size="sm" />
+          </Box>
+        )}
+      </Box>
     </Flex>
   );
 };
+
 
 const getChannelsForLoggedoutUser = () => {
   return axios

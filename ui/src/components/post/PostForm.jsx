@@ -20,6 +20,7 @@ import ImageCropper from "@/components/Image-cropper/ImageCropper";
 import useDeviceType from "@/components/useDeviceType";
 import genres from "@/static-data/genres";
 import LibraryImageSelector from "../publish/LibraryImageSelector";
+import { useDispatch, useSelector } from "react-redux";
 const RichTextEditor = dynamic(() => import("@/components/RichTextEditor"), {
   ssr: false,
 });
@@ -40,6 +41,8 @@ const PostForm = ({
   postLoading,
   isEditMode,
   handlePreview,
+  showPreviewButton = false,
+  postId = null,
 }) => {
   const deviceType = useDeviceType();
   const toast = useToast();
@@ -47,6 +50,14 @@ const PostForm = ({
   const [libraryImages, setLibraryImages] = useState([]);
   const [isLibraryModalOpen, setIsLibraryModalOpen] = useState(false);
   const [isLoadingFeatureImage, setIsLoadingFeatureImage] = useState(false);
+  
+  const dispatch = useDispatch();
+  const { tempLibraryImages } = useSelector((state) => state.publish);
+  
+  // Debug log for PostForm Redux state
+  useEffect(() => {
+    console.log('PostForm: tempLibraryImages updated:', tempLibraryImages?.length || 0);
+  }, [tempLibraryImages]);
 
   useEffect(() => {
     // Debug log to check editionDetails
@@ -133,19 +144,19 @@ const PostForm = ({
   };
 
   const handlePreviewPage = () => {
-    const { header, standFirst, credits, bodyRichText } = formData;
+    const { header } = formData;
 
     if (!header) {
       toast({
-        title: "Incomplete Form",
-        description: "Please fill in all mandatory * fields.",
+        title: "Header Required",
+        description: "Please fill in the Header field.",
         status: "warning",
         duration: 5000,
         isClosable: true,
       });
       return;
     }
-    if (uploadedImage ? !croppedImage : false) {
+    if (uploadedImage && !croppedImage) {
       toast({
         title: "Save The Image",
         description: "Save The Image After Cropping",
@@ -159,7 +170,7 @@ const PostForm = ({
   };
 
 const imageUrlToDataUrl = async (url) => {
-  const proxiedUrl = "http://localhost:5001/image-proxy?url=" + encodeURIComponent(url);
+  const proxiedUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/image-proxy?url=` + encodeURIComponent(url);
   const response = await fetch(proxiedUrl, { mode: 'cors' }); // might fail due to CORS
   const blob = await response.blob();
   return await new Promise((resolve) => {
@@ -177,6 +188,8 @@ const imageUrlToDataUrl = async (url) => {
       return false;
     }
   };
+
+  // Remove this function since we're using Redux now
 
   const handleLibraryImage = async (img) => {
     setIsLoadingFeatureImage(true)    
@@ -232,12 +245,12 @@ const imageUrlToDataUrl = async (url) => {
   };
 
   return (
-    <Box w={{ base: "100%", lg: "60%" }}>
+    <Box w={{ base: "100%", lg: "100%" }} px={{ base: 2, md: 4 }}>
       {/* Form Section */}
-      <Stack spacing={4}>
+      <Stack spacing={{ base: 3, md: 4 }}>
         <Box w="100%">
-          <Flex justifyContent="space-between" alignItems="center" px="4">
-            <Text fontSize="sm">MAIN IMAGE</Text>
+          <Flex justifyContent="space-between" alignItems="center" px={{ base: 2, md: 4 }} mb={2}>
+            <Text fontSize={{ base: "xs", md: "sm" }}>MAIN IMAGE</Text>
             <div>
               <Input
                 visibility="hidden"
@@ -260,7 +273,7 @@ const imageUrlToDataUrl = async (url) => {
                 onChange={handleFileSelect}
                 capture="environment"
               />
-              <label htmlFor="files" className="btn">
+              <label htmlFor="files" className="btn" style={{ fontSize: deviceType === "phone" ? "0.75rem" : "0.875rem" }}>
                 UPLOAD IMAGE
               </label>
             </div>
@@ -268,8 +281,8 @@ const imageUrlToDataUrl = async (url) => {
           <FormControl id="mainImage">
             <Box
               border="3px dashed #e2e8f0"
-              width="360px"
-              height="205px"
+              width={{ base: "280px", sm: "320px", md: "360px" }}
+              height={{ base: "160px", sm: "180px", md: "205px" }}
               display="flex"
               alignItems="center"
               justifyContent="center"
@@ -315,23 +328,25 @@ const imageUrlToDataUrl = async (url) => {
           </Box>
         </Box>
         <Box w="100%">
-          <Flex mb="4" direction={{ base: "row", md: "column" }} gap={2}>
-            <FormControl id="edition" mr={4}>
-              <FormLabel fontSize="sm">Edition*</FormLabel>
+        {editionDetails && (  
+            <FormControl id="edition" mb="4" mr={{ base: 0, md: 4 }}>
+              <FormLabel fontSize={{ base: "xs", md: "sm" }}>Edition*</FormLabel>
               <Input
-                size="sm"
+                size={{ base: "sm", md: "sm" }}
                 type="text"
-                placeholder="The Green Room"
+                placeholder=""
                 value={editionDetails?.editionText || ""}
                 isDisabled={true}
                 maxLength={70}
                 color="#000"
               />
             </FormControl>
-            <FormControl id="section" mr={4}>
-              <FormLabel fontSize="sm">SECTION</FormLabel>
+          )}
+          <Flex mb="4" direction={{ base: "column", md: "row" }} gap={{ base: 3, md: 2 }}>
+            <FormControl id="section" mr={{ base: 0, md: 4 }}>
+              <FormLabel fontSize={{ base: "xs", md: "sm" }}>SECTION</FormLabel>
               <Select
-                size="sm"
+                size={{ base: "sm", md: "sm" }}
                 value={selectedSection}
                 onChange={(e) => setSelectedSection(e.target.value)}
               >
@@ -344,12 +359,12 @@ const imageUrlToDataUrl = async (url) => {
               </Select>
             </FormControl>
             <FormControl id="subSection">
-              <FormLabel fontSize="sm">SUB SECTION</FormLabel>
+              <FormLabel fontSize={{ base: "xs", md: "sm" }}>SUB SECTION</FormLabel>
               <Select
-                size="sm"
+                size={{ base: "sm", md: "sm" }}
                 value={selectedSubSection}
                 onChange={(e) => setSelectedSubSection(e.target.value)}
-                disabled={!selectedSection}
+                disabled={!selectedSection || genres[selectedSection].genre === "Other"}
               >
                 <option value="">Select a sub-section</option>
                 {selectedSection &&
@@ -361,8 +376,8 @@ const imageUrlToDataUrl = async (url) => {
               </Select>
             </FormControl>
           </Flex>
-          <FormControl id="header" mb="4">
-            <FormLabel fontSize="sm">HEADER*</FormLabel>
+          <FormControl id="header" mb={{ base: 3, md: 4 }}>
+            <FormLabel fontSize={{ base: "xs", md: "sm" }}>HEADER*</FormLabel>
             <Input
               size="sm"
               type="text"
@@ -374,8 +389,8 @@ const imageUrlToDataUrl = async (url) => {
               }
             />
           </FormControl>
-          <FormControl id="standFirst" mb="4">
-            <FormLabel fontSize="sm">STAND-FIRST</FormLabel>
+          <FormControl id="standFirst" mb={{ base: 3, md: 4 }}>
+            <FormLabel fontSize={{ base: "xs", md: "sm" }}>STAND-FIRST</FormLabel>
             <Input
               size="sm"
               type="text"
@@ -387,8 +402,8 @@ const imageUrlToDataUrl = async (url) => {
               }
             />
           </FormControl>
-          <FormControl id="credits" mb="4">
-            <FormLabel fontSize="sm">CREDITS</FormLabel>
+          <FormControl id="credits" mb={{ base: 3, md: 4 }}>
+            <FormLabel fontSize={{ base: "xs", md: "sm" }}>CREDITS</FormLabel>
             <Input
               size="sm"
               type="text"
@@ -402,34 +417,53 @@ const imageUrlToDataUrl = async (url) => {
         </Box>
 
         <FormControl id="bodyRichText">
-          <FormLabel fontSize="sm">BODY COPY</FormLabel>
-          <RichTextEditor
-            handleTextBodyChange={handleTextBodyChange}
-            bodyRichText={formData.bodyRichText}
-            initialValue={formData.bodyRichText}
-            editionId={editionDetails?._id}
-            edition={editionDetails}
-          />
+          <FormLabel fontSize={{ base: "xs", md: "sm" }}>BODY COPY</FormLabel>
+          <Box minH={{ base: "200px", md: "300px" }}>
+            <RichTextEditor
+              handleTextBodyChange={handleTextBodyChange}
+              bodyRichText={formData.bodyRichText}
+              initialValue={formData.bodyRichText}
+              editionId={editionDetails?._id}
+              postId={postId} // Will be updated when we have postId after saving
+              edition={editionDetails}
+            />
+          </Box>
         </FormControl>
-        <Button
-          disabled={postLoading}
-          colorScheme="green"
-          onClick={handlePreviewPage}
-          fontSize="md"
-          py={4}
-        >
-          {postLoading && <Spinner size="sm" color="white" />}
-          {postLoading ? (isEditMode ? "Updating Post..." : "Creating Post...") : "Save & Preview"}
-        </Button>
+        {showPreviewButton ? (
+          <Button
+            disabled={postLoading}
+            colorScheme="green"
+            onClick={handlePreviewPage}
+            fontSize={{ base: "sm", md: "md" }}
+            py={4}
+            w={{ base: "100%", md: "auto" }}
+          >
+            {postLoading && <Spinner size="sm" color="white" />}
+            {postLoading ? (isEditMode ? "Updating Post..." : "Creating Post...") : "Save & Preview"}
+          </Button>
+        ) : (
+          <Button
+            disabled={postLoading}
+            colorScheme="blue"
+            onClick={handleSubmit}
+            fontSize={{ base: "sm", md: "md" }}
+            py={4}
+            w={{ base: "100%", md: "auto" }}
+          >
+            {postLoading && <Spinner size="sm" color="white" />}
+            {postLoading ? (isEditMode ? "Updating Post..." : "Publishing...") : "Publish"}
+          </Button>
+        )}
       </Stack>
 
 
        <LibraryImageSelector
+        key="postform-library-selector"
         isOpen={isLibraryModalOpen}
         onClose={() => setIsLibraryModalOpen(false)}
         editionId={editionDetails?._id}
+        postId={postId}
         onImageSelect={handleLibraryImage}
-        mergeImages={true}
       />
     </Box>
   );

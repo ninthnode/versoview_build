@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Box, Flex } from "@chakra-ui/react";
 import { createNewPost } from "@/redux/posts/postActions";
 import { fetchLoggedInUserChannel } from "@/redux/channel/channelActions";
+import { clearTempLibraryImages } from "@/redux/publish/publishActions";
 import { useDispatch, useSelector } from "react-redux";
 import { useToast } from "@chakra-ui/react";
 import { getEditionById, cleanEdition } from "@/redux/publish/publishActions";
@@ -23,6 +24,7 @@ const PublishPdfPost = ({ params }) => {
   const postLoading = useSelector((s) => s.post.loadingModify);
   const editionDetails = useSelector((s) => s.publish.singleEdition);
   const userChannel = useSelector((s) => s.channel.userChannel);
+  const { tempLibraryImages } = useSelector((s) => s.publish);
   
   const [isEditing, setIsEditing] = useState(true);
   const [uploadedImage, setUploadedImage] = useState(null);
@@ -72,7 +74,10 @@ const PublishPdfPost = ({ params }) => {
       formData.section = genres[selectedSection]?.genre ||"";
       formData.subSection = selectedSubSection||"";
       formData.editionId = editionDetails._id;
+      formData.libraryImages = tempLibraryImages;
       dispatch(createNewPost(key, content_type, image, formData));
+      // Clear temporary images after successful submission
+      dispatch(clearTempLibraryImages());
     } catch (error) {
       console.error("Error submitting form:", error);
     }
@@ -82,16 +87,33 @@ const PublishPdfPost = ({ params }) => {
     setIsEditing(!isEditing);
   };
 
+  const handlePublish = () => {
+    handleSubmit();
+  };
+
   return (
-    <Box mb={"60px"}>
-      <Flex py={5} gap="4">
+    <Box mb={"60px"} px={{ base: 2, md: 4 }}>
+      <Flex 
+        py={5} 
+        gap={{ base: 2, md: 4 }}
+        direction={{ base: "column", lg: "row" }}
+        align={{ base: "center", lg: "flex-start" }}
+      >
         {/* PDF Preview Section */}
         {editionDetails && editionDetails.pdfUrls && (
-          <PdfViewer pdfUrls={editionDetails.pdfUrls} />
+          <Box 
+            w={{ base: "100%", lg: "60%" }} 
+            mb={{ base: 4, lg: 0 }}
+            display="flex"
+            justifyContent="center"
+          >
+            <PdfViewer pdfUrls={editionDetails.pdfUrls} />
+          </Box>
         )}
 
-        {isEditing ? (
-          <PostForm 
+        <Box w={{ base: "100%", lg: editionDetails?.pdfUrls ? "60%" : "100%" }}>
+          {isEditing ? (
+            <PostForm 
             formData={formData}
             setFormData={setFormData}
             uploadedImage={uploadedImage}
@@ -107,30 +129,34 @@ const PublishPdfPost = ({ params }) => {
             postLoading={postLoading}
             isEditMode={false}
             handlePreview={handlePreview}
+            showPreviewButton={true}
           />
-        ) : (
-          <Box
-            w="100%"
-            h="100%"
-            display="flex"
-            justifyContent="center"
-            alignItems="center"
-          >
-            <PostPreview
-              post={formData}
-              croppedImage={croppedImage}
-              uploadedImage={uploadedImage}
-              selectedSection={genres[selectedSection]?.genre || ""}
-              selectedSubSection={selectedSubSection || ""}
-              userChannel={userChannel}
-              postLoading={postLoading}
-              handleSubmit={handleSubmit}
-              isEditPost={false}
-              handleEditSubmit={null}
-              handlePreviewPage={handlePreview}
-            />
-          </Box>
-        )}
+          ) : (
+            <Box
+              w="100%"
+              h="100%"
+              display="flex"
+              justifyContent="center"
+              alignItems="center"
+              px={{ base: 2, md: 0 }}
+            >
+              <PostPreview
+                post={formData}
+                croppedImage={croppedImage}
+                uploadedImage={uploadedImage}
+                selectedSection={genres[selectedSection]?.genre || ""}
+                selectedSubSection={selectedSubSection || ""}
+                userChannel={userChannel}
+                postLoading={postLoading}
+                handleSubmit={handleSubmit}
+                isEditPost={false}
+                handleEditSubmit={null}
+                handlePreviewPage={handlePreview}
+                handlePublish={handlePublish}
+              />
+            </Box>
+          )}
+        </Box>
       </Flex>
     </Box>
   );

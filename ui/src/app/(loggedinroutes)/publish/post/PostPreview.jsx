@@ -38,7 +38,8 @@ function PostPreview({
   handleSubmit,
   isEditPost,
   handleEditSubmit,
-  postLoading
+  postLoading,
+  handlePublish
 }) {
   return (
     <Box maxW="2xl">
@@ -207,12 +208,12 @@ function PostPreview({
                 w='100%'
                 size="full"
                 colorScheme="green"
-                fontSize='md'
+                fontSize={{ base: "sm", md: "md" }}
                 py={3}
-                onClick={isEditPost?handleEditSubmit:handleSubmit}
+                onClick={isEditPost ? handleEditSubmit : (handlePublish || handleSubmit)}
               >
                 {postLoading && <Spinner size="sm" color="white" />}
-                {postLoading ? isEditPost?"Editing Post..":"Creating Post.." : "Save"}
+                {postLoading ? (isEditPost ? "Editing Post..." : "Publishing...") : "Publish"}
               </Button>
             </CardBody>
           </Card>

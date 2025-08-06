@@ -50,10 +50,10 @@ const PdfFlipBookModal = ({ title,editionId }) => {
   
   // Zoom state - CHANGED: Default zoom to 175% (1.75)
   const [zoomLevel, setZoomLevel] = useState(1.75);
-  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+  const [panOffset, setPanOffset] = useState({ x: 0, y: 20 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [lastPanOffset, setLastPanOffset] = useState({ x: 0, y: 0 });
+  const [lastPanOffset, setLastPanOffset] = useState({ x: 0, y: 20 });
   
   const flipBookRef = useRef(null);
   const modalBodyRef = useRef(null);
@@ -63,8 +63,14 @@ const PdfFlipBookModal = ({ title,editionId }) => {
   const MIN_ZOOM = 0.5;
   const MAX_ZOOM = 3;
   const ZOOM_STEP = 0.25;
-  const DEFAULT_ZOOM = 1.75; // 175%
-  
+  console.log("Device Height",window.innerHeight);
+  let DEFAULT_ZOOM;
+
+if (deviceType === 'phone') {
+  DEFAULT_ZOOM = 1.5;
+} else {
+  DEFAULT_ZOOM = window.innerHeight >= 800 ? 2 : 1.75;
+}
   // Update window dimensions and device type on resize
   useEffect(() => {
     const updateWindowDimensions = () => {
@@ -84,6 +90,10 @@ const PdfFlipBookModal = ({ title,editionId }) => {
   // Calculate modal dimensions after open or resize
   useEffect(() => {
     if (isOpen && modalBodyRef.current) {
+      console.log("Device Type",deviceType);
+      if(deviceType != 'phone') {
+        toggleFullScreen()
+      }
       const updateDimensions = () => {
         const rect = modalBodyRef.current.getBoundingClientRect();
         setModalDimensions({
@@ -158,8 +168,8 @@ const PdfFlipBookModal = ({ title,editionId }) => {
   useEffect(() => {
     if (isOpen) {
       setZoomLevel(DEFAULT_ZOOM); // Set to 175% by default
-      setPanOffset({ x: 0, y: 0 });
-      setLastPanOffset({ x: 0, y: 0 });
+      setPanOffset({ x: 0, y: 20 });
+      setLastPanOffset({ x: 0, y: 20 });
       setIsDragging(false);
       setCurrentMode('turner'); // Default to page turner mode
     }
@@ -209,8 +219,8 @@ const PdfFlipBookModal = ({ title,editionId }) => {
     
     // Reset pan when zooming out to default or less
     if (newZoom <= DEFAULT_ZOOM) {
-      setPanOffset({ x: 0, y: 0 });
-      setLastPanOffset({ x: 0, y: 0 });
+      setPanOffset({ x: 0, y: 20 });
+      setLastPanOffset({ x: 0, y: 20 });
     }
   };
 
@@ -219,8 +229,8 @@ const PdfFlipBookModal = ({ title,editionId }) => {
     
     // Reset pan when zooming out to default or less
     if (value <= DEFAULT_ZOOM) {
-      setPanOffset({ x: 0, y: 0 });
-      setLastPanOffset({ x: 0, y: 0 });
+      setPanOffset({ x: 0, y: 20 });
+      setLastPanOffset({ x: 0, y: 20 });
     }
   };
 
@@ -229,8 +239,8 @@ const PdfFlipBookModal = ({ title,editionId }) => {
   
   const handleResetZoom = () => {
     setZoomLevel(DEFAULT_ZOOM);
-    setPanOffset({ x: 0, y: 0 });
-    setLastPanOffset({ x: 0, y: 0 });
+    setPanOffset({ x: 0, y: 20 });
+    setLastPanOffset({ x: 0, y: 20 });
   };
 
   const handleMouseDown = (e) => {
@@ -433,7 +443,7 @@ const PdfFlipBookModal = ({ title,editionId }) => {
             transition="all 0.3s ease"
             opacity={isFullScreen ? 0.7 : 1}
             _hover={{ opacity: 1 }}
-            position={isFullScreen ? "absolute" : "relative"}
+            position={ "relative"}
             bg={isFullScreen ? "rgba(255,255,255,0.9)" : "transparent"}
             w="100%"
             zIndex="2"
@@ -531,7 +541,7 @@ const PdfFlipBookModal = ({ title,editionId }) => {
                       onClick={handleResetZoom}
                       variant="ghost"
                       size="sm"
-                      isDisabled={zoomLevel === DEFAULT_ZOOM && panOffset.x === 0 && panOffset.y === 0}
+                      isDisabled={zoomLevel === DEFAULT_ZOOM && panOffset.x === 0 && panOffset.y === 20}
                       aria-label="Reset Zoom"
                     />
                   </Tooltip>

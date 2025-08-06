@@ -13,14 +13,15 @@ const RichTextEditor = forwardRef(
       showExtraButtons = false,
       handleTextBodyChange,
       bodyRichText,
-      editionId
+      editionId,
+      postId = null
     },
     ref
   ) => {
     const editorRef = useRef(null);
     const cursorPositionRef = useRef(null); // Store cursor position
     const { isOpen, onOpen, onClose } = useDisclosure();
-  const [isLibraryModalOpen, setIsLibraryModalOpen] = useState(false);
+    const [isLibraryModalOpen, setIsLibraryModalOpen] = useState(false);
 
     // Add effect to handle bodyRichText if passed directly
     useEffect(() => {
@@ -165,11 +166,12 @@ const RichTextEditor = forwardRef(
           placeholder={placeholderText || "Write something..."}
         />
         <LibraryImageSelector
+            key="richtexteditor-library-selector"
             isOpen={isLibraryModalOpen}
             onClose={() => setIsLibraryModalOpen(false)}
             editionId={editionId}
+            postId={postId}
             onImageSelect={handleLibraryImage}
-            mergeImages={false}
           />  
       </div>
     );

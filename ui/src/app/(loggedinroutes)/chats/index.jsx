@@ -9,6 +9,8 @@ import {
 } from "@/redux/comments/commentAction";
 import { addRemoveBookmarks } from "@/redux/bookmarks/bookmarkAction";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+
 function Chats({ user }) {
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -16,6 +18,7 @@ function Chats({ user }) {
   const commentStateUpdateCount = useSelector(
     (s) => s.comment.commentStateUpdateCount
   );
+  const pathname = usePathname();
 
   useEffect(() => {
     const token = localStorage.getItem("token")?.replaceAll('"', "");
@@ -44,8 +47,14 @@ function Chats({ user }) {
       }
     }
     fetchComments();
-  }, [user, commentStateUpdateCount]);
+  }, [user, commentStateUpdateCount,pathname]);
 
+
+  //  useEffect(() => {
+  //     setComments([]);
+  //     console.log('pathchanged')
+
+  // }, [pathname]);
   const upvoteComment = async (changeCommentId) => {
     await dispatch(updateCommentUpvote(changeCommentId));
   };

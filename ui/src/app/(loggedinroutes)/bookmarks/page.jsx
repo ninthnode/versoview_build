@@ -56,15 +56,15 @@ const Comment = ({
           onClick={()=>handleClick(singleComment)}
         >
           <Link href={`post/${singleComment.userId.username}/${postId.slug}`}>
-            <HStack spacing={4} alignItems="flex-start">
-              <Avatar name={singleComment.userId.channelName} src={singleComment.userId.profileImageUrl} />
-              <VStack align="start" spacing={1}>
-                <Text fontWeight="bold" fontSize="md">{singleComment.userId.channelName}</Text>
+            <HStack spacing={2} alignItems="flex-start">
+              <Avatar ml='2' size="sm" borderRadius={10} name={singleComment.userId.channelName} src={singleComment.userId.profileImageUrl} />
+              <VStack align="start">
+                <Text p='0' fontWeight="bold" fontSize="md">{singleComment.userId.channelName}</Text>
                 <Text fontSize="sm" color="gray.500">
                   {singleComment.createdAt}
                 </Text>
                 {singleComment.excerpt && (
-                  <Box borderWidth="1px" borderRadius="md" boxShadow="lg" p="2">
+                  <Box borderWidth="1px" borderRadius="md" boxShadow="lg">
                     <Text>
                       {'"'}
                       {singleComment.excerpt}
@@ -78,6 +78,7 @@ const Comment = ({
         </div>
         <Box pt={3} position="absolute" top="0" right="0">
           <IconButton
+          pr={4}
             variant="ghost"
             color={!isBookmarked ? "gray" : "green.500"}
             aria-label="See menu"

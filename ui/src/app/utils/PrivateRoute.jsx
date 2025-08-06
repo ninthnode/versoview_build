@@ -65,7 +65,7 @@ const useSplashScreen = () => {
 
 // Route checking utilities
 const routeUtils = {
-  isAuthRoute: (path) => AuthRoutes.some(route => path === route.url),
+  isAuthRoute: (path) => AuthRoutes.some(route => path.startsWith(route.url)),
   isProtectedRoute: (path) => ProtectedRoutes.some(route => path.startsWith(route.url)),
   isPublicRoute: (path) => PublicRoutes.some(route => path.startsWith(route.url)),
   isVerifyExceptionRoute: (path) => VERIFY_EXCEPTION_ROUTES.some(route => path.startsWith(route))
@@ -296,6 +296,7 @@ const PrivateRoute = ({ children }) => {
     }
     
     // Standard authentication check
+    console.log(userVerified , loading , delay)
     return userVerified && !loading && !delay;
   };
   

@@ -14,14 +14,20 @@ function Publish() {
   const [isCreateEditPost, setIsCreateEditPost] = useState(false);
   const [selectedEdition, setSelectedEdition] = useState([]);
   return (
-    <Box mt='4'>
-      {deviceType == "desktop"&&!isCreateEditPost ? (
-        <Flex gap={4}  px={4}>
-          <PdfCards setIsCreateEditPost={setIsCreateEditPost}
-          setSelectedEdition={setSelectedEdition}
+    <Box mt='4' px={{ base: 2, md: 4 }}>
+      {deviceType == "desktop" && !isCreateEditPost ? (
+        <Flex 
+          gap={{ base: 2, md: 4 }} 
+          direction={{ base: "column", lg: "row" }}
+          px={{ base: 2, md: 4 }}
+        >
+          <PdfCards 
+            setIsCreateEditPost={setIsCreateEditPost}
+            setSelectedEdition={setSelectedEdition}
           />
-          <Posts setIsCreateEditPost={setIsCreateEditPost}
-          setSelectedEdition={setSelectedEdition}
+          <Posts 
+            setIsCreateEditPost={setIsCreateEditPost}
+            setSelectedEdition={setSelectedEdition}
           />
         </Flex>
       ) : (

@@ -769,7 +769,7 @@ const mergeImagesInBatches = async (imageUrls) => {
             </Box>
           </Box>
 
-          <Box overflow="hidden" mt="8">
+          {/* <Box overflow="hidden" mt="8">
             <Box
               borderTopWidth="2px"
               borderBottomWidth="2px"
@@ -789,7 +789,7 @@ const mergeImagesInBatches = async (imageUrls) => {
             <Box mt="4">
               <DemographicForm />
             </Box>
-          </Box>
+          </Box> */}
         </Box>
 
         <Box overflow="hidden">

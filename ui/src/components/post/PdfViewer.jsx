@@ -3,7 +3,7 @@ import { Box, Flex, Heading, Spinner } from "@chakra-ui/react";
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
-
+import "@/app/(loggedinroutes)/publish/post/pdf.css";
 // Initialize PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
@@ -66,7 +66,7 @@ const PdfViewer = ({ pdfUrls }) => {
 
   return (
     <Box
-      w="60%"
+      w="100%"
       border="1px solid black"
       display={{ base: "none", md: "block" }}
       height="fit-content"
@@ -88,7 +88,7 @@ const PdfViewer = ({ pdfUrls }) => {
                   <Document
                     file={pdf}
                     onLoadSuccess={(pdf) => onLoadSuccess(pdf, index)}
-                    renderMode={"svg"}
+                    renderMode="svg"
                   >
                     {Array.from(
                       new Array(numPages[index] || 0),

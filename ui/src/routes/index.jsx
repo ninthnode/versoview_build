@@ -17,7 +17,7 @@ const AuthRoutes = [
     name: "PasswordReset",
     icon: "",
     isprivate: false,
-    url: "/password-reset",
+    url: "/reset-password",
   },
   {
     name: "ForgotPassword",

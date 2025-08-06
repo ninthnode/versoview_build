@@ -15,7 +15,9 @@ import {
     UPLOAD_LIBRARY_IMAGE_REQUEST,
     UPLOAD_LIBRARY_IMAGE_SUCCESS,
     GET_LIBRARY_IMAGES_FAILURE,
-    UPLOAD_LIBRARY_IMAGE_FAILURE
+    UPLOAD_LIBRARY_IMAGE_FAILURE,
+    ADD_TEMP_LIBRARY_IMAGE,
+    CLEAR_TEMP_LIBRARY_IMAGES
   } from './publishTypes';
   
   const initialState = {
@@ -33,6 +35,7 @@ import {
     libraryError: null,
     libraryUploadLoading: false,
     libraryUploadError: null,
+    tempLibraryImages: [],
   };
   
  const publishReducer = (state = initialState, action) => {
@@ -132,6 +135,20 @@ import {
           ...state,
           loading: false,
           userEditions: action.payload,
+        };
+      case ADD_TEMP_LIBRARY_IMAGE:
+        console.log('Redux: Adding temp library image', action.payload);
+        console.log('Redux: Current tempLibraryImages count:', state.tempLibraryImages.length);
+        const newTempImages = [...state.tempLibraryImages, action.payload];
+        console.log('Redux: New tempLibraryImages count:', newTempImages.length);
+        return {
+          ...state,
+          tempLibraryImages: newTempImages,
+        };
+      case CLEAR_TEMP_LIBRARY_IMAGES:
+        return {
+          ...state,
+          tempLibraryImages: [],
         };
       default:
         return state;

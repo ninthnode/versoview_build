@@ -4,6 +4,8 @@ const { Edition } = require("../models/edition.model");
 const { Channel } = require("../models/channel.model");
 const { Bookmark } = require("../models/bookmark.model");
 const { LibraryImage } = require("../models/libraryImage.model");
+const { PostImages } = require("../models/postImages.model");
+const e = require("express");
 
 module.exports.createEdition = asyncHandler(async (req, res) => {
   try {
@@ -279,29 +281,60 @@ module.exports.uploadLibraryImage = async (req, res) => {
 
 module.exports.getLibraryImagesByEditionId = asyncHandler(async (req, res) => {
   try {
-    const editionId = req.params._id;
+    const { postId, editionId } = req.query;
 
-    // Find the library image document by editionId
-    const libraryImages = await LibraryImage.findOne({ editionId });
-
-    if (!libraryImages) {
-      return res
-        .status(404)
-        .json({ error: "No images found for this edition." });
+    let allImages = [];
+    // Handle normal posts (postId provided and not "null" string)
+    if (postId && postId !== "null" && postId !== null) {
+      console.log("Fetching images for postId:", postId);
+      // Get post-specific images
+      const postImages = await PostImages.findOne({ postId });
+      if (postImages && postImages.images) {
+        allImages = [...allImages, ...postImages.images];
+      }
     }
 
-    // Build flat array
-    const flatImageArray = [
-      ...(libraryImages.allImages || [])
-        .filter((img) => img.isDefault === false)
-        .reverse()
-        .map((img) => img.url),
-      ...(libraryImages.mergedImages || []),
-    ];
-    res.json({ images: flatImageArray });
+    // Handle edition posts (editionId provided)
+    if (editionId) {
+      // Check if edition exists
+      const edition = await Edition.findById(editionId);
+      if (edition) {
+        // Get edition-specific images from PostImages (new approach)
+        const editionPostImages = await PostImages.findOne({ editionId });
+        if (editionPostImages && editionPostImages.images) {
+          allImages = [...allImages, ...editionPostImages.images];
+        }
+        
+        // Also get merged images from library (legacy support)
+        const libraryImages = await LibraryImage.findOne({ editionId });
+        if (libraryImages && libraryImages.mergedImages) {
+          allImages = [...allImages, ...libraryImages.mergedImages];
+        }
+      }
+    }
+
+    // If neither postId nor editionId provided, return error
+    if ((!postId || postId === "null") && !editionId) {
+      return res.status(400).json({
+        success: false,
+        message: "Post ID or Edition ID is required",
+      });
+    }
+
+    // Remove duplicates
+    const uniqueImages = [...new Set(allImages)];
+
+    res.status(200).json({
+      success: true,
+      images: uniqueImages,
+      message: "Library images fetched successfully",
+    });
   } catch (error) {
     console.error("Error fetching library images:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ 
+      success: false,
+      error: "Internal Server Error" 
+    });
   }
 });
 
@@ -316,15 +349,16 @@ module.exports.getLibraryImagesForPageTurner = asyncHandler(
         return res.status(404).json({ message: "Edition not found" });
       }
       // Get library images from the LibraryImage model
-      const libraryImages = await LibraryImage.find({
-        editionId,
-        isDefault: true,
-      }).sort({ order: -1 });
-      const imageUrls = libraryImages.map((img) => img.imageUrl);
+    const libraryImages = await LibraryImage.findOne({ editionId });
 
+const flatImageArray = [
+      ...(libraryImages.allImages || [])
+        .filter((img) => img.isDefault === true)
+        .map((img) => img.url),
+    ];
       res.status(200).json({
         success: true,
-        data: imageUrls,
+        data: flatImageArray,
         message: "Library images fetched successfully",
       });
     } catch (error) {
@@ -333,3 +367,122 @@ module.exports.getLibraryImagesForPageTurner = asyncHandler(
     }
   }
 );
+
+module.exports.uploadPostImage = asyncHandler(async (req, res) => {
+  try {
+    const { postId, editionId, url } = req.body;
+
+    // Require either postId or editionId
+    if (!postId && !editionId) {
+      return res.status(400).json({
+        success: false,
+        message: "Post ID or Edition ID is required",
+      });
+    }
+
+    // Validate the referenced document exists
+    if (postId) {
+      const post = await Post.findById(postId);
+      if (!post) {
+        return res.status(404).json({
+          success: false,
+          message: "Post not found",
+        });
+      }
+    }
+
+    if (editionId) {
+      const edition = await Edition.findById(editionId);
+      if (!edition) {
+        return res.status(404).json({
+          success: false,
+          message: "Edition not found",
+        });
+      }
+    }
+
+    // Find existing postImages by postId or editionId
+    let query = {};
+    if (postId) query.postId = postId;
+    if (editionId) query.editionId = editionId;
+    
+    let postImages = await PostImages.findOne(query);
+
+    if (postImages) {
+      postImages.images = [...postImages.images, ...url];
+      await postImages.save();
+    } else {
+      const newPostImagesData = {
+        images: url, // Assuming url is an array of image URLs
+      };
+      
+      if (postId) newPostImagesData.postId = postId;
+      if (editionId) newPostImagesData.editionId = editionId;
+      
+      postImages = new PostImages(newPostImagesData);
+      await postImages.save();
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Post images uploaded successfully",
+      data: postImages,
+    });
+  } catch (error) {
+    console.error("Error uploading post images:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+});
+
+module.exports.getPostImages = asyncHandler(async (req, res) => {
+  try {
+    const postId = req.params._id;
+
+    if (!postId) {
+      return res.status(400).json({
+        success: false,
+        message: "Post ID is required",
+      });
+    }
+
+    // Get post images from PostImages model
+    const postImages = await PostImages.findOne({ postId });
+    
+    // If post has an edition, also get merged images from library
+    const post = await Post.findById(postId);
+    let allImages = [];
+    
+    // Add post-specific images
+    if (postImages && postImages.images) {
+      allImages = [...allImages, ...postImages.images];
+    }
+    
+    // If it's an edition post, also include merged images from library
+    if (post && post.editionId) {
+      const libraryImages = await LibraryImage.findOne({ editionId: post.editionId });
+      if (libraryImages && libraryImages.mergedImages) {
+        allImages = [...allImages, ...libraryImages.mergedImages];
+      }
+    }
+
+    // Remove duplicates
+    const uniqueImages = [...new Set(allImages)];
+
+    res.status(200).json({
+      success: true,
+      images: uniqueImages,
+      message: "Post images fetched successfully",
+    });
+  } catch (error) {
+    console.error("Error fetching post images:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+});

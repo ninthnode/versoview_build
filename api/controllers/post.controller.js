@@ -18,6 +18,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const fse = require("fs-extra");
 const { Follow } = require("../models/follow.model");
+const { PostImages } = require("../models/postImages.model");
 
 // get all pdf images
 function getAllImageFiles(folder) {
@@ -127,9 +128,23 @@ module.exports.create = asyncHandler(async (req, res) => {
       }
     }
 
+    // Save library images to PostImages model if provided
+    if (req.body.libraryImages && req.body.libraryImages.length > 0) {
+      try {
+        const postImages = new PostImages({
+          postId: savedPost._id,
+          images: req.body.libraryImages,
+        });
+        await postImages.save();
+        console.log("Library images saved for post:", savedPost._id);
+      } catch (imageError) {
+        console.error("Error saving library images:", imageError);
+        // Don't fail the entire post creation if image saving fails
+      }
+    }
+
     // Update userType to 'publisher'
     await User.findByIdAndUpdate(userId, { userType: "publisher" });
-
 
     res.status(201);
     res.json({
@@ -538,7 +553,7 @@ module.exports.getPostByChannelId = asyncHandler(async (req, res) => {
     const channelId = req.params._id;
     const userId = req.user ? req.user._id : null;
 
-    const postData = await Post.find({ channelId: channelId }).populate("channelId");
+    const postData = await Post.find({ channelId: channelId }).populate("channelId").populate("editionId");
 
     if (!postData.length)
       return res
@@ -1536,7 +1551,6 @@ module.exports.getAllUnreadPost = asyncHandler(async (req, res) => {
     if (!unreadPosts) {
       return res.status(200).json({ status: 404, data: null });
     }
-
     return res.status(200).json({ status: 200, data: unreadPosts });
   } catch (error) {
     console.error(error);

@@ -15,7 +15,9 @@ import {
     UPLOAD_LIBRARY_IMAGE_REQUEST,
     UPLOAD_LIBRARY_IMAGE_SUCCESS,
     GET_LIBRARY_IMAGES_FAILURE,
-    UPLOAD_LIBRARY_IMAGE_FAILURE
+    UPLOAD_LIBRARY_IMAGE_FAILURE,
+    ADD_TEMP_LIBRARY_IMAGE,
+    CLEAR_TEMP_LIBRARY_IMAGES
   } from './publishTypes';
   import { toast } from 'react-toastify';
 
@@ -289,17 +291,33 @@ import {
 
 
 
-  export const getLibraryImages = (editionId) => async (dispatch) => {
+  export const getLibraryImages = (postId, editionId = null) => async (dispatch) => {
     try {
       dispatch({ type: GET_LIBRARY_IMAGES_REQUEST });
-      const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/editions/getLibraryImages/${editionId}`,
-        {
-          headers: {
-            authorization: `Bearer ${localStorage.getItem("token").replaceAll('"', "")}`,
-          },
+      
+      let url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/editions/getLibraryImages?`;
+      
+      // Add postId if it exists and is not null/undefined/"null"
+      if (postId && postId !== "null" && postId !== null) {
+        url += `postId=${postId}`;
+      }
+      
+      // Add editionId if it exists and is not null/undefined/"null"  
+      if (editionId && editionId !== "null" && editionId !== null) {
+        if (postId && postId !== "null" && postId !== null) {
+          url += `&editionId=${editionId}`;
+        } else {
+          url += `editionId=${editionId}`;
         }
-      );
+      }
+      
+      console.log('getLibraryImages: Final URL:', url, 'postId:', postId, 'editionId:', editionId);
+      
+      const response = await axios.get(url, {
+        headers: {
+          authorization: `Bearer ${localStorage.getItem("token").replaceAll('"', "")}`,
+        },
+      });
       dispatch({
         type: GET_LIBRARY_IMAGES_SUCCESS,
         payload: response?.data?.images,
@@ -336,7 +354,7 @@ import {
     }
   };
 
-  export const uploadLibraryImage = (key, content_type, file, editionId) => async (dispatch) => {
+  export const uploadPostImage = (key, content_type, file, postId, editionId) => async (dispatch) => {
     try {
       dispatch({ type: UPLOAD_LIBRARY_IMAGE_REQUEST });
       
@@ -357,8 +375,13 @@ import {
 
       // Save to backend
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/editions/uploadLibraryImage/${editionId}`,
-        { url: baseUrl },
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/editions/uploadPostImage`,
+        (() => {
+          const requestBody = { url: [baseUrl] };
+          if (postId) requestBody.postId = postId;
+          if (editionId) requestBody.editionId = editionId;
+          return requestBody;
+        })(),
         {
           headers: {
             authorization: `Bearer ${localStorage.getItem("token").replaceAll('"', "")}`,
@@ -382,4 +405,12 @@ import {
     }
   };
 
+  // Temporary library image actions
+  export const addTempLibraryImage = (imageUrl) => ({
+    type: ADD_TEMP_LIBRARY_IMAGE,
+    payload: imageUrl
+  });
 
+  export const clearTempLibraryImages = () => ({
+    type: CLEAR_TEMP_LIBRARY_IMAGES
+  });

@@ -120,7 +120,7 @@ const PostCard = ({
               border="1px solid lightgray"
               borderRadius="md"
               objectFit="cover"
-              minH="300px"
+              minH={{ base: "250px", md: "300px"}} 
               src={post.mainImageURL}
               alt={post.header}
             />
@@ -167,6 +167,7 @@ const PostCard = ({
               </Flex>
 
               <Box>
+              {console.log("post.editionId", post)}
                 {post.editionId?.pdfUrls?.length>0 && (
                   <PdfFlipBookModal
                     title={
