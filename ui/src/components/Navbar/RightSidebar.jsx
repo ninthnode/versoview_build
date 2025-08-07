@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { connect } from "react-redux";
 import { fetchfollowChannelList } from "@/redux/channel/channelActions";
 import { fetchUser } from "@/redux/profile/actions";
@@ -9,6 +9,7 @@ import { usePathname } from "next/navigation";
 import useDeviceType from "@/components/useDeviceType";
 import { RightSidebarRoutes } from "@/routes";
 import Link from "next/link";
+
 function RightSidebar({
   userDetails,
   user,
@@ -18,29 +19,41 @@ function RightSidebar({
 }) {
   const path = usePathname();
   const deviceType = useDeviceType();
+  const offsetRef = useRef(0); // Use ref to persist offset value
+  const lastScrollTopRef = useRef(0); // Use ref for lastScrollTop
+  
   const ShowSidebarIf =
     RightSidebarRoutes.find((route) => path.startsWith(route)) &&
     deviceType == "desktop";
+
   useEffect(() => {
     if (ShowSidebarIf && user) {
       fetchfollowChannelList();
       fetchUser(user.id);
     }
-  }, [ShowSidebarIf,user]);
+  }, [ShowSidebarIf, user]);
 
-  let lastScrollTop = 0;
+  // Reset sidebar scroll position on route change
+  useEffect(() => {
+    const sidebarContent = document.getElementById("content_wrapper");
+    if (sidebarContent && ShowSidebarIf) {
+      // Reset the offset and transform
+      offsetRef.current = 0;
+      sidebarContent.style.transform = 'translateY(0px)';
+      sidebarContent.style.position = 'fixed';
+      lastScrollTopRef.current = 0;
+    }
+  }, [path, ShowSidebarIf]); // Reset when route changes
 
   useEffect(() => {
     const sidebar = document.getElementById("sidebar");
     const sidebarContent = document.getElementById("content_wrapper");
     const mainContainer = document.getElementById("main_container");
 
-    if (!sidebar || !sidebarContent || !mainContainer) return;
+    if (!sidebar || !sidebarContent || !mainContainer || !ShowSidebarIf) return;
 
     // Enable smooth scrolling
     sidebarContent.style.transition = "transform 0.3s ease-out";
-
-    let offset = 0; // Keeps track of sidebar movement
 
     const handleScroll = () => {
       const scrollTop = window.scrollY;
@@ -49,23 +62,29 @@ function RightSidebar({
       const mainContainerH = mainContainer.getBoundingClientRect().height;
       const sidebarTop = sidebar.getBoundingClientRect().top + window.scrollY;
 
-      if (contentH < mainContainerH) {
-        if (scrollTop > lastScrollTop) {
+      // Only apply custom scroll behavior if main container is tall enough to require scrolling
+      if (mainContainerH > viewportH && contentH < mainContainerH) {
+        if (scrollTop > lastScrollTopRef.current) {
           // Scrolling Down: Move sidebar content up
-          offset = Math.max(
+          offsetRef.current = Math.max(
             -(contentH - viewportH + sidebarTop),
-            offset - (scrollTop - lastScrollTop)
+            offsetRef.current - (scrollTop - lastScrollTopRef.current)
           );
         } else {
           // Scrolling Up: Move sidebar content down smoothly
-          offset = Math.min(0, offset + (lastScrollTop - scrollTop));
+          offsetRef.current = Math.min(0, offsetRef.current + (lastScrollTopRef.current - scrollTop));
         }
 
-        sidebarContent.style.transform = `translateY(${offset}px)`;
+        sidebarContent.style.transform = `translateY(${offsetRef.current}px)`;
         sidebarContent.style.position = "fixed";
+      } else {
+        // Disable custom functionality - allow normal scroll behavior
+        sidebarContent.style.transform = '';
+        sidebarContent.style.position = '';
+        offsetRef.current = 0;
       }
 
-      lastScrollTop = scrollTop;
+      lastScrollTopRef.current = scrollTop;
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -73,7 +92,7 @@ function RightSidebar({
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
-  }, []);
+  }, [ShowSidebarIf]); // Add ShowSidebarIf as dependency
 
   return (
     ShowSidebarIf && (
@@ -85,7 +104,7 @@ function RightSidebar({
         <Chats user={user} />
 
         {/* <Divider/> */}
-        {userDetails&&followings&&userDetails != null &&
+        {userDetails && followings && userDetails != null &&
           (followings ? (
             <>
               <Heading as="h4" fontSize="lg" fontWeight="bold" mt="4" mb="2">
