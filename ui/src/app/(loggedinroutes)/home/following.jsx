@@ -26,7 +26,7 @@ import {
   IoStarOutline as StarIconOutlined,
 } from "react-icons/io5";
 import { FiMoreHorizontal } from "react-icons/fi";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   unfollowChannel,
   getAllPinnedChannels
@@ -44,6 +44,149 @@ const options = {
   Pinned: "PINNED",
   ByGenre: "BY GENRE",
   AZ: "A - Z",
+};
+
+// New component to handle individual following item with unread logic
+const FollowingItem = ({ following, user, handlePinUnpin, handleUnFollowChannel }) => {
+  const authState = useSelector((s) => s.auth?.user?.user);
+  const [unread, setUnread] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const getUnread = async () => {
+    try {
+      const response = await get(`post/getAllUnreadPost/${following._id}`);
+      console.log('Unread response for following:', following.channelName, response.data?.length || 0);
+      return response.data?.length || 0;
+    } catch (error) {
+      console.error('Error fetching unread count:', error);
+      return 0;
+    }
+  };
+
+  const setReadPost = async () => {
+    try {
+      const response = await get(`post/setReadPost/${following._id}`);
+      console.log('Set read response:', response);
+      return response;
+    } catch (error) {
+      console.error('Error setting post as read:', error);
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    const fetchUnread = async () => {
+      if (authState && following._id) {
+        setIsLoading(true);
+        const count = await getUnread();
+        console.log('Fetched unread count for:', following.channelName, count);
+        setUnread(count);
+        setIsLoading(false);
+      } else {
+        setIsLoading(false);
+        setUnread(0);
+      }
+    };
+
+    fetchUnread();
+  }, [following._id, authState]);
+
+  const handleClick = async () => {
+    if (!authState) return;
+    
+    try {
+      await setReadPost();
+      // Refresh unread count after marking as read
+      const newCount = await getUnread();
+      setUnread(newCount);
+    } catch (error) {
+      console.error('Error handling click:', error);
+    }
+  };
+
+  return (
+    <Flex
+      key={following._id || crypto.randomUUID()}
+      py={2}
+      align="center"
+      justify="space-between"
+      _hover={{ shadow: "md", bg: "gray.50" }}
+      transition="shadow 0.2s, background-color 0.2s"
+    >
+      <Flex alignItems="center">
+        <IconButton
+          fontSize="25px"
+          aria-label="Pin Channel"
+          colorScheme={user.profileBgColor}
+          onClick={() => handlePinUnpin(following)}
+          icon={
+            following.pinned ? (
+              <StarIcon color="green" />
+            ) : (
+              <StarIconOutlined color="gray" />
+            )
+          }
+        />
+        <Box position="relative" onClick={handleClick}>
+          <Avatar
+            borderRadius={10}
+            src={following?.channelIconImageUrl}
+            size="lg"
+            alt={following?.channelName}
+          />
+          
+          {/* Unread badge - same logic as StatusSlider */}
+          {!isLoading && unread > 0 && (
+            <Box
+              position="absolute"
+              top="-2"
+              right="-2"
+              zIndex="10"
+              fontSize="xs"
+              color="white"
+              bg="red.500"
+              borderRadius="full"
+              minW="20px"
+              h="20px"
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              border="2px solid white"
+            >
+              {unread}
+            </Box>
+          )}
+          
+          {isLoading && (
+            <Box
+              position="absolute"
+              top="-2"
+              right="-2"
+              zIndex="10"
+            >
+              <Spinner size="sm" />
+            </Box>
+          )}
+        </Box>
+        <Box ml={3}>
+          <Link href={`/channel/${following.username}`}>
+            <Text fontSize="md" fontWeight="bold">
+              {following?.channelName}
+            </Text>
+          </Link>
+          <Text fontSize="sm">
+            {Array.isArray(following.userId?.genre) &&
+              following.userId?.genre[0]
+              }
+          </Text>
+        </Box>
+      </Flex>
+      <ListDropdown
+        channelId={following._id}
+        handleUnFollowChannel={handleUnFollowChannel}
+      />
+    </Flex>
+  );
 };
 
 function ViewBy({ view, setView, setSortedFollowings }) {
@@ -135,7 +278,7 @@ const sortFn = (view) => {
   }
 };
 
-const Following = ({ followings, user,fetchfollowChannelList }) => {
+const Following = ({ followings, user, fetchfollowChannelList }) => {
   const [view, setView] = useState(options.Recent);
   const [followingsDataSorted, setfollowingsDataSorted] = useState([]);
   const [followingLoading, setFollowingLoading] = useState(true);
@@ -172,37 +315,7 @@ const Following = ({ followings, user,fetchfollowChannelList }) => {
   }
 
   return (
-    <Box  mb='4'>
-      {/* <Box px={0} py={3} bg={user.profileBgColor}>
-        <Flex justifyContent="space-between" alignItems="center">
-          <Flex alignItems="center">
-            <Avatar
-              borderRadius={10}
-              src={user.profileImageUrl}
-              size="lg"
-              alt={user.channelName}
-            />
-            <Box ml={3}>
-              <Text fontWeight="bold" fontSize="16px">
-                {user.channelName}
-              </Text>
-              <Text fontSize="sm" color="textlight">
-                {Array.isArray(user.genre) &&
-                  user.genre.sort().slice(0, -2).join(", ") +
-                    user.genre.sort().slice(-2).join(" & ")}
-              </Text>
-            </Box>
-          </Flex>
-          <IconButton
-            mr={4}
-            aria-label="Menu"
-            variant="ghost"
-            color="#333"
-            icon={<FiMoreHorizontal />}
-          />
-        </Flex>
-      </Box> */}
-      {/* <Divider /> */}
+    <Box mb='4'>
       <Flex justify="flex-start" py={3}>
         <ViewBy
           view={view}
@@ -210,57 +323,17 @@ const Following = ({ followings, user,fetchfollowChannelList }) => {
           setSortedFollowings={setfollowingsDataSorted}
         />
       </Flex>
-      {/* <Divider /> */}
       {followingLoading ? (
         <Spinner />
       ) : followingsDataSorted.length > 0 ? (
         followingsDataSorted.map((following) => (
-          <Flex
+          <FollowingItem
             key={following._id || crypto.randomUUID()}
-            py={2}
-            align="center"
-            justify="space-between"
-            _hover={{ shadow: "md", bg: "gray.50" }}
-            transition="shadow 0.2s, background-color 0.2s"
-          >
-            <Flex alignItems="center">
-              <IconButton
-                fontSize="25px"
-                aria-label="Pin Channel"
-                colorScheme={user.profileBgColor}
-                onClick={() => handlePinUnpin(following)}
-                icon={
-                  following.pinned ? (
-                    <StarIcon color="green" />
-                  ) : (
-                    <StarIconOutlined color="gray" />
-                  )
-                }
-              />
-              <Avatar
-                borderRadius={10}
-                src={following?.channelIconImageUrl}
-                size="lg"
-                alt={user.channelName}
-              />
-              <Box ml={3}>
-                <Link href={`/channel/${following.username}`}>
-                  <Text fontSize="md" fontWeight="bold">
-                    {following?.channelName}
-                  </Text>
-                </Link>
-                <Text fontSize="sm">
-                  {Array.isArray(following.userId?.genre) &&
-                    following.userId?.genre[0]
-                    }
-                </Text>
-              </Box>
-            </Flex>
-            <ListDropdown
-              channelId={following._id}
-              handleUnFollowChannel={handleUnFollowChannel}
-            />
-          </Flex>
+            following={following}
+            user={user}
+            handlePinUnpin={handlePinUnpin}
+            handleUnFollowChannel={handleUnFollowChannel}
+          />
         ))
       ) : (
         <Text mt="4" textAlign={"center"}>

@@ -433,9 +433,9 @@ if (deviceType === 'phone') {
           boxShadow="xl"
         >
           <ModalHeader 
-            display="flex" 
-            justifyContent="space-between" 
-            alignItems="center"
+            display={{ base: "block", md: "flex" }}
+            justifyContent={{ md: "space-between" }}
+            alignItems={{ md: "center" }}
             borderBottomWidth="1px"
             borderColor="gray.100"
             py={3}
@@ -448,128 +448,265 @@ if (deviceType === 'phone') {
             w="100%"
             zIndex="2"
           >
-            <Text fontSize={{ base: "md", md: "lg" }} fontWeight="semibold" noOfLines={1}>
-              {title}
-            </Text>
-            <HStack spacing={4}>
-              {/* IMPROVED: Mode Selection Buttons */}
-              <ButtonGroup size="sm" isAttached variant="outline">
-                <Tooltip label="Page Turner Mode">
-                  <Button
-                    leftIcon={<FaBook />}
-                    onClick={setTurnerMode}
-                    colorScheme={currentMode === 'turner' ? "blue" : "gray"}
-                    variant={currentMode === 'turner' ? "solid" : "outline"}
-                  >
-                    Turner
-                  </Button>
-                </Tooltip>
-                <Tooltip label="Zoom Mode">
-                  <Button
-                    leftIcon={<FaSearch />}
-                    onClick={setZoomMode}
-                    colorScheme={currentMode === 'zoom' ? "green" : "gray"}
-                    variant={currentMode === 'zoom' ? "solid" : "outline"}
-                  >
-                    Zoom
-                  </Button>
-                </Tooltip>
-                <Tooltip label="Pan Mode">
-                  <Button
-                    leftIcon={<FaMousePointer />}
-                    onClick={setPanMode}
-                    colorScheme={currentMode === 'pan' ? "purple" : "gray"}
-                    variant={currentMode === 'pan' ? "solid" : "outline"}
-                  >
-                    Pan
-                  </Button>
-                </Tooltip>
-              </ButtonGroup>
-              
-              {/* Divider */}
-              <Divider orientation="vertical" h="2rem" />
-              
-              {/* Zoom Controls - show when in zoom or pan mode */}
-              {(currentMode === 'zoom' || currentMode === 'pan') && (
-                <HStack spacing={2}>
-                  <Tooltip label="Zoom Out">
-                    <IconButton
-                      icon={<FaSearchMinus />}
-                      onClick={handleZoomOut}
-                      variant="ghost"
-                      size="sm"
-                      isDisabled={zoomLevel <= MIN_ZOOM}
-                      aria-label="Zoom Out"
-                    />
-                  </Tooltip>
-                  
-                  {/* Zoom Slider */}
-                  <Box w="100px" display={{ base: "none", md: "block" }}>
-                    <Slider
-                      value={zoomLevel}
-                      min={MIN_ZOOM}
-                      max={MAX_ZOOM}
-                      step={0.1}
-                      onChange={handleZoomSlider}
-                      focusThumbOnChange={false}
-                    >
-                      <SliderTrack bg="gray.300">
-                        <SliderFilledTrack bg="blue.400" />
-                      </SliderTrack>
-                      <SliderThumb boxSize={4} />
-                    </Slider>
-                  </Box>
-                  
-                  <Text fontSize="xs" minW="3rem" textAlign="center" fontWeight="semibold">
-                    {Math.round(zoomLevel * 100)}%
+            {/* Mobile Layout */}
+            <Box display={{ base: "block", md: "none" }}>
+              <VStack spacing={3} align="stretch">
+                {/* Title and action buttons row */}
+                <Flex justifyContent="space-between" alignItems="center">
+                  <Text fontSize="md" fontWeight="semibold" noOfLines={1}>
+                    {title}
                   </Text>
-                  
-                  <Tooltip label="Zoom In">
-                    <IconButton
-                      icon={<FaSearchPlus />}
-                      onClick={handleZoomIn}
-                      variant="ghost"
-                      size="sm"
-                      isDisabled={zoomLevel >= MAX_ZOOM}
-                      aria-label="Zoom In"
-                    />
+                  <HStack spacing={2}>
+                    <Tooltip label={isFullScreen ? "Exit Full Screen" : "Full Screen"}>
+                      <IconButton
+                        icon={isFullScreen ? <FaCompress /> : <FaExpand />}
+                        onClick={toggleFullScreen}
+                        variant="ghost"
+                        size="sm"
+                        aria-label={isFullScreen ? "Exit Full Screen" : "Full Screen"}
+                      />
+                    </Tooltip>
+                    
+                    <Tooltip label="Close">
+                      <IconButton
+                        icon={<Text fontSize="md">✖</Text>}
+                        onClick={onClose}
+                        variant="ghost"
+                        size="sm"
+                        aria-label="Close PDF Viewer"
+                      />
+                    </Tooltip>
+                  </HStack>
+                </Flex>
+
+                {/* Mode Selection Buttons */}
+                <Flex justify="center" align="center">
+                  <ButtonGroup size="sm" isAttached variant="outline">
+                    <Tooltip label="Page Turner Mode">
+                      <Button
+                        leftIcon={<FaBook />}
+                        onClick={setTurnerMode}
+                        colorScheme={currentMode === 'turner' ? "blue" : "gray"}
+                        variant={currentMode === 'turner' ? "solid" : "outline"}
+                      >
+                        Turner
+                      </Button>
+                    </Tooltip>
+                    <Tooltip label="Zoom Mode">
+                      <Button
+                        leftIcon={<FaSearch />}
+                        onClick={setZoomMode}
+                        colorScheme={currentMode === 'zoom' ? "green" : "gray"}
+                        variant={currentMode === 'zoom' ? "solid" : "outline"}
+                      >
+                        Zoom
+                      </Button>
+                    </Tooltip>
+                    <Tooltip label="Pan Mode">
+                      <Button
+                        leftIcon={<FaMousePointer />}
+                        onClick={setPanMode}
+                        colorScheme={currentMode === 'pan' ? "purple" : "gray"}
+                        variant={currentMode === 'pan' ? "solid" : "outline"}
+                      >
+                        Pan
+                      </Button>
+                    </Tooltip>
+                  </ButtonGroup>
+                </Flex>
+
+                {/* Zoom Controls - show when in zoom or pan mode */}
+                {(currentMode === 'zoom' || currentMode === 'pan') && (
+                  <Flex 
+                    justify="center" 
+                    align="center" 
+                    wrap="wrap" 
+                    gap={2}
+                    pt={1}
+                  >
+                    <Tooltip label="Zoom Out">
+                      <IconButton
+                        icon={<FaSearchMinus />}
+                        onClick={handleZoomOut}
+                        variant="ghost"
+                        size="sm"
+                        isDisabled={zoomLevel <= MIN_ZOOM}
+                        aria-label="Zoom Out"
+                      />
+                    </Tooltip>
+                    
+                    {/* Zoom Slider */}
+                    <Box w="150px">
+                      <Slider
+                        value={zoomLevel}
+                        min={MIN_ZOOM}
+                        max={MAX_ZOOM}
+                        step={0.1}
+                        onChange={handleZoomSlider}
+                        focusThumbOnChange={false}
+                      >
+                        <SliderTrack bg="gray.300">
+                          <SliderFilledTrack bg="blue.400" />
+                        </SliderTrack>
+                        <SliderThumb boxSize={4} />
+                      </Slider>
+                    </Box>
+                    
+                    <Text fontSize="xs" minW="3rem" textAlign="center" fontWeight="semibold">
+                      {Math.round(zoomLevel * 100)}%
+                    </Text>
+                    
+                    <Tooltip label="Zoom In">
+                      <IconButton
+                        icon={<FaSearchPlus />}
+                        onClick={handleZoomIn}
+                        variant="ghost"
+                        size="sm"
+                        isDisabled={zoomLevel >= MAX_ZOOM}
+                        aria-label="Zoom In"
+                      />
+                    </Tooltip>
+                    
+                    <Tooltip label="Reset Zoom">
+                      <IconButton
+                        icon={<FaUndo />}
+                        onClick={handleResetZoom}
+                        variant="ghost"
+                        size="sm"
+                        isDisabled={zoomLevel === DEFAULT_ZOOM && panOffset.x === 0 && panOffset.y === 20}
+                        aria-label="Reset Zoom"
+                      />
+                    </Tooltip>
+                  </Flex>
+                )}
+              </VStack>
+            </Box>
+
+            {/* Desktop Layout */}
+            <Box display={{ base: "none", md: "flex" }} w="100%" justifyContent="space-between" alignItems="center">
+              <Text fontSize="lg" fontWeight="semibold" noOfLines={1}>
+                {title}
+              </Text>
+              <HStack spacing={4}>
+                {/* IMPROVED: Mode Selection Buttons */}
+                <ButtonGroup size="sm" isAttached variant="outline">
+                  <Tooltip label="Page Turner Mode">
+                    <Button
+                      leftIcon={<FaBook />}
+                      onClick={setTurnerMode}
+                      colorScheme={currentMode === 'turner' ? "blue" : "gray"}
+                      variant={currentMode === 'turner' ? "solid" : "outline"}
+                    >
+                      Turner
+                    </Button>
                   </Tooltip>
-                  
-                  <Tooltip label="Reset Zoom">
-                    <IconButton
-                      icon={<FaUndo />}
-                      onClick={handleResetZoom}
-                      variant="ghost"
-                      size="sm"
-                      isDisabled={zoomLevel === DEFAULT_ZOOM && panOffset.x === 0 && panOffset.y === 20}
-                      aria-label="Reset Zoom"
-                    />
+                  <Tooltip label="Zoom Mode">
+                    <Button
+                      leftIcon={<FaSearch />}
+                      onClick={setZoomMode}
+                      colorScheme={currentMode === 'zoom' ? "green" : "gray"}
+                      variant={currentMode === 'zoom' ? "solid" : "outline"}
+                    >
+                      Zoom
+                    </Button>
                   </Tooltip>
-                </HStack>
-              )}
-              
-              <Divider orientation="vertical" h="2rem" />
-              
-              <Tooltip label={isFullScreen ? "Exit Full Screen" : "Full Screen"}>
-                <IconButton
-                  icon={isFullScreen ? <FaCompress /> : <FaExpand />}
-                  onClick={toggleFullScreen}
-                  variant="ghost"
-                  size="sm"
-                  aria-label={isFullScreen ? "Exit Full Screen" : "Full Screen"}
-                />
-              </Tooltip>
-              
-              <Tooltip label="Close">
-                <IconButton
-                  icon={<Text fontSize="md">✖</Text>}
-                  onClick={onClose}
-                  variant="ghost"
-                  size="sm"
-                  aria-label="Close PDF Viewer"
-                />
-              </Tooltip>
-            </HStack>
+                  <Tooltip label="Pan Mode">
+                    <Button
+                      leftIcon={<FaMousePointer />}
+                      onClick={setPanMode}
+                      colorScheme={currentMode === 'pan' ? "purple" : "gray"}
+                      variant={currentMode === 'pan' ? "solid" : "outline"}
+                    >
+                      Pan
+                    </Button>
+                  </Tooltip>
+                </ButtonGroup>
+                
+                {/* Divider */}
+                <Divider orientation="vertical" h="2rem" />
+                
+                {/* Zoom Controls - show when in zoom or pan mode */}
+                {(currentMode === 'zoom' || currentMode === 'pan') && (
+                  <HStack spacing={2}>
+                    <Tooltip label="Zoom Out">
+                      <IconButton
+                        icon={<FaSearchMinus />}
+                        onClick={handleZoomOut}
+                        variant="ghost"
+                        size="sm"
+                        isDisabled={zoomLevel <= MIN_ZOOM}
+                        aria-label="Zoom Out"
+                      />
+                    </Tooltip>
+                    
+                    {/* Zoom Slider */}
+                    <Box w="100px">
+                      <Slider
+                        value={zoomLevel}
+                        min={MIN_ZOOM}
+                        max={MAX_ZOOM}
+                        step={0.1}
+                        onChange={handleZoomSlider}
+                        focusThumbOnChange={false}
+                      >
+                        <SliderTrack bg="gray.300">
+                          <SliderFilledTrack bg="blue.400" />
+                        </SliderTrack>
+                        <SliderThumb boxSize={4} />
+                      </Slider>
+                    </Box>
+                    
+                    <Text fontSize="xs" minW="3rem" textAlign="center" fontWeight="semibold">
+                      {Math.round(zoomLevel * 100)}%
+                    </Text>
+                    
+                    <Tooltip label="Zoom In">
+                      <IconButton
+                        icon={<FaSearchPlus />}
+                        onClick={handleZoomIn}
+                        variant="ghost"
+                        size="sm"
+                        isDisabled={zoomLevel >= MAX_ZOOM}
+                        aria-label="Zoom In"
+                      />
+                    </Tooltip>
+                    
+                    <Tooltip label="Reset Zoom">
+                      <IconButton
+                        icon={<FaUndo />}
+                        onClick={handleResetZoom}
+                        variant="ghost"
+                        size="sm"
+                        isDisabled={zoomLevel === DEFAULT_ZOOM && panOffset.x === 0 && panOffset.y === 20}
+                        aria-label="Reset Zoom"
+                      />
+                    </Tooltip>
+                  </HStack>
+                )}
+                
+                <Divider orientation="vertical" h="2rem" />
+                
+                <Tooltip label={isFullScreen ? "Exit Full Screen" : "Full Screen"}>
+                  <IconButton
+                    icon={isFullScreen ? <FaCompress /> : <FaExpand />}
+                    onClick={toggleFullScreen}
+                    variant="ghost"
+                    size="sm"
+                    aria-label={isFullScreen ? "Exit Full Screen" : "Full Screen"}
+                  />
+                </Tooltip>
+                
+                <Tooltip label="Close">
+                  <IconButton
+                    icon={<Text fontSize="md">✖</Text>}
+                    onClick={onClose}
+                    variant="ghost"
+                    size="sm"
+                    aria-label="Close PDF Viewer"
+                  />
+                </Tooltip>
+              </HStack>
+            </Box>
           </ModalHeader>
           
           <ModalBody 
@@ -610,7 +747,7 @@ if (deviceType === 'phone') {
               }}
             >
               {/* IMPROVED: Mode indicator with better styling */}
-              <Box
+              {/* <Box
                 position="absolute"
                 top="10px"
                 left="10px"
@@ -646,7 +783,7 @@ if (deviceType === 'phone') {
                      zoomLevel > 1 ? "Click and drag to pan around" : "Zoom in first to enable panning"}
                   </Text>
                 </VStack>
-              </Box>
+              </Box> */}
 
               <Box
                 transform={`scale(${zoomLevel}) translate(${panOffset.x / zoomLevel}px, ${panOffset.y / zoomLevel}px)`}

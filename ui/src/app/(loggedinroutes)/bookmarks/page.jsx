@@ -57,7 +57,7 @@ const Comment = ({
         >
           <Link href={`post/${singleComment.userId.username}/${postId.slug}`}>
             <HStack spacing={2} alignItems="flex-start">
-              <Avatar ml='2' size="sm" borderRadius={10} name={singleComment.userId.channelName} src={singleComment.userId.profileImageUrl} />
+              <Avatar ml='8px' size="sm" borderRadius={10} name={singleComment.userId.channelName} src={singleComment.userId.profileImageUrl} />
               <VStack align="start">
                 <Text p='0' fontWeight="bold" fontSize="md">{singleComment.userId.channelName}</Text>
                 <Text fontSize="sm" color="gray.500">
@@ -89,7 +89,7 @@ const Comment = ({
         </Box>
         <HStack spacing={2} ml='8'>
           <Text mt="3"></Text>
-          <Text mt="3" bg="lightblue" borderRadius="md" w='100%' p='2'>{commentText}</Text>
+          <Text mt="3" bg="lightblue" borderRadius="md" w='100%' p='2'mr='3'>{commentText}</Text>
         </HStack>
       </Box>
            <Divider />

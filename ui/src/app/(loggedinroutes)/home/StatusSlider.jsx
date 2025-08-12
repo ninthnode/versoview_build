@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect,useRef, useState } from "react";
 import { Box, Avatar, Flex, HStack, Spinner, Divider } from "@chakra-ui/react";
 import axios from "axios";
 import Link from "next/link";
@@ -113,37 +113,58 @@ const StatusItem = ({ status }) => {
   );
 };
 
-
-const getChannelsForLoggedoutUser = () => {
-  return axios
-    .get(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/channel/getAllChannelLoggedoutUser`
-    )
-    .then((r) =>
-      r.data.data.map((c) => ({
-        id: c._id,
-        name: c.channelName,
-        channelIconImageUrl: c.channelIconImageUrl,
-      }))
-    );
-};
-
 const StatusSlider = () => {
   const [channels, setChannels] = useState([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+  const scrollContainerRef = useRef(null);
+  
   const authState = useSelector((s) => s.auth?.user?.user);
   const authVerified = useSelector((s) => s.auth?.userVerified);
   const pinnedChannelData = useSelector((s) => s.channel.pinnedChannels);
   const dispatch = useDispatch();
-
-
+  
   useEffect(() => {
     if(authVerified){
       dispatch(getAllPinnedChannels())
     }
   }, [authVerified]);
-  if(pinnedChannelData.length==0) return <AvatarShimmer/>
-  return pinnedChannelData.length>0&& (
+
+  const handleMouseDown = (e) => {
+    setIsDragging(true);
+    setStartX(e.pageX - scrollContainerRef.current.offsetLeft);
+    setScrollLeft(scrollContainerRef.current.scrollLeft);
+    scrollContainerRef.current.style.cursor = 'grabbing';
+  };
+
+  const handleMouseLeave = () => {
+    setIsDragging(false);
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.style.cursor = 'grab';
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.style.cursor = 'grab';
+    }
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging) return;
+    e.preventDefault();
+    const x = e.pageX - scrollContainerRef.current.offsetLeft;
+    const walk = (x - startX) * 2; // Adjust scroll speed multiplier as needed
+    scrollContainerRef.current.scrollLeft = scrollLeft - walk;
+  };
+
+  if(pinnedChannelData.length === 0) return <AvatarShimmer/>
+  
+  return pinnedChannelData.length > 0 && (
     <Box
+      ref={scrollContainerRef}
       overflowX="scroll"
       __css={{
         "&::-webkit-scrollbar": {
@@ -160,8 +181,14 @@ const StatusSlider = () => {
       }}
       overflowY="hidden"
       paddingRight={0}
+      cursor="grab"
+      onMouseDown={handleMouseDown}
+      onMouseLeave={handleMouseLeave}
+      onMouseUp={handleMouseUp}
+      onMouseMove={handleMouseMove}
+      userSelect="none" // Prevent text selection while dragging
     >
-      <HStack spacing={4} mb={2}  px={4}>
+      <HStack spacing={4} mb={2} px={4}>
         {pinnedChannelData.map((status) => (
           <StatusItem key={status._id} status={status} />
         ))}

@@ -29,18 +29,30 @@ function getAllImageFiles(folder) {
 }
 
 async function generateUniqueSlug(title) {
+  if (!title || typeof title !== 'string') {
+    throw new Error('Title must be a non-empty string');
+  }
+
+  // Create base slug from title
   let baseSlug = title
     .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, "") // Remove special characters
-    .replace(/\s+/g, "-") // Replace spaces with hyphens
-    .slice(0, 25); // Limit to 25 characters
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "") // Remove special characters except spaces and hyphens
+    .replace(/\s+/g, "-") // Replace one or more spaces with single hyphen
+    .replace(/-+/g, "-") // Replace multiple consecutive hyphens with single hyphen
+    .replace(/^-+|-+$/g, ""); // Remove leading/trailing hyphens
+
+  // Handle empty slug after cleaning
+  if (!baseSlug) {
+    baseSlug = "untitled";
+  }
 
   let uniqueSlug = baseSlug;
   let counter = 1;
 
-  // Loop until a unique slug is found
+  // Keep checking until we find a unique slug
   while (await Post.exists({ slug: uniqueSlug })) {
-    uniqueSlug = `${baseSlug}-${counter}`.slice(0, 30); // Append counter to baseSlug and ensure it doesn't exceed 30 characters
+    uniqueSlug = `${baseSlug}-${counter}`;
     counter++;
   }
 
@@ -88,16 +100,6 @@ module.exports.create = asyncHandler(async (req, res) => {
     const channelData = await Channel.findOne({ userId });
     const channelId = channelData._id;
     const slug = await generateUniqueSlug(req.body.header);
-    // if (req.body.bodyRichText) {
- 
-    //   const uploadImage = async (base64) => {
-    //     // Simulate upload and return a unique URL
-    //     return `https://versoview-post-images.s3.us-east-1.amazonaws.com/public/test/image/image-1737002230842.png`;
-    //   };
-    
-    //   const result = await processImgTags(req.body.bodyRichText, uploadImage);
-    //   req.body.bodyRichText= result
-    // }
 
     const postData = {
       channelId: channelId,
