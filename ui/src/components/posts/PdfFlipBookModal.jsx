@@ -16,24 +16,26 @@ import {
   Tooltip,
   useBreakpointValue,
   HStack,
-  Button,
-  ButtonGroup,
-  Slider,
-  SliderTrack,
-  SliderFilledTrack,
-  SliderThumb,
   VStack,
   Divider,
 } from "@chakra-ui/react";
-import { FaExpand, FaCompress, FaSearchPlus, FaSearchMinus, FaUndo, FaBook, FaSearch, FaMousePointer } from "react-icons/fa";
+import { FaExpand, FaCompress, FaSearchPlus, FaSearchMinus, FaUndo } from "react-icons/fa";
 import "./style.css";
 import useDeviceType from "@/components/useDeviceType";
 import {getLibraryImagesForPageTurner} from "../../redux/publish/publishActions";
 import { useDispatch,useSelector } from "react-redux";
+import MobilePdfViewer from "./MobilePdfViewer";
 
 const PdfFlipBookModal = ({ title,editionId }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const deviceType = useDeviceType();
+  
+  // Enhanced mobile detection including landscape mode
+  const isMobileDevice = () => {
+    return deviceType === 'phone' || 
+           (deviceType === 'tablet' && ('ontouchstart' in window || navigator.maxTouchPoints > 0)) ||
+           /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  };
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
   const [modalDimensions, setModalDimensions] = useState({
@@ -45,15 +47,31 @@ const PdfFlipBookModal = ({ title,editionId }) => {
     height: typeof window !== 'undefined' ? window.innerHeight : 768
   });
   
-  // Mode state - IMPROVED: Separate mode states
-  const [currentMode, setCurrentMode] = useState('turner'); // 'turner', 'zoom', 'pan'
+  // Helper function to calculate initial values based on window height
+  const getInitialValues = () => {
+    const height = typeof window !== 'undefined' ? window.innerHeight : 768;
+    const zoomLevel = deviceType === 'phone' ? 1.5 : (height >= 800 ? 2 : 1.75);
+    const panY = height >= 800 ? 30 : 20;
+    return {
+      zoomLevel,
+      panOffset: { x: 0, y: panY },
+      lastPanOffset: { x: 0, y: panY }
+    };
+  };
+
+  const initialValues = getInitialValues();
   
-  // Zoom state - CHANGED: Default zoom to 175% (1.75)
-  const [zoomLevel, setZoomLevel] = useState(1.75);
-  const [panOffset, setPanOffset] = useState({ x: 0, y: 20 });
+  // Zoom state - Dynamic based on window height
+  const [zoomLevel, setZoomLevel] = useState(initialValues.zoomLevel);
+  
+  // Auto mode based on zoom level
+  const defaultZoomLevel = getInitialValues().zoomLevel;
+  const isZoomedIn = zoomLevel > defaultZoomLevel;
+  const currentMode = isZoomedIn ? 'pan' : 'turner';
+  const [panOffset, setPanOffset] = useState(initialValues.panOffset);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [lastPanOffset, setLastPanOffset] = useState({ x: 0, y: 20 });
+  const [lastPanOffset, setLastPanOffset] = useState(initialValues.lastPanOffset);
   
   const flipBookRef = useRef(null);
   const modalBodyRef = useRef(null);
@@ -112,10 +130,10 @@ if (deviceType === 'phone') {
     }
   }, [isOpen]);
 
-  // Mouse wheel zoom handling - only in zoom mode
+  // Mouse wheel zoom handling
   useEffect(() => {
     const handleWheel = (e) => {
-      if (currentMode === 'zoom' && (e.ctrlKey || e.metaKey)) {
+      if (e.ctrlKey || e.metaKey) {
         e.preventDefault();
         const delta = e.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
         handleZoom(delta);
@@ -130,12 +148,12 @@ if (deviceType === 'phone') {
         container.removeEventListener('wheel', handleWheel);
       };
     }
-  }, [isOpen, zoomLevel, currentMode]);
+  }, [isOpen, zoomLevel]);
 
-  // Mouse drag handling for panning - only in pan mode
+  // Mouse drag handling for panning - only when zoomed in
   useEffect(() => {
     const handleMouseMove = (e) => {
-      if (isDragging && zoomLevel > 1 && currentMode === 'pan') {
+      if (isDragging && isZoomedIn) {
         const deltaX = e.clientX - dragStart.x;
         const deltaY = e.clientY - dragStart.y;
         
@@ -162,25 +180,25 @@ if (deviceType === 'phone') {
         document.removeEventListener('mouseup', handleMouseUp);
       };
     }
-  }, [isDragging, dragStart, lastPanOffset, panOffset, zoomLevel, currentMode]);
+  }, [isDragging, dragStart, lastPanOffset, panOffset, zoomLevel, isZoomedIn]);
 
   // Reset zoom and pan when modal opens/closes
   useEffect(() => {
     if (isOpen) {
-      setZoomLevel(DEFAULT_ZOOM); // Set to 175% by default
-      setPanOffset({ x: 0, y: 20 });
-      setLastPanOffset({ x: 0, y: 20 });
+      const values = getInitialValues();
+      setZoomLevel(values.zoomLevel);
+      setPanOffset(values.panOffset);
+      setLastPanOffset(values.lastPanOffset);
       setIsDragging(false);
-      setCurrentMode('turner'); // Default to page turner mode
     }
   }, [isOpen]);
 
-  // Stop dragging when switching modes
+  // Stop dragging when zooming out
   useEffect(() => {
-    if (currentMode !== 'pan') {
+    if (!isZoomedIn) {
       setIsDragging(false);
     }
-  }, [currentMode]);
+  }, [isZoomedIn]);
 
   // Browser full-screen handling
   useEffect(() => {
@@ -212,15 +230,15 @@ if (deviceType === 'phone') {
   }, []);
 
   const handleZoom = (delta) => {
-    if (currentMode !== 'zoom') return;
-    
     const newZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoomLevel + delta));
     setZoomLevel(newZoom);
     
     // Reset pan when zooming out to default or less
-    if (newZoom <= DEFAULT_ZOOM) {
-      setPanOffset({ x: 0, y: 20 });
-      setLastPanOffset({ x: 0, y: 20 });
+    const defaultZoom = getInitialValues().zoomLevel;
+    if (newZoom <= defaultZoom) {
+      const values = getInitialValues();
+      setPanOffset(values.panOffset);
+      setLastPanOffset(values.lastPanOffset);
     }
   };
 
@@ -228,9 +246,11 @@ if (deviceType === 'phone') {
     setZoomLevel(value);
     
     // Reset pan when zooming out to default or less
-    if (value <= DEFAULT_ZOOM) {
-      setPanOffset({ x: 0, y: 20 });
-      setLastPanOffset({ x: 0, y: 20 });
+    const defaultZoom = getInitialValues().zoomLevel;
+    if (value <= defaultZoom) {
+      const values = getInitialValues();
+      setPanOffset(values.panOffset);
+      setLastPanOffset(values.lastPanOffset);
     }
   };
 
@@ -238,23 +258,20 @@ if (deviceType === 'phone') {
   const handleZoomOut = () => handleZoom(-ZOOM_STEP);
   
   const handleResetZoom = () => {
-    setZoomLevel(DEFAULT_ZOOM);
-    setPanOffset({ x: 0, y: 20 });
-    setLastPanOffset({ x: 0, y: 20 });
+    const values = getInitialValues();
+    setZoomLevel(values.zoomLevel);
+    setPanOffset(values.panOffset);
+    setLastPanOffset(values.lastPanOffset);
   };
 
   const handleMouseDown = (e) => {
-    if (zoomLevel > 1 && currentMode === 'pan') {
+    if (isZoomedIn) {
       e.preventDefault();
       setIsDragging(true);
       setDragStart({ x: e.clientX, y: e.clientY });
     }
   };
 
-  // IMPROVED: Separate mode functions
-  const setTurnerMode = () => setCurrentMode('turner');
-  const setZoomMode = () => setCurrentMode('zoom');
-  const setPanMode = () => setCurrentMode('pan');
 
   const toggleFullScreen = () => {
     if (!isFullScreen) {
@@ -416,7 +433,17 @@ if (deviceType === 'phone') {
         <Image src="/assets/book.svg" h="1.2rem" w="1.4rem" mr={2} />
       </Flex>
       
-      <Modal 
+      {/* Render Mobile PDF Viewer for mobile devices (including landscape) */}
+      {isMobileDevice() ? (
+        <MobilePdfViewer
+          isOpen={isOpen}
+          onClose={onClose}
+          title={title}
+          libraryImages={libraryImages}
+        />
+      ) : (
+        /* Desktop PDF Viewer */
+        <Modal 
         isOpen={isOpen} 
         onClose={onClose} 
         size={modalSize}
@@ -454,7 +481,7 @@ if (deviceType === 'phone') {
                 {/* Title and action buttons row */}
                 <Flex justifyContent="space-between" alignItems="center">
                   <Text fontSize="md" fontWeight="semibold" noOfLines={1}>
-                    {title}
+                    {title}sdds
                   </Text>
                   <HStack spacing={2}>
                     <Tooltip label={isFullScreen ? "Exit Full Screen" : "Full Screen"}>
@@ -479,106 +506,54 @@ if (deviceType === 'phone') {
                   </HStack>
                 </Flex>
 
-                {/* Mode Selection Buttons */}
-                <Flex justify="center" align="center">
-                  <ButtonGroup size="sm" isAttached variant="outline">
-                    <Tooltip label="Page Turner Mode">
-                      <Button
-                        leftIcon={<FaBook />}
-                        onClick={setTurnerMode}
-                        colorScheme={currentMode === 'turner' ? "blue" : "gray"}
-                        variant={currentMode === 'turner' ? "solid" : "outline"}
-                      >
-                        Turner
-                      </Button>
-                    </Tooltip>
-                    <Tooltip label="Zoom Mode">
-                      <Button
-                        leftIcon={<FaSearch />}
-                        onClick={setZoomMode}
-                        colorScheme={currentMode === 'zoom' ? "green" : "gray"}
-                        variant={currentMode === 'zoom' ? "solid" : "outline"}
-                      >
-                        Zoom
-                      </Button>
-                    </Tooltip>
-                    <Tooltip label="Pan Mode">
-                      <Button
-                        leftIcon={<FaMousePointer />}
-                        onClick={setPanMode}
-                        colorScheme={currentMode === 'pan' ? "purple" : "gray"}
-                        variant={currentMode === 'pan' ? "solid" : "outline"}
-                      >
-                        Pan
-                      </Button>
-                    </Tooltip>
-                  </ButtonGroup>
+                {/* Zoom Controls */}
+                <Flex 
+                  justify="center" 
+                  align="center" 
+                  wrap="wrap" 
+                  gap={3}
+                  pt={1}
+                >
+                  <Tooltip label="Zoom Out">
+                    <IconButton
+                      icon={<FaSearchMinus />}
+                      onClick={handleZoomOut}
+                      variant="ghost"
+                      size="sm"
+                      isDisabled={zoomLevel <= MIN_ZOOM}
+                      aria-label="Zoom Out"
+                    />
+                  </Tooltip>
+                  
+                  <Text fontSize="xs" minW="4rem" textAlign="center" fontWeight="semibold">
+                    {Math.round(zoomLevel * 100)}%
+                  </Text>
+                  
+                  <Tooltip label="Zoom In">
+                    <IconButton
+                      icon={<FaSearchPlus />}
+                      onClick={handleZoomIn}
+                      variant="ghost"
+                      size="sm"
+                      isDisabled={zoomLevel >= MAX_ZOOM}
+                      aria-label="Zoom In"
+                    />
+                  </Tooltip>
+                  
+                  <Tooltip label="Reset Zoom">
+                    <IconButton
+                      icon={<FaUndo />}
+                      onClick={handleResetZoom}
+                      variant="ghost"
+                      size="sm"
+                      isDisabled={(() => {
+                        const values = getInitialValues();
+                        return zoomLevel === values.zoomLevel && panOffset.x === values.panOffset.x && panOffset.y === values.panOffset.y;
+                      })()}
+                      aria-label="Reset Zoom"
+                    />
+                  </Tooltip>
                 </Flex>
-
-                {/* Zoom Controls - show when in zoom or pan mode */}
-                {(currentMode === 'zoom' || currentMode === 'pan') && (
-                  <Flex 
-                    justify="center" 
-                    align="center" 
-                    wrap="wrap" 
-                    gap={2}
-                    pt={1}
-                  >
-                    <Tooltip label="Zoom Out">
-                      <IconButton
-                        icon={<FaSearchMinus />}
-                        onClick={handleZoomOut}
-                        variant="ghost"
-                        size="sm"
-                        isDisabled={zoomLevel <= MIN_ZOOM}
-                        aria-label="Zoom Out"
-                      />
-                    </Tooltip>
-                    
-                    {/* Zoom Slider */}
-                    <Box w="150px">
-                      <Slider
-                        value={zoomLevel}
-                        min={MIN_ZOOM}
-                        max={MAX_ZOOM}
-                        step={0.1}
-                        onChange={handleZoomSlider}
-                        focusThumbOnChange={false}
-                      >
-                        <SliderTrack bg="gray.300">
-                          <SliderFilledTrack bg="blue.400" />
-                        </SliderTrack>
-                        <SliderThumb boxSize={4} />
-                      </Slider>
-                    </Box>
-                    
-                    <Text fontSize="xs" minW="3rem" textAlign="center" fontWeight="semibold">
-                      {Math.round(zoomLevel * 100)}%
-                    </Text>
-                    
-                    <Tooltip label="Zoom In">
-                      <IconButton
-                        icon={<FaSearchPlus />}
-                        onClick={handleZoomIn}
-                        variant="ghost"
-                        size="sm"
-                        isDisabled={zoomLevel >= MAX_ZOOM}
-                        aria-label="Zoom In"
-                      />
-                    </Tooltip>
-                    
-                    <Tooltip label="Reset Zoom">
-                      <IconButton
-                        icon={<FaUndo />}
-                        onClick={handleResetZoom}
-                        variant="ghost"
-                        size="sm"
-                        isDisabled={zoomLevel === DEFAULT_ZOOM && panOffset.x === 0 && panOffset.y === 20}
-                        aria-label="Reset Zoom"
-                      />
-                    </Tooltip>
-                  </Flex>
-                )}
               </VStack>
             </Box>
 
@@ -588,101 +563,48 @@ if (deviceType === 'phone') {
                 {title}
               </Text>
               <HStack spacing={4}>
-                {/* IMPROVED: Mode Selection Buttons */}
-                <ButtonGroup size="sm" isAttached variant="outline">
-                  <Tooltip label="Page Turner Mode">
-                    <Button
-                      leftIcon={<FaBook />}
-                      onClick={setTurnerMode}
-                      colorScheme={currentMode === 'turner' ? "blue" : "gray"}
-                      variant={currentMode === 'turner' ? "solid" : "outline"}
-                    >
-                      Turner
-                    </Button>
+                {/* Zoom Controls */}
+                <HStack spacing={2}>
+                  <Tooltip label="Zoom Out">
+                    <IconButton
+                      icon={<FaSearchMinus />}
+                      onClick={handleZoomOut}
+                      variant="ghost"
+                      size="sm"
+                      isDisabled={zoomLevel <= MIN_ZOOM}
+                      aria-label="Zoom Out"
+                    />
                   </Tooltip>
-                  <Tooltip label="Zoom Mode">
-                    <Button
-                      leftIcon={<FaSearch />}
-                      onClick={setZoomMode}
-                      colorScheme={currentMode === 'zoom' ? "green" : "gray"}
-                      variant={currentMode === 'zoom' ? "solid" : "outline"}
-                    >
-                      Zoom
-                    </Button>
+                  
+                  <Text fontSize="xs" minW="4rem" textAlign="center" fontWeight="semibold">
+                    {Math.round(zoomLevel * 100)}%
+                  </Text>
+                  
+                  <Tooltip label="Zoom In">
+                    <IconButton
+                      icon={<FaSearchPlus />}
+                      onClick={handleZoomIn}
+                      variant="ghost"
+                      size="sm"
+                      isDisabled={zoomLevel >= MAX_ZOOM}
+                      aria-label="Zoom In"
+                    />
                   </Tooltip>
-                  <Tooltip label="Pan Mode">
-                    <Button
-                      leftIcon={<FaMousePointer />}
-                      onClick={setPanMode}
-                      colorScheme={currentMode === 'pan' ? "purple" : "gray"}
-                      variant={currentMode === 'pan' ? "solid" : "outline"}
-                    >
-                      Pan
-                    </Button>
+                  
+                  <Tooltip label="Reset Zoom">
+                    <IconButton
+                      icon={<FaUndo />}
+                      onClick={handleResetZoom}
+                      variant="ghost"
+                      size="sm"
+                      isDisabled={(() => {
+                        const values = getInitialValues();
+                        return zoomLevel === values.zoomLevel && panOffset.x === values.panOffset.x && panOffset.y === values.panOffset.y;
+                      })()}
+                      aria-label="Reset Zoom"
+                    />
                   </Tooltip>
-                </ButtonGroup>
-                
-                {/* Divider */}
-                <Divider orientation="vertical" h="2rem" />
-                
-                {/* Zoom Controls - show when in zoom or pan mode */}
-                {(currentMode === 'zoom' || currentMode === 'pan') && (
-                  <HStack spacing={2}>
-                    <Tooltip label="Zoom Out">
-                      <IconButton
-                        icon={<FaSearchMinus />}
-                        onClick={handleZoomOut}
-                        variant="ghost"
-                        size="sm"
-                        isDisabled={zoomLevel <= MIN_ZOOM}
-                        aria-label="Zoom Out"
-                      />
-                    </Tooltip>
-                    
-                    {/* Zoom Slider */}
-                    <Box w="100px">
-                      <Slider
-                        value={zoomLevel}
-                        min={MIN_ZOOM}
-                        max={MAX_ZOOM}
-                        step={0.1}
-                        onChange={handleZoomSlider}
-                        focusThumbOnChange={false}
-                      >
-                        <SliderTrack bg="gray.300">
-                          <SliderFilledTrack bg="blue.400" />
-                        </SliderTrack>
-                        <SliderThumb boxSize={4} />
-                      </Slider>
-                    </Box>
-                    
-                    <Text fontSize="xs" minW="3rem" textAlign="center" fontWeight="semibold">
-                      {Math.round(zoomLevel * 100)}%
-                    </Text>
-                    
-                    <Tooltip label="Zoom In">
-                      <IconButton
-                        icon={<FaSearchPlus />}
-                        onClick={handleZoomIn}
-                        variant="ghost"
-                        size="sm"
-                        isDisabled={zoomLevel >= MAX_ZOOM}
-                        aria-label="Zoom In"
-                      />
-                    </Tooltip>
-                    
-                    <Tooltip label="Reset Zoom">
-                      <IconButton
-                        icon={<FaUndo />}
-                        onClick={handleResetZoom}
-                        variant="ghost"
-                        size="sm"
-                        isDisabled={zoomLevel === DEFAULT_ZOOM && panOffset.x === 0 && panOffset.y === 20}
-                        aria-label="Reset Zoom"
-                      />
-                    </Tooltip>
-                  </HStack>
-                )}
+                </HStack>
                 
                 <Divider orientation="vertical" h="2rem" />
                 
@@ -734,7 +656,7 @@ if (deviceType === 'phone') {
               transition="all 0.3s ease"
               overflow="hidden"
               cursor={
-                currentMode === 'pan' && zoomLevel > 1 
+                isZoomedIn
                   ? (isDragging ? 'grabbing' : 'grab') 
                   : 'default'
               }
@@ -746,44 +668,6 @@ if (deviceType === 'phone') {
                 msUserSelect: 'none'
               }}
             >
-              {/* IMPROVED: Mode indicator with better styling */}
-              {/* <Box
-                position="absolute"
-                top="10px"
-                left="10px"
-                bg={
-                  currentMode === 'turner' ? "rgba(59, 130, 246, 0.95)" :
-                  currentMode === 'zoom' ? "rgba(34, 197, 94, 0.95)" :
-                  "rgba(147, 51, 234, 0.95)"
-                }
-                color="white"
-                px={4}
-                py={3}
-                borderRadius="lg"
-                fontSize="sm"
-                zIndex="1"
-                opacity="0.9"
-                _hover={{ opacity: 1 }}
-                display="flex"
-                alignItems="center"
-                gap={3}
-                backdropFilter="blur(10px)"
-                boxShadow="lg"
-              >
-                {currentMode === 'turner' ? <FaBook /> : 
-                 currentMode === 'zoom' ? <FaSearch /> : <FaMousePointer />}
-                <VStack align="start" spacing={1}>
-                  <Text fontWeight="bold" fontSize="sm">
-                    {currentMode === 'turner' ? "Page Turner Mode" : 
-                     currentMode === 'zoom' ? "Zoom Mode" : "Pan Mode"}
-                  </Text>
-                  <Text fontSize="xs" opacity="0.9">
-                    {currentMode === 'turner' ? "Click pages to turn, swipe on mobile" :
-                     currentMode === 'zoom' ? "Hold Ctrl/Cmd + scroll to zoom" :
-                     zoomLevel > 1 ? "Click and drag to pan around" : "Zoom in first to enable panning"}
-                  </Text>
-                </VStack>
-              </Box> */}
 
               <Box
                 transform={`scale(${zoomLevel}) translate(${panOffset.x / zoomLevel}px, ${panOffset.y / zoomLevel}px)`}
@@ -809,14 +693,14 @@ if (deviceType === 'phone') {
                     flippingTime={800}
                     startPage={0}
                     clickEventForward={false}
-                    useMouseEvents={currentMode === 'turner'} // Only enable mouse events in turner mode
+                    useMouseEvents={!isZoomedIn} // Only enable mouse events when not zoomed in
                     style={{ 
                       margin: "auto", 
-                      pointerEvents: currentMode === 'turner' ? 'auto' : 'none' // Only allow interaction in turner mode
+                      pointerEvents: !isZoomedIn ? 'auto' : 'none' // Only allow interaction when not zoomed in
                     }}
                     drawShadow={true}
                     maxShadowOpacity={0.5}
-                    isClickFlip={currentMode === 'turner'} // Only enable click flip in turner mode
+                    isClickFlip={!isZoomedIn} // Only enable click flip when not zoomed in
                   >
                     {/* Cover page - always single */}
                     {libraryImages.length > 0 && (
@@ -856,6 +740,7 @@ if (deviceType === 'phone') {
           </ModalBody>
         </ModalContent>
       </Modal>
+      )}
     </Box>
   );
 };
