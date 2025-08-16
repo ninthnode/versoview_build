@@ -25,7 +25,7 @@ router.delete("/deleteEdition/:_id", deleteEdition);
 router.post("/uploadLibraryImage/:_id",protectUser, uploadLibraryImage);
 router.get("/getEditionsSize",protectUser, getEditionsSize);
 router.get("/getLibraryImages", protectUser, getLibraryImagesByEditionId);
-router.get("/getLibraryImagesForPageTurner/:_id", protectUser, getLibraryImagesForPageTurner);
+router.get("/getLibraryImagesForPageTurner/:_id", getLibraryImagesForPageTurner);
 router.post("/uploadPostImage", protectUser, uploadPostImage);
  
 module.exports = router;

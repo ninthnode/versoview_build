@@ -167,7 +167,6 @@ const PostCard = ({
               </Flex>
 
               <Box>
-              {console.log("post.editionId", post)}
                 {post.editionId?.pdfUrls?.length>0 && (
                   <PdfFlipBookModal
                     title={

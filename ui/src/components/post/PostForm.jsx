@@ -278,11 +278,11 @@ const imageUrlToDataUrl = async (url) => {
               </label>
             </div>
           </Flex>
-          <FormControl id="mainImage">
+          <FormControl id="mainImage"  h="250px">
             <Box
               border="3px dashed #e2e8f0"
-              width={{ base: "280px", sm: "320px", md: "360px" }}
-              height={{ base: "160px", sm: "180px", md: "205px" }}
+              width="360px"
+              height="205px"
               display="flex"
               alignItems="center"
               justifyContent="center"

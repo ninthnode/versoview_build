@@ -285,6 +285,7 @@ module.exports.getPostIfUserNotLoggedIn = asyncHandler(async (req, res) => {
 
     const postData = await Post.find({ userId: postId })
       .populate("channelId")
+      .populate("editionId")
       .sort({ createdAt: -1 });
     let newpostData = postData.map((p) => {
       return {

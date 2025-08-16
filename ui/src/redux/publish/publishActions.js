@@ -335,11 +335,6 @@ import {
       dispatch({ type: GET_LIBRARY_IMAGES_REQUEST });
       const response = await axios.get(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/editions/getLibraryImagesForPageTurner/${editionId}`,
-        {
-          headers: {
-            authorization: `Bearer ${localStorage.getItem("token").replaceAll('"', "")}`,
-          },
-        }
       );
       dispatch({
         type: GET_LIBRARY_IMAGES_SUCCESS,
