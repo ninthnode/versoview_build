@@ -6,12 +6,16 @@ import { getExcerptText } from "@/app/utils/GetExcerpt";
 
 export async function generateMetadata({params}) {
   try {
-    const response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/getPostByIdLoggedOut/${params.id}`);
+    console.log("postMeta")
+    const response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/getPostByIdLoggedOut/${params.postSlug}`);
     let data = response.data.data.post
     let body = getExcerptText(data.bodyRichText, 50).replace(/<\/?[^>]+(>|$)/g, "");
-    return await getDashboardMetadata(data.header,data.standFirst || body,data.mainImageURL);
+    const postUrl = `${process.env.NEXT_PUBLIC_FRONTEND_URL}/post/${params.channelusername}/${params.postSlug}`;
+    console.log("postMeta", data)
+    return await getDashboardMetadata(data.header, data.standFirst || body, data.mainImageURL, postUrl);
   } catch (error) {
     console.log(error)
+    return await getDashboardMetadata();
   }
 }
 

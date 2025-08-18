@@ -1,31 +1,23 @@
-"use client";
-
 import "@/styles/global.css";
 import "@/styles/fonts.css";
-import { ChakraProvider } from "@chakra-ui/react";
-import customTheme from "@/styles/theme";
-import { Provider } from "react-redux";
+import Providers from "@/components/Providers";
 
-import store from "@/redux/store";
-
-import { ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+export const metadata = {
+  title: "Versoview",
+  description: "Versoview - Your Digital Reading Experience",
+  icons: {
+    icon: "/assets/fav.png",
+    apple: "/assets/fav.png",
+  },
+};
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <head>
-        <title>Versoview</title>
-        <link rel="icon" href="/assets/fav.png" />
-        <link rel="apple-touch-icon" href="/assets/fav.png" />
-      </head>
       <body>
-        <ChakraProvider theme={customTheme}>
-          <Provider store={store}>
-            <ToastContainer />
-            {children}
-          </Provider>
-        </ChakraProvider>
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );
