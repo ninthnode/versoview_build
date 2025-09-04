@@ -39,7 +39,9 @@ const CommentsModal = ({
   modalComment,
   backToAllComments,
   postSlug,
-  pageLoading
+  pageLoading,
+  deleteComment,
+  currentUser
 }) => {
   const [showReply, setshowReply] = useState("");
   const deviceType = useDeviceType();
@@ -169,6 +171,8 @@ const CommentsModal = ({
                           getPreviousPage={getPreviousPage}
                           pageNumber={pageNumber}
                           sectionRefs={sectionRefs}
+                          deleteComment={deleteComment}
+                          currentUser={currentUser}
                         />
                       ))
                     ) : (

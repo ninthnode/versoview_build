@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Box,
   Button,
@@ -10,12 +10,13 @@ import {
   Flex,
   Image,
   Link,
-  Spinner,
+  Spinner,InputGroup, InputRightElement, IconButton
 } from "@chakra-ui/react";
 import AuthFooter from "../../../AuthFooter";
 import { FaRegCheckCircle, FaTimes } from "react-icons/fa";
 import { connect } from "react-redux";
 import { ResetPasswordRequest } from "@/redux/auth/authActions";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 
 function ChangePassword({ params, ResetPasswordRequest }) {
   const [password, setPassword] = useState("");
@@ -25,23 +26,28 @@ function ChangePassword({ params, ResetPasswordRequest }) {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [changeSuccess, setChangeSuccess] = useState(false);
 
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      setError("Passwords do not match.");
       return;
     }
+
     setLoading(true);
     setError("");
-    const res = await ResetPasswordRequest(
-      '123',
-      params.id,
-      params.token
-    );
-    setLoading(false);
-    setIsSubmitted(true);
-    if (res.status == 200) {
-      setChangeSuccess(true);
+
+    try {
+      const res = await ResetPasswordRequest(password, params.id, params.token);
+      setIsSubmitted(true);
+      setChangeSuccess(res.status === 200);
+    } catch (err) {
+      setError("Something went wrong. Please try again.");
+      setChangeSuccess(false);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -62,36 +68,67 @@ function ChangePassword({ params, ResetPasswordRequest }) {
             mx="auto"
             mb={8}
             mt={4}
+            src={"/assets/logo.svg"}
+            alt="Logo"
           />
+
           {!isSubmitted ? (
             <>
-              <Text mb={2} fontWeight="normal" textAlign="center">
-                Enter New Password
+              <Text mb={2} fontWeight="semibold" textAlign="center">
+                Set a New Password
               </Text>
+
               <FormControl id="password" mt={4} isRequired>
-                <Input
-                  type="password"
-                  placeholder="Enter new password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
+                <InputGroup>
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="New password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <InputRightElement>
+                    <IconButton
+                      variant="ghost"
+                      size="sm"
+                      icon={showPassword ? <FiEyeOff /> : <FiEye />}
+                      onClick={() => setShowPassword(!showPassword)}
+                      aria-label={
+                        showPassword ? "Hide password" : "Show password"
+                      }
+                    />
+                  </InputRightElement>
+                </InputGroup>
               </FormControl>
-              <FormControl id="confirmPassword" mt={4} isRequired>
-                <Input
-                  type="password"
-                  placeholder="Confirm new password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                />
-              </FormControl>
+
+<FormControl id="confirmPassword" mt={4} isRequired>
+  <InputGroup>
+    <Input
+      type={showConfirmPassword ? "text" : "password"}
+      placeholder="Confirm password"
+      value={confirmPassword}
+      onChange={(e) => setConfirmPassword(e.target.value)}
+    />
+    <InputRightElement>
+      <IconButton
+        variant="ghost"
+        size="sm"
+        icon={showConfirmPassword ? <FiEyeOff /> : <FiEye />}
+        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+        aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+      />
+    </InputRightElement>
+  </InputGroup>
+</FormControl>
+
               {error && (
-                <Text color="red" mt={2} textAlign="center">
+                <Text color="red.500" mt={2} textAlign="center">
                   {error}
                 </Text>
               )}
+
               <Button
                 variant="primary"
-                mt={4}
+                mt={6}
                 w="100%"
                 onClick={handleSubmit}
                 isDisabled={loading}
@@ -105,32 +142,24 @@ function ChangePassword({ params, ResetPasswordRequest }) {
             </>
           ) : (
             <>
-              {changeSuccess ? (
-                <>
-                  <Flex justify="center">
-                    <FaRegCheckCircle color="green" fontSize="6rem" />
-                  </Flex>
-                  <Text my={4} fontWeight="normal" textAlign="center">
-                    Password Changed Successfully!
-                  </Text>
-                </>
-              ) : (
-                <>
-                  <Flex justify="center">
-                    <FaTimes color="Red" fontSize="6rem" />
-                  </Flex>
-                  <Text my={4} fontWeight="normal" textAlign="center">
-                    Password Not Changed! <br />
-                    Error: Invalid Request!
-                  </Text>
-                </>
-              )}
+              <Flex justify="center" mt={4}>
+                {changeSuccess ? (
+                  <FaRegCheckCircle color="green" fontSize="5rem" />
+                ) : (
+                  <FaTimes color="red" fontSize="5rem" />
+                )}
+              </Flex>
+              <Text my={4} fontWeight="medium" textAlign="center">
+                {changeSuccess
+                  ? "Your password has been successfully updated!"
+                  : "Password reset failed. The link may be invalid or expired."}
+              </Text>
             </>
           )}
 
           <Text my={6} textAlign="center">
             Return to{" "}
-            <Link color="primary" href="/login">
+            <Link color="primary.500" href="/login">
               Login
             </Link>
           </Text>
@@ -142,9 +171,8 @@ function ChangePassword({ params, ResetPasswordRequest }) {
   );
 }
 
-const mapStateToProps = (state) => ({});
 const mapDispatchToProps = {
   ResetPasswordRequest,
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(ChangePassword);
+export default connect(null, mapDispatchToProps)(ChangePassword);

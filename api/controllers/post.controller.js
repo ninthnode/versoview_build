@@ -1606,10 +1606,57 @@ module.exports.postOwner = asyncHandler(async (req, res) => {
 module.exports.deletePostComment = asyncHandler(async (req, res) => {
   try {
     const { _id } = req.params;
-    console.log(req.params, "ids");
-    const deletedPost = await PostComment.findOneAndDelete({ _id: _id });
-    console.log(deletedPost, "deleted post comment --");
-    return res.status(200).json({ status: 200, data: deletedPost });
+    const userId = req.user._id;
+    
+    // Find the comment to be deleted
+    const commentToDelete = await PostComment.findById(_id).populate('userId');
+    
+    if (!commentToDelete) {
+      return res.status(404).json({ error: "Comment not found" });
+    }
+    
+    // Check if user has permission to delete (owner or admin)
+    if (commentToDelete.userId._id.toString() !== userId.toString() && req.user.role !== 'admin') {
+      return res.status(403).json({ error: "You don't have permission to delete this comment" });
+    }
+    
+    // Function to recursively delete nested comments
+    const deleteNestedComments = async (commentId) => {
+      const comment = await PostComment.findById(commentId);
+      if (comment && comment.replies && comment.replies.length > 0) {
+        // Delete all nested replies first
+        for (let replyId of comment.replies) {
+          await deleteNestedComments(replyId);
+        }
+      }
+      
+      // Delete associated votes
+      await CommentVote.deleteMany({ postCommentId: commentId });
+      
+      // Delete associated bookmarks
+      await Bookmark.deleteMany({ postCommentId: commentId });
+      
+      // Delete the comment itself
+      await PostComment.findByIdAndDelete(commentId);
+    };
+    
+    // If this comment has a parent, remove it from parent's replies array
+    if (commentToDelete.parentId) {
+      await PostComment.findByIdAndUpdate(
+        commentToDelete.parentId,
+        { $pull: { replies: _id } }
+      );
+    }
+    
+    // Delete the comment and all its nested replies
+    await deleteNestedComments(_id);
+    
+    return res.status(200).json({ 
+      status: 200, 
+      message: "Comment and all replies deleted successfully",
+      data: commentToDelete 
+    });
+    
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Internal Server Error" });

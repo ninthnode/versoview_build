@@ -9,6 +9,7 @@ import {
   CLOSE_COMMENTS_MODAL,
   NEXT_PAGE,
   PREVIOUS_PAGE,
+  DELETE_COMMENT_SUCCESS,
 } from "./commentType";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -510,6 +511,109 @@ export const replyToPostComment = (
       //   autoClose: 3000,
       //   type: "error",
       // });
+    }
+  };
+};
+
+// Helper function to recursively remove comment from nested structure
+const removeCommentFromStructure = (comments, commentId) => {
+  return comments.filter(comment => {
+    if (comment._id === commentId) {
+      return false; // Remove this comment
+    }
+    
+    // If this comment has replies, recursively filter them
+    if (comment.replies && comment.replies.length > 0) {
+      comment.replies = removeCommentFromStructure(comment.replies, commentId);
+    }
+    
+    return true;
+  });
+};
+
+// Helper function to update parent comment reply count after deletion
+const updateParentReplyCount = (comments, parentId) => {
+  return comments.map(comment => {
+    if (comment._id === parentId) {
+      return {
+        ...comment,
+        replyCount: Math.max(0, (comment.replyCount || 0) - 1)
+      };
+    }
+    
+    // If this comment has replies, recursively check them
+    if (comment.replies && comment.replies.length > 0) {
+      return {
+        ...comment,
+        replies: updateParentReplyCount(comment.replies, parentId)
+      };
+    }
+    
+    return comment;
+  });
+};
+
+export const deleteComment = (commentId, postId, level, parentComment, neighbourComments) => {
+  return async (dispatch, getState) => {
+    try {
+      const token = localStorage.getItem("token").replaceAll('"', "");
+      
+      // Call the API to delete the comment
+      const response = await axios.delete(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/deletePostComment/${commentId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const { comment } = getState();
+      
+      // Remove comment from the current comment structure
+      let updatedComments = removeCommentFromStructure(comment.comments, commentId);
+      
+      // If this was a reply, update parent comment's reply count
+      if (parentComment) {
+        updatedComments = updateParentReplyCount(updatedComments, parentComment._id);
+      }
+      
+      // Update page data if we're on nested pages
+      if (level > 1 && comment.pageNumber > 0) {
+        const tempPagesData = {
+          ...comment.pagesData,
+          [comment.pageNumber]: removeCommentFromStructure(
+            comment.pagesData[comment.pageNumber] || [],
+            commentId
+          ),
+        };
+        
+        dispatch({
+          type: NEXT_PAGE,
+          payload: { arr: tempPagesData, page: comment.pageNumber },
+        });
+      }
+
+      // Dispatch the updated comments
+      dispatch({
+        type: DELETE_COMMENT_SUCCESS,
+        payload: updatedComments,
+      });
+
+      // Update comment count
+      dispatch(getCommentAndRepliesCount(postId));
+
+      toast("Comment deleted successfully", {
+        autoClose: 3000,
+        type: "success",
+      });
+
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+      toast("Error deleting comment", {
+        autoClose: 3000,
+        type: "error",
+      });
     }
   };
 };

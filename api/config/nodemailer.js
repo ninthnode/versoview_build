@@ -35,17 +35,20 @@ const nodemailer = require("nodemailer");
 const sendMail = async (email, subject, link) => {
 	try {
 		const transporter = nodemailer.createTransport({
-			host: "smtp.zoho.in",
-			port: 465,
-			secure: true, // use SSL
+			service: "gmail",
+			host: "smtp.gmail.com",
+			port: 587,
+			secure: false, // use STARTTLS
 			auth: {
-				user: "sakar123@zohomail.in",
-				pass: "Pass@221244",
+				// user:  "sakar@theninthnode.com",
+				// pass: "xxft knmf laja qlyr",
+				user:  "versoviewsmtp@gmail.com",
+				pass: "rpqo fsxm ovvl yuys",
 			},
 		});
 
 		await transporter.sendMail({
-			from: "VersoView <sakar123@zohomail.in>",
+			from: `VersoView <${process.env.GMAIL_USER || "sakar@theninthnode.com"}>`,
 			to: email,
 			subject: subject,
 			text: `Reset your password using the following link: ${link}`,

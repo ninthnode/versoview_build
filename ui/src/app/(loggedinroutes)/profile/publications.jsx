@@ -143,7 +143,7 @@ function Publications({ userPosts,deletePostHandler }) {
                   borderRadius="md"
                   w='100%'
                 >
-                  <Link href={`/post/${item._id}`}>
+                  <Link href={`/post/${item.channelId.username}/${item.slug}`}>
                     <Text fontSize="sm">{item.header}</Text>
                   </Link>
 

@@ -9,6 +9,7 @@ const bcrypt = require("bcryptjs");
 const { sendMail } = require("../config/nodemailer");
 const { OAuth2Client } = require("google-auth-library");
 const axios = require("axios");
+const mongoose = require('mongoose');
 
 const {
   generateToken,
@@ -243,29 +244,38 @@ module.exports.refreshTokenApi = asyncHandler(async (req, res) => {
 module.exports.resetPassword = asyncHandler(async (req, res) => {
   const { id, token } = req.params;
   const { password } = req.body;
-  // console.log(id, token, "id and token is there");
+
+  console.log(id, "id and token is there");
+
+  // Check for valid ObjectId
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ message: "Invalid user ID format" });
+  }
+
   const user = await User.findOne({ _id: id });
 
   if (!user) {
-    return res.send({ message: "User not exist !!" });
+    return res.status(404).json({ message: "User not found" });
   }
-  const cert = filesys.readFileSync(path.join(__dirname, "../jwtRS256.pem"));
-  const verify = jwt.verify(token, cert, { algorithms: ["RS256"] });
 
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(password, salt);
   try {
-    if (user && verify) {
-      await User.findByIdAndUpdate(
-        id,
-        { password: hashedPassword },
-        { new: true }
-      );
+    const cert = filesys.readFileSync(path.join(__dirname, "../jwtRS256.pem"));
+    const verify = jwt.verify(token, cert, { algorithms: ["RS256"] });
 
-      res.status(200).json({ message: "password updated" });
+    if (!verify) {
+      return res.status(401).json({ message: "Token verification failed" });
     }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    await User.findByIdAndUpdate(id, { password: hashedPassword }, { new: true });
+
+    res.status(200).json({ message: "Password updated successfully" });
+
   } catch (error) {
-    res.send("Not verified");
+    console.error("Error resetting password:", error);
+    res.status(500).json({ message: "Internal server error", error: error.message });
   }
 });
 
@@ -310,7 +320,7 @@ module.exports.getUser = asyncHandler(async (req, res) => {
         .json({ status: 404, message: `User wih Id ${_id} Not Found !` });
     }
     //get user posts titles
-    const posts = await Post.find({ userId: _id });
+    const posts = await Post.find({ userId: _id }).populate("channelId");
     const totalPosts = await Post.find({ userId: _id }).countDocuments();
     const channelData = await Channel.findOne({ userId: _id });
     //get user channel followings

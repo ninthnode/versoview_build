@@ -245,7 +245,7 @@ const imageUrlToDataUrl = async (url) => {
   };
 
   return (
-    <Box w={{ base: "100%", lg: "100%" }} px={{ base: 2, md: 4 }}>
+    <Box w={{ base: "100%", lg: "100%" }} px={{ base: 0, md: 4 }}>
       {/* Form Section */}
       <Stack spacing={{ base: 3, md: 4 }}>
         <Box w="100%">
@@ -281,8 +281,9 @@ const imageUrlToDataUrl = async (url) => {
           <FormControl id="mainImage"  h="250px">
             <Box
               border="3px dashed #e2e8f0"
-              width="360px"
-              height="205px"
+              width={{ base: "90vw", sm: "360px" }}  // 90% viewport width on mobile, 360px on larger screens
+              maxWidth="360px"
+              aspectRatio="360/205"
               display="flex"
               alignItems="center"
               justifyContent="center"
@@ -364,11 +365,11 @@ const imageUrlToDataUrl = async (url) => {
                 size={{ base: "sm", md: "sm" }}
                 value={selectedSubSection}
                 onChange={(e) => setSelectedSubSection(e.target.value)}
-                disabled={!selectedSection || genres[selectedSection].genre === "Other"}
+                disabled={!selectedSection || genres[selectedSection]?.genre === "Other"}
               >
                 <option value="">Select a sub-section</option>
                 {selectedSection &&
-                  genres[selectedSection].subGenres.map((subGenre) => (
+                  genres[selectedSection]?.subGenres.map((subGenre) => (
                     <option key={subGenre} value={subGenre}>
                       {subGenre}
                     </option>

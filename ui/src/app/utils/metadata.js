@@ -16,8 +16,8 @@ export async function getDashboardMetadata(title, description, image, url) {
       images: [
         {
           url: data.image,
-          width: 1200,
-          height: 630,
+          width: 1600,
+          height: 900,
           alt: data.title,
           type: 'image/jpeg',
         },

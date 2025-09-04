@@ -20,6 +20,7 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/zoom';
 import 'swiper/css/pagination';
+import './style.css';
 
 // Component to merge two images side by side without quality loss
 const MergedImage = ({ leftImage, rightImage, alt }) => {

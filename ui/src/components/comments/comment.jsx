@@ -19,6 +19,9 @@ import { FiMoreHorizontal } from "react-icons/fi";
 import { getExcerptText } from "@/app/utils/GetExcerpt";
 import Link from "next/link";
 import { BsChat } from "react-icons/bs";
+import { MdDelete } from "react-icons/md";
+import useConfirmationDialog from "@/components/useConfirmationDialog";
+import { useSelector } from "react-redux";
 
 const Comment = ({
   _id,
@@ -48,11 +51,39 @@ const Comment = ({
   replyCount,
   parentSetIsOpen,
   neighbourComments,
-  sectionRefs=null
+  sectionRefs=null,
+  deleteComment,
+  currentUser
 }) => {
   const [isOpen, setIsOpen] = useState(comment.opened || false);
   const [replyId, setReplyId] = useState(false);
   const [replyText, setReplyText] = useState("");
+  
+  const [showDeleteDialog, DeleteConfirmationDialog] = useConfirmationDialog(
+    "Are you sure you want to delete this comment? This action cannot be undone."
+  );
+
+  // Get user directly from Redux with comprehensive fallback
+  const reduxUser = useSelector(state => {
+    // Try ALL possible auth state structures
+    return state.auth?.user?.user || 
+           state.auth?.user?.data ||
+           state.auth?.user || 
+           state.auth?.data?.user ||
+           state.auth?.data ||
+           state.auth?.currentUser ||
+           null;
+  });
+  
+  // Use Redux user as fallback if prop is undefined
+  const actualCurrentUser = currentUser || reduxUser;
+  
+  // Get user ID with multiple fallbacks
+  const getCurrentUserId = (user) => {
+    if (!user) return null;
+    return user._id || user.id || user.userId || user.user?._id || user.user?.id;
+  };
+  
   const handleChangeReplyText = (e) => {
     setReplyText(e.target.value);
   };
@@ -60,6 +91,39 @@ const Comment = ({
     replyToPostComment(commentId, replyText, postId, level, neighbourComments);
     setReplyText("");
   };
+
+  const handleDeleteComment = async () => {
+    if (!deleteComment) {
+      console.error('Delete function not available');
+      return;
+    }
+    
+    const confirmed = await showDeleteDialog();
+    if (confirmed) {
+      deleteComment(_id, postId, level, parentComment, neighbourComments);
+    }
+  };
+
+  // Helper function to check if user can delete this comment
+  const checkCanDelete = () => {
+    if (!actualCurrentUser) return false;
+    
+    // Admin can delete any comment
+    if (actualCurrentUser.role === 'admin') return true;
+    
+    // Get current user ID with fallbacks
+    const currentUserId = getCurrentUserId(actualCurrentUser);
+    
+    // Get comment owner ID with fallbacks
+    const commentOwnerId = getCurrentUserId(userId) || userId?._id || userId?.id || userId;
+    
+    return currentUserId && commentOwnerId && 
+           (currentUserId === commentOwnerId || 
+            currentUserId.toString() === commentOwnerId.toString());
+  };
+  
+  const canDelete = checkCanDelete();
+
 
   return (
     <Box w="100%" mb={4} bg="#fff" h={"100%"} key={_id} ref={(el) => {if(sectionRefs!==null){sectionRefs.current[_id] = el}}}>
@@ -89,13 +153,23 @@ const Comment = ({
           )}
         </VStack>
         <Box position="absolute" top={4} right="0">
-          <IconButton
+          {/* <IconButton
             variant="ghost"
             color="gray.400"
             aria-label="See menu"
             fontSize="25px"
             icon={<FiMoreHorizontal />}
-          />
+          /> */}
+          {canDelete && (
+            <IconButton
+              variant="ghost"
+              color="red.500"
+              aria-label="Delete comment"
+              fontSize="lg"
+              icon={<MdDelete />}
+              onClick={handleDeleteComment}
+            />
+          )}
           <IconButton
             variant="ghost"
             color={!isBookmarked ? "gray" : "green.500"}
@@ -337,10 +411,13 @@ const Comment = ({
                   parentSetIsOpen ={setIsOpen}
                   neighbourComments={comment.replies}
                   sectionRefs={sectionRefs}
+                  deleteComment={deleteComment}
+                  currentUser={currentUser}
                 />
             )
           );
         })}
+      {DeleteConfirmationDialog}
     </Box>
   );
 };

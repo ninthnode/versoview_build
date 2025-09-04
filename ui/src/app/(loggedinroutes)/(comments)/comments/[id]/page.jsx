@@ -13,9 +13,10 @@ import {
   updateCommentDownvote,
   getCommentRepliesByCommentId,
   replyToPostComment,
-  getPreviousPage,getCommentByPostId,closeCommentModal
+  getPreviousPage,getCommentByPostId,closeCommentModal,
+  deleteComment
 } from "@/redux/comments/commentAction";
-import { connect } from "react-redux";
+import { connect, useSelector } from "react-redux";
 import { addRemoveBookmarks } from "@/redux/bookmarks/bookmarkAction";
 import CommentsModal from "./CommentsModal";
 
@@ -42,8 +43,11 @@ const Comments = ({
   commentStateUpdateCount,
   modalComment,
   closeCommentModal,
-  postSlug
+  postSlug,
+  deleteComment,
+  currentUser
 }) => {
+
 
   const postId = id;
   const [commentList, setCommentList] = useState([]);
@@ -55,9 +59,9 @@ const Comments = ({
   }, [getCommentByPostId, postId]);
 
   useEffect(() => {
-    if (commentState&&commentState.length > 0) {
+    if (commentState) {
       setCommentList(commentState);
-      setPageLoading(false)
+      setPageLoading(false);
     }
   }, [commentState,commentStateUpdateCount,isModalCommentsOpen]);
 
@@ -134,6 +138,8 @@ const Comments = ({
           modalComment={modalComment}
           backToAllComments={backToAllComments}
           pageLoading={pageLoading}
+          deleteComment={deleteComment}
+          currentUser={currentUser}
         />
       )}
     </Box>
@@ -146,6 +152,7 @@ const mapStateToProps = (state) => ({
   modalComment: state.comment.modalComment,
   pageNumber: state.comment.pageNumber,
   loading: state.comment.loading,
+  currentUser: state.auth.user?.user || state.auth.user || state.auth.data,
 });
 
 const mapDispatchToProps = {
@@ -157,7 +164,8 @@ const mapDispatchToProps = {
   getCommentByPostId,
   replyToPostComment,
   getPreviousPage,
-  closeCommentModal
+  closeCommentModal,
+  deleteComment
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Comments);

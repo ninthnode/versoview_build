@@ -40,6 +40,7 @@ import {
   addCommentToPost,
   getCommentByPostId,
   getCommentAndRepliesCount,
+  deleteComment,
 } from "@/redux/comments/commentAction";
 import { FaBookmark as BookmarkFilled } from "react-icons/fa";
 import { addRemoveBookmarks } from "@/redux/bookmarks/bookmarkAction";
@@ -79,6 +80,8 @@ function SinglePost({
   postTotalComments,
   fetchChannelPosts,
   channelPosts,
+  deleteComment,
+  currentUser,
 }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedText, setSelectedText] = useState("");
@@ -399,6 +402,8 @@ function SinglePost({
                 isAuthenticated={isAuthenticated}
                 getCommentByPostId={getCommentByPostId}
                 postSlug={postState.post.slug}
+                deleteComment={deleteComment}
+                currentUser={currentUser}
               />
               {channelPosts && channelPosts.length > 0 && (
                 <RelatedArticleList channelPosts={channelPosts} />
@@ -450,6 +455,7 @@ const mapStateToProps = (state) => ({
   commentState: state.comment.comments,
   postTotalComments: state.comment.postTotalComments,
   channelPosts: state.channel.posts.data,
+  currentUser: state.auth.user?.user || state.auth.user || state.auth.data,
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -463,6 +469,8 @@ const mapDispatchToProps = (dispatch) => ({
   updatePostDownvote: (id) => dispatch(updatePostDownvote(id)),
   addRemoveBookmarks: (type, postId) =>
     dispatch(addRemoveBookmarks(type, postId)),
+  deleteComment: (commentId, postId, level, parentComment, neighbourComments) =>
+    dispatch(deleteComment(commentId, postId, level, parentComment, neighbourComments)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(SinglePost);

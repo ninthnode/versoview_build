@@ -7,7 +7,8 @@ import {
   OPEN_COMMENTS_MODAL,
   CLOSE_COMMENTS_MODAL,
   NEXT_PAGE,
-  PREVIOUS_PAGE
+  PREVIOUS_PAGE,
+  DELETE_COMMENT_SUCCESS
 } from "./commentType";
 
 const initialState = {
@@ -78,6 +79,12 @@ const commentsReducer = (state = initialState, action) => {
         ...state,
         // pagesData: action.payload,
         pageNumber:state.pageNumber-1
+      };
+    case DELETE_COMMENT_SUCCESS:
+      return {
+        ...state,
+        comments: action.payload,
+        commentStateUpdateCount:state.commentStateUpdateCount+1
       };
     default:
       return state;
