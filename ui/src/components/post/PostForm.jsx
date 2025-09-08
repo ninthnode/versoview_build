@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Box,
   Flex,
@@ -53,6 +53,20 @@ const PostForm = ({
   
   const dispatch = useDispatch();
   const { tempLibraryImages } = useSelector((state) => state.publish);
+  
+  // Refs for file inputs
+  const fileInputRef = useRef(null);
+  const cameraInputRef = useRef(null);
+  
+  // Function to clear file inputs
+  const clearFileInputs = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+    if (cameraInputRef.current) {
+      cameraInputRef.current.value = '';
+    }
+  };
   
   // Debug log for PostForm Redux state
   useEffect(() => {
@@ -253,6 +267,7 @@ const imageUrlToDataUrl = async (url) => {
             <Text fontSize={{ base: "xs", md: "sm" }}>MAIN IMAGE</Text>
             <div>
               <Input
+                ref={fileInputRef}
                 visibility="hidden"
                 id="files"
                 type="file"
@@ -263,6 +278,7 @@ const imageUrlToDataUrl = async (url) => {
                 onChange={handleFileSelect}
               />
               <Input
+                ref={cameraInputRef}
                 visibility="hidden"
                 id="cameras"
                 type="file"
@@ -278,7 +294,7 @@ const imageUrlToDataUrl = async (url) => {
               </label>
             </div>
           </Flex>
-          <FormControl id="mainImage"  h="250px">
+          <FormControl id="mainImage"  h="200px">
             <Box
               border="3px dashed #e2e8f0"
               width={{ base: "90vw", sm: "360px" }}  // 90% viewport width on mobile, 360px on larger screens
@@ -312,6 +328,7 @@ const imageUrlToDataUrl = async (url) => {
                 libraryImages={libraryImages}
                 setLibraryImages={setLibraryImages}
                 setIsLibraryModalOpen={setIsLibraryModalOpen}
+                clearFileInputs={clearFileInputs}
               />
             </Box>
           </FormControl>

@@ -484,7 +484,7 @@ if (deviceType === 'phone') {
                     {title}sdds
                   </Text>
                   <HStack spacing={2}>
-                    <Tooltip label={isFullScreen ? "Exit Full Screen" : "Full Screen"}>
+                    {/* <Tooltip label={isFullScreen ? "Exit Full Screen" : "Full Screen"}>
                       <IconButton
                         icon={isFullScreen ? <FaCompress /> : <FaExpand />}
                         onClick={toggleFullScreen}
@@ -492,7 +492,7 @@ if (deviceType === 'phone') {
                         size="sm"
                         aria-label={isFullScreen ? "Exit Full Screen" : "Full Screen"}
                       />
-                    </Tooltip>
+                    </Tooltip> */}
                     
                     <Tooltip label="Close">
                       <IconButton
@@ -608,7 +608,7 @@ if (deviceType === 'phone') {
                 
                 <Divider orientation="vertical" h="2rem" />
                 
-                <Tooltip label={isFullScreen ? "Exit Full Screen" : "Full Screen"}>
+                {/* <Tooltip label={isFullScreen ? "Exit Full Screen" : "Full Screen"}>
                   <IconButton
                     icon={isFullScreen ? <FaCompress /> : <FaExpand />}
                     onClick={toggleFullScreen}
@@ -616,7 +616,7 @@ if (deviceType === 'phone') {
                     size="sm"
                     aria-label={isFullScreen ? "Exit Full Screen" : "Full Screen"}
                   />
-                </Tooltip>
+                </Tooltip> */}
                 
                 <Tooltip label="Close">
                   <IconButton

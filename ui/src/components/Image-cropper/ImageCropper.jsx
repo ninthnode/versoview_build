@@ -10,6 +10,7 @@ import {
   Tooltip,
   useDisclosure,
   Spinner,
+  Box
 } from "@chakra-ui/react";
 import { FaUpload, FaCamera } from "react-icons/fa";
 import { MdLibraryAdd } from "react-icons/md";
@@ -25,6 +26,7 @@ const ImageCropper = ({
   edition,
   setIsLibraryModalOpen,
   isLoadingFeatureImage,
+  clearFileInputs,
 }) => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
@@ -56,14 +58,17 @@ const ImageCropper = ({
   return (
     <div>
       {uploadedImage ? (
-        <div
+        <Box
           style={{
             position: "absolute",
             top: 0,
             left: 0,
-            width: "100%",
-            height: "200px",
+            // width: "100%",
+            // height: "200px",
           }}
+           width={{ base: "90vw", sm: "360px" }}  // 90% viewport width on mobile, 360px on larger screens
+              maxWidth="360px"
+          aspectRatio="360/205"
         >
           {isEditing ? (
             <Cropper
@@ -81,8 +86,9 @@ const ImageCropper = ({
               objectFit="cover"
               src={croppedImage ? croppedImage : uploadedImage}
               alt="Cropped Image"
-              w="100%"
-              h="100%"
+              width={{ base: "90vw", sm: "360px" }}
+             maxWidth="360px"
+              aspectRatio="360/205"
               crossOrigin="anonymous"
             />
           )}
@@ -131,6 +137,8 @@ const ImageCropper = ({
                 onClick={() => {
                   setUploadedImage(null);
                   setCroppedImage(null);
+                  setIsEditing(true);
+                  if (clearFileInputs) clearFileInputs();
                 }}
                 style={{
                   borderRadius: "5px",
@@ -143,7 +151,7 @@ const ImageCropper = ({
               />
             </Flex>
           </div>
-        </div>
+        </Box>
       ) : (
         <Flex flexDirection={"column"} alignItems="center">
           <Flex gap="4" pos="relative">

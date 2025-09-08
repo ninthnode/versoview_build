@@ -120,7 +120,8 @@ const PostCard = ({
               border="1px solid lightgray"
               borderRadius="md"
               objectFit="cover"
-              minH={{ base: "250px", md: "300px"}} 
+              // minH={{ base: "250px", md: "300px"}} 
+              aspectRatio="360/205"
               src={post.mainImageURL}
               alt={post.header}
             />

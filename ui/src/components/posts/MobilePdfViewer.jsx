@@ -438,7 +438,7 @@ const MobilePdfViewer = ({ isOpen, onClose, title, libraryImages }) => {
               {title}
             </Text>
             <HStack spacing={2}>
-              <Tooltip label={isFullScreen ? "Exit Full Screen" : "Full Screen"}>
+              {/* <Tooltip label={isFullScreen ? "Exit Full Screen" : "Full Screen"}>
                 <IconButton
                   icon={isFullScreen ? <FaCompress /> : <FaExpand />}
                   onClick={toggleFullScreen}
@@ -448,7 +448,7 @@ const MobilePdfViewer = ({ isOpen, onClose, title, libraryImages }) => {
                   _hover={{ bg: "rgba(255,255,255,0.1)" }}
                   aria-label={isFullScreen ? "Exit Full Screen" : "Full Screen"}
                 />
-              </Tooltip>
+              </Tooltip> */}
               
               <Tooltip label="Close">
                 <IconButton

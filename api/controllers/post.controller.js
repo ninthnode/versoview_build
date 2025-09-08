@@ -267,7 +267,7 @@ module.exports.getUserPosts = asyncHandler(async (req, res) => {
 
     const userId = req.user._id;
 
-    const userPosts = await Post.find({ userId: userId,editionId: null });
+    const userPosts = await Post.find({ userId: userId,editionId: null }).populate("channelId");
 
     res.status(200).json({
       message: "Success",

@@ -56,7 +56,12 @@ module.exports.getAllEdition = asyncHandler(async (req, res) => {
   try {
     const userId = req.user._id;
       const userEditions = await Edition.find({ userId: userId })
-        .populate("postId")
+          .populate({
+            path: 'postId',
+            populate: {
+              path: 'channelId' // this populates channelID inside the post
+            }
+          })
         .sort({ createdAt: -1 })
         .lean();
       const editionsWithImage = await Promise.all(
