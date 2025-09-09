@@ -1,6 +1,6 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import Cropper from "react-easy-crop";
-import { getCroppedImg } from "./utils";
+import { getCroppedImg, compressImage, getImageSize } from "./utils";
 import { FaCheck, FaTimes } from "react-icons/fa";
 import { MdModeEdit } from "react-icons/md";
 import {
@@ -32,6 +32,8 @@ const ImageCropper = ({
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
   const [isEditing, setIsEditing] = useState(true);
+  const [isCompressing, setIsCompressing] = useState(false);
+  const [compressionMessage, setCompressionMessage] = useState("");
 
   const onCropCompleteCallback = useCallback(
     (croppedArea, croppedAreaPixels) => {
@@ -39,6 +41,46 @@ const ImageCropper = ({
     },
     []
   );
+
+  // Auto-compress images over 5MB when uploaded
+  useEffect(() => {
+    const handleImageCompression = async () => {
+      if (uploadedImage && !isCompressing) {
+        try {
+          const imageSize = await getImageSize(uploadedImage);
+          const sizeInMB = imageSize / (1024 * 1024);
+          
+          if (sizeInMB > 5) {
+            setIsCompressing(true);
+            setCompressionMessage(`Compressing image (${sizeInMB.toFixed(1)}MB)...`);
+            
+            const compressedImage = await compressImage(uploadedImage, 5, 0.9);
+            const compressedSize = await getImageSize(compressedImage);
+            const compressedSizeInMB = compressedSize / (1024 * 1024);
+            
+            setUploadedImage(compressedImage);
+            setCompressionMessage(`Image compressed from ${sizeInMB.toFixed(1)}MB to ${compressedSizeInMB.toFixed(1)}MB`);
+            
+            // Clear compression message after 3 seconds
+            setTimeout(() => {
+              setCompressionMessage("");
+              setIsCompressing(false);
+            }, 3000);
+          } else {
+            setCompressionMessage("");
+            setIsCompressing(false);
+          }
+        } catch (error) {
+          console.error('Error compressing image:', error);
+          setCompressionMessage("Compression failed, using original image");
+          setIsCompressing(false);
+          setTimeout(() => setCompressionMessage(""), 3000);
+        }
+      }
+    };
+
+    handleImageCompression();
+  }, [uploadedImage, setUploadedImage, isCompressing]);
 
   const handleCrop = async () => {
     try {
@@ -201,7 +243,20 @@ const ImageCropper = ({
               </>
             )}
           </Flex>
-          <Text>{imageSizeError}</Text>
+          <Text color="red.500">{imageSizeError}</Text>
+          {compressionMessage && (
+            <Text color="blue.500" fontSize="sm" mt="2" textAlign="center">
+              {compressionMessage}
+            </Text>
+          )}
+          {isCompressing && (
+            <Flex align="center" justify="center" mt="2">
+              <Spinner size="sm" mr="2" />
+              <Text fontSize="sm" color="blue.500">
+                Processing...
+              </Text>
+            </Flex>
+          )}
         </Flex>
       )}
     </div>

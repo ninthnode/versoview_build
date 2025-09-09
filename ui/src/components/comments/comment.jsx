@@ -53,7 +53,8 @@ const Comment = ({
   neighbourComments,
   sectionRefs=null,
   deleteComment,
-  currentUser
+  currentUser,
+  postChannelOwner
 }) => {
   const [isOpen, setIsOpen] = useState(comment.opened || false);
   const [replyId, setReplyId] = useState(false);
@@ -117,9 +118,18 @@ const Comment = ({
     // Get comment owner ID with fallbacks
     const commentOwnerId = getCurrentUserId(userId) || userId?._id || userId?.id || userId;
     
-    return currentUserId && commentOwnerId && 
+    // Check if current user is the comment owner
+    const isCommentOwner = currentUserId && commentOwnerId && 
            (currentUserId === commentOwnerId || 
             currentUserId.toString() === commentOwnerId.toString());
+    
+    // Check if current user is the post channel owner
+    const postChannelOwnerId = getCurrentUserId(postChannelOwner) || postChannelOwner?._id || postChannelOwner?.id;
+    const isPostChannelOwner = currentUserId && postChannelOwnerId && 
+           (currentUserId === postChannelOwnerId || 
+            currentUserId.toString() === postChannelOwnerId.toString());
+    
+    return isCommentOwner || isPostChannelOwner;
   };
   
   const canDelete = checkCanDelete();
@@ -413,6 +423,7 @@ const Comment = ({
                   sectionRefs={sectionRefs}
                   deleteComment={deleteComment}
                   currentUser={currentUser}
+                  postChannelOwner={postChannelOwner}
                 />
             )
           );

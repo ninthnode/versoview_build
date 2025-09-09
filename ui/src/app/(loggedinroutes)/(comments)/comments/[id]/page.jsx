@@ -45,7 +45,8 @@ const Comments = ({
   closeCommentModal,
   postSlug,
   deleteComment,
-  currentUser
+  currentUser,
+  postChannelOwner
 }) => {
 
 
@@ -140,6 +141,7 @@ const Comments = ({
           pageLoading={pageLoading}
           deleteComment={deleteComment}
           currentUser={currentUser}
+          postChannelOwner={postChannelOwner}
         />
       )}
     </Box>

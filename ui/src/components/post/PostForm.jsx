@@ -88,14 +88,14 @@ const PostForm = ({
     const maxSize = 5 * 1024 * 1024;
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
-      if (file.size > maxSize) {
-        setImageSizeError(
-          "File size exceeds the 5MB limit. Select a smaller file."
-        );
-        setUploadedImage("");
-        setCroppedImage("");
-        return;
-      }
+      // if (file.size > maxSize) {
+      //   setImageSizeError(
+      //     "File size exceeds the 5MB limit. Select a smaller file."
+      //   );
+      //   setUploadedImage("");
+      //   setCroppedImage("");
+      //   return;
+      // }
       setImageSizeError("");
       const imageDataUrl = await readFile(file);
       const processedImage = await processImage(imageDataUrl);

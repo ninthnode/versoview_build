@@ -404,6 +404,7 @@ function SinglePost({
                 postSlug={postState.post.slug}
                 deleteComment={deleteComment}
                 currentUser={currentUser}
+                postChannelOwner={postState.user}
               />
               {channelPosts && channelPosts.length > 0 && (
                 <RelatedArticleList channelPosts={channelPosts} />

@@ -41,7 +41,8 @@ const CommentsModal = ({
   postSlug,
   pageLoading,
   deleteComment,
-  currentUser
+  currentUser,
+  postChannelOwner
 }) => {
   const [showReply, setshowReply] = useState("");
   const deviceType = useDeviceType();
@@ -173,6 +174,7 @@ const CommentsModal = ({
                           sectionRefs={sectionRefs}
                           deleteComment={deleteComment}
                           currentUser={currentUser}
+                          postChannelOwner={postChannelOwner}
                         />
                       ))
                     ) : (

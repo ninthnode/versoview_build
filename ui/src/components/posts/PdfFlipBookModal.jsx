@@ -19,7 +19,7 @@ import {
   VStack,
   Divider,
 } from "@chakra-ui/react";
-import { FaExpand, FaCompress, FaSearchPlus, FaSearchMinus, FaUndo } from "react-icons/fa";
+import { FaExpand, FaCompress, FaSearchPlus, FaSearchMinus, FaUndo, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import "./style.css";
 import useDeviceType from "@/components/useDeviceType";
 import {getLibraryImagesForPageTurner} from "../../redux/publish/publishActions";
@@ -272,6 +272,19 @@ if (deviceType === 'phone') {
     }
   };
 
+  // Navigation functions for arrows
+  const handlePrevPage = () => {
+    if (flipBookRef.current) {
+      flipBookRef.current.pageFlip().flipPrev();
+    }
+  };
+
+  const handleNextPage = () => {
+    if (flipBookRef.current) {
+      flipBookRef.current.pageFlip().flipNext();
+    }
+  };
+
 
   const toggleFullScreen = () => {
     if (!isFullScreen) {
@@ -484,7 +497,7 @@ if (deviceType === 'phone') {
                     {title}sdds
                   </Text>
                   <HStack spacing={2}>
-                    {/* <Tooltip label={isFullScreen ? "Exit Full Screen" : "Full Screen"}>
+                    {/* <Tooltip label={isFullScreen ? "Exit Full Screen" : "Full Screen"}> */}
                       <IconButton
                         icon={isFullScreen ? <FaCompress /> : <FaExpand />}
                         onClick={toggleFullScreen}
@@ -492,7 +505,7 @@ if (deviceType === 'phone') {
                         size="sm"
                         aria-label={isFullScreen ? "Exit Full Screen" : "Full Screen"}
                       />
-                    </Tooltip> */}
+                    {/* </Tooltip> */}
                     
                     <Tooltip label="Close">
                       <IconButton
@@ -608,7 +621,7 @@ if (deviceType === 'phone') {
                 
                 <Divider orientation="vertical" h="2rem" />
                 
-                {/* <Tooltip label={isFullScreen ? "Exit Full Screen" : "Full Screen"}>
+                {/* <Tooltip label={isFullScreen ? "Exit Full Screen" : "Full Screen"}> */}
                   <IconButton
                     icon={isFullScreen ? <FaCompress /> : <FaExpand />}
                     onClick={toggleFullScreen}
@@ -616,7 +629,7 @@ if (deviceType === 'phone') {
                     size="sm"
                     aria-label={isFullScreen ? "Exit Full Screen" : "Full Screen"}
                   />
-                </Tooltip> */}
+                {/* </Tooltip> */}
                 
                 <Tooltip label="Close">
                   <IconButton
@@ -668,6 +681,62 @@ if (deviceType === 'phone') {
                 msUserSelect: 'none'
               }}
             >
+              {/* Navigation Arrows - Only show on desktop when pan mode is active */}
+              {isDesktop && isZoomedIn && (
+                <>
+                  {/* Previous Page Arrow */}
+                  <IconButton
+                    icon={<FaChevronLeft />}
+                    onClick={handlePrevPage}
+                    position="absolute"
+                    left="10px"
+                    top="50%"
+                    transform="translateY(-50%)"
+                    zIndex="10"
+                    size="lg"
+                    variant="solid"
+                    colorScheme="whiteAlpha"
+                    bg="rgba(0, 0, 0, 0.6)"
+                    color="white"
+                    _hover={{
+                      bg: "rgba(0, 0, 0, 0.8)",
+                      transform: "translateY(-50%) scale(1.1)"
+                    }}
+                    _active={{
+                      bg: "rgba(0, 0, 0, 0.9)"
+                    }}
+                    borderRadius="full"
+                    boxShadow="lg"
+                    aria-label="Previous Page"
+                  />
+                  
+                  {/* Next Page Arrow */}
+                  <IconButton
+                    icon={<FaChevronRight />}
+                    onClick={handleNextPage}
+                    position="absolute"
+                    right="10px"
+                    top="50%"
+                    transform="translateY(-50%)"
+                    zIndex="10"
+                    size="lg"
+                    variant="solid"
+                    colorScheme="whiteAlpha"
+                    bg="rgba(0, 0, 0, 0.6)"
+                    color="white"
+                    _hover={{
+                      bg: "rgba(0, 0, 0, 0.8)",
+                      transform: "translateY(-50%) scale(1.1)"
+                    }}
+                    _active={{
+                      bg: "rgba(0, 0, 0, 0.9)"
+                    }}
+                    borderRadius="full"
+                    boxShadow="lg"
+                    aria-label="Next Page"
+                  />
+                </>
+              )}
 
               <Box
                 transform={`scale(${zoomLevel}) translate(${panOffset.x / zoomLevel}px, ${panOffset.y / zoomLevel}px)`}
