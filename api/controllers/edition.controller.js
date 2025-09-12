@@ -5,8 +5,139 @@ const { Channel } = require("../models/channel.model");
 const { Bookmark } = require("../models/bookmark.model");
 const { LibraryImage } = require("../models/libraryImage.model");
 const { PostImages } = require("../models/postImages.model");
+const { processPdfForEdition } = require("../services/pdfProcessingService.simple");
+const { sendCompletion, sendError } = require("./sse.controller");
+const crypto = require("crypto");
 const e = require("express");
 
+// New streamlined create-edition endpoint with SSE
+module.exports.createEditionSSE = asyncHandler(async (req, res) => {
+  try {
+    // Check if file is uploaded
+    if (!req.file) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "PDF file is required" 
+      });
+    }
+
+    const { about, edition, date, genre, subGenre } = req.body;
+    const userId = req.user._id;
+    const pdfBuffer = req.file.buffer;
+
+    // Validate required fields
+    if (!about || !date || !genre) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required fields: about, date, or genre"
+      });
+    }
+
+    // Generate unique session ID
+    const sessionId = crypto.randomUUID();
+
+    // Parse and validate data
+    let parsedGenre, parsedSubGenre;
+    try {
+      parsedGenre = typeof genre === 'string' ? JSON.parse(genre) : genre;
+      parsedSubGenre = subGenre ? (typeof subGenre === 'string' ? JSON.parse(subGenre) : subGenre) : [];
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid genre or subGenre format"
+      });
+    }
+
+    // Prepare edition data
+    const editionData = {
+      userId: userId,
+      editionText: edition || "",
+      editionDescription: about,
+      editionDate: date,
+      genre: Array.isArray(parsedGenre) ? parsedGenre : [parsedGenre],
+      subGenre: Array.isArray(parsedSubGenre) ? parsedSubGenre : [],
+      size: parseFloat((pdfBuffer.length / (1024 * 1024)).toFixed(2)), // Size in MB as number
+    };
+
+    // Start background processing (don't await)
+    processEditionInBackground(pdfBuffer, editionData, sessionId);
+
+    // Return session ID immediately
+    res.json({
+      success: true,
+      sessionId: sessionId,
+      message: "PDF processing started. Connect to SSE for progress updates."
+    });
+
+  } catch (error) {
+    console.error("Error starting edition processing:", error);
+    res.status(500).json({ 
+      success: false, 
+      error: "Internal Server Error" 
+    });
+  }
+});
+
+// Background processing function
+const processEditionInBackground = async (pdfBuffer, editionData, sessionId) => {
+  try {
+    // Process PDF with SSE updates
+    const processedData = await processPdfForEdition(pdfBuffer, editionData, sessionId);
+    
+    // Prepare edition data matching the model schema
+    const editionDataForSave = {
+      userId: processedData.userId,
+      editionText: processedData.editionText,
+      editionDescription: processedData.editionDescription,
+      editionDate: processedData.editionDate,
+      pdfUrls: processedData.pdfUrls || [],
+      uploadImages: processedData.libraryImages || [],
+      mergedImages: processedData.mergedImages || [],
+      genre: processedData.genre || [],
+      subGenre: processedData.subGenre || [],
+      size: processedData.size,
+      postId: []
+    };
+    
+    // Create and save the edition
+    const newEdition = new Edition(editionDataForSave);
+    await newEdition.save();
+    
+    // Save library images separately
+    if (processedData.libraryImages && processedData.libraryImages.length > 0) {
+      const sanitizedImages = processedData.libraryImages.map((img) => ({
+        url: img,
+        isDefault: true,
+      }));
+
+      const libraryImageEntry = new LibraryImage({
+        editionId: newEdition._id,
+        userId: processedData.userId,
+        allImages: sanitizedImages,
+        mergedImages: processedData.mergedImages || [],
+      });
+
+      await libraryImageEntry.save();
+    }
+
+    // Send completion message via SSE
+    sendCompletion(sessionId, {
+      progress: 100,
+      message: "Edition created successfully!",
+      editionId: newEdition._id,
+      redirectUrl: "/publish"
+    });
+
+  } catch (error) {
+    console.error(`Error in background processing for session ${sessionId}:`, error);
+    sendError(sessionId, {
+      message: "Error processing PDF: " + error.message,
+      error: error.message
+    });
+  }
+};
+
+// Keep original for backward compatibility
 module.exports.createEdition = asyncHandler(async (req, res) => {
   try {
     const data = req.body;

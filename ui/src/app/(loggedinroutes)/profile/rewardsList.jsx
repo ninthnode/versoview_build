@@ -37,7 +37,7 @@ useEffect(() => {
             </Flex>
             <Flex align="center">
               <Text mr={4}>{reward.points}</Text>
-              <IconButton aria-label="More options" icon={<FiMoreHorizontal />} size="sm" />
+              {/* <IconButton aria-label="More options" icon={<FiMoreHorizontal />} size="sm" /> */}
             </Flex>
           </Flex>
         ))}

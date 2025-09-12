@@ -1615,8 +1615,18 @@ module.exports.deletePostComment = asyncHandler(async (req, res) => {
       return res.status(404).json({ error: "Comment not found" });
     }
     
-    // Check if user has permission to delete (owner or admin)
-    if (commentToDelete.userId._id.toString() !== userId.toString() && req.user.role !== 'admin') {
+    // Find the post to check if current user is the post owner
+    const post = await Post.findById(commentToDelete.postId);
+    if (!post) {
+      return res.status(404).json({ error: "Post not found" });
+    }
+    
+    // Check if user has permission to delete (comment owner, post owner, or admin)
+    const isCommentOwner = commentToDelete.userId._id.toString() === userId.toString();
+    const isPostOwner = post.userId.toString() === userId.toString();
+    const isAdmin = req.user.role === 'admin';
+    
+    if (!isCommentOwner && !isPostOwner && !isAdmin) {
       return res.status(403).json({ error: "You don't have permission to delete this comment" });
     }
     

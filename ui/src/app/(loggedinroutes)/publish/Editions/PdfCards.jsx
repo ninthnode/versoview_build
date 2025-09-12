@@ -114,7 +114,7 @@ const PdfCards = ({ editions, getAllEditions, deletePost, deleteEdition }) => {
                   Add a post from this edition
                 </Button>
               </Flex>
-              <Flex justifyContent="center">
+              {/* <Flex justifyContent="center">
                 <Button
                   aria-label="Add New Post"
                   rightIcon={<MdDelete fontSize="25px" />}
@@ -126,7 +126,7 @@ const PdfCards = ({ editions, getAllEditions, deletePost, deleteEdition }) => {
                 >
                   Delete edition
                 </Button>
-              </Flex>
+              </Flex> */}
               <Accordion allowToggle allowMultiple={false} mt={4}>
                 <AccordionItem key={edition._id}>
                   <AccordionButton>

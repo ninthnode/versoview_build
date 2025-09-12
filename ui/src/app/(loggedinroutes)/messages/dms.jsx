@@ -20,6 +20,7 @@ import useDeviceType from "@/components/useDeviceType";
 import { useRouter } from "next/navigation";
 import { initializeSocket, disconnectSocket } from "../../utils/socket";
 import { useSearchParams } from "next/navigation";
+import { emitNotificationUpdate } from "../../utils/notificationEvents";
 
 const Dms = () => {
   const [selectedUser, setSelectedUser] = useState(null);
@@ -55,6 +56,8 @@ const Dms = () => {
               timestamp: data.timestamp || new Date().toISOString()
             },
           ]);
+          // Mark as read since user is viewing the conversation
+          markMessagesAsRead(data.senderId);
         }
       });
 
@@ -100,6 +103,8 @@ const Dms = () => {
             
             if (foundUser) {
               setSelectedUser(foundUser);
+              // Mark messages as read if user is directly selected via URL
+              await markMessagesAsRead(foundUser._id);
             } else {
               // Fetch user by ID if not in recent chats
               try {
@@ -111,7 +116,10 @@ const Dms = () => {
                     },
                   }
                 );
-                setSelectedUser(userResponse.data.user);
+                const userData = { ...userResponse.data.user, unreadCount: 0 };
+                setSelectedUser(userData);
+                // Mark messages as read if user is directly selected via URL
+                await markMessagesAsRead(paramsUserId);
               } catch (error) {
                 console.error("Error fetching user by ID:", error);
               }
@@ -165,6 +173,27 @@ const Dms = () => {
             setShowChats(true);
           }
           
+          // Fetching messages also marks them as read, so we should update the notification count
+          // Let's fetch the updated count and emit the event
+          try {
+            const token = localStorage.getItem("token")?.replaceAll('"', "");
+            if (token) {
+              const countResponse = await axios.get(
+                `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/messages/unread/${authState.id}`,
+                {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                  },
+                }
+              );
+              const newCount = countResponse.data.unreadCount || 0;
+              console.log("DMs: After fetching messages, new unread count:", newCount);
+              emitNotificationUpdate(newCount);
+            }
+          } catch (error) {
+            console.error("Error fetching updated count after message fetch:", error);
+          }
+          
           // Scroll to bottom after messages are loaded and rendered
           setTimeout(() => {
             if (messagesEndRef.current) {
@@ -186,14 +215,54 @@ const Dms = () => {
     fetchMessages();
   }, [selectedUser, authState?.id, deviceType]);
 
-  const handleClick = (user) => {
+  const markMessagesAsRead = async (otherUserId) => {
+    try {
+      console.log("DMs: Marking messages as read for user:", otherUserId);
+      const token = localStorage.getItem("token")?.replaceAll('"', "");
+      if (!token || !authState?.id) {
+        console.log("DMs: No token or authState, skipping mark as read");
+        return;
+      }
+
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/messages/mark-read`,
+        {
+          userId: authState.id,
+          otherUserId: otherUserId
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          },
+        }
+      );
+
+      console.log("DMs: Mark as read response:", response.data);
+      
+      // Emit custom event to update notification count in other components
+      if (response.data.success && response.data.unreadCount !== undefined) {
+        console.log("DMs: Emitting notification update:", response.data.unreadCount);
+        emitNotificationUpdate(response.data.unreadCount);
+      }
+      
+      // The server will also emit the updated count via socket
+    } catch (error) {
+      console.error("Error marking messages as read:", error);
+    }
+  };
+
+  const handleClick = async (user) => {
     if (selectedUser?._id !== user._id) {
-      // Reset unread count
+      // Update selected user with reset unread count locally
       const updatedUser = { ...user, unreadCount: 0 };
       setSelectedUser(updatedUser);
       setSearch("");
       setMessages([]); // Clear previous messages
   
+      // Mark messages as read on server
+      await markMessagesAsRead(user._id);
+
       // Update URL
       const params = new URLSearchParams(window.location.search);
       params.set("id", user._id);

@@ -28,6 +28,32 @@ import MobilePdfViewer from "./MobilePdfViewer";
 
 const PdfFlipBookModal = ({ title,editionId }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  
+  const handleClose = () => {
+    if (isFullScreen) {
+      if (document.exitFullscreen) {
+        document.exitFullscreen()
+          .then(() => onClose())
+          .catch(err => {
+            console.error("Error attempting to exit full-screen mode:", err);
+            onClose();
+          });
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+        setTimeout(() => onClose(), 100);
+      } else if (document.mozCancelFullScreen) {
+        document.mozCancelFullScreen();
+        setTimeout(() => onClose(), 100);
+      } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
+        setTimeout(() => onClose(), 100);
+      } else {
+        onClose();
+      }
+    } else {
+      onClose();
+    }
+  };
   const deviceType = useDeviceType();
   
   // Enhanced mobile detection including landscape mode
@@ -450,7 +476,7 @@ if (deviceType === 'phone') {
       {isMobileDevice() ? (
         <MobilePdfViewer
           isOpen={isOpen}
-          onClose={onClose}
+          onClose={handleClose}
           title={title}
           libraryImages={libraryImages}
         />
@@ -458,7 +484,7 @@ if (deviceType === 'phone') {
         /* Desktop PDF Viewer */
         <Modal 
         isOpen={isOpen} 
-        onClose={onClose} 
+        onClose={handleClose} 
         size={modalSize}
         motionPreset="slideInBottom"
         scrollBehavior="inside"
@@ -510,7 +536,7 @@ if (deviceType === 'phone') {
                     <Tooltip label="Close">
                       <IconButton
                         icon={<Text fontSize="md">✖</Text>}
-                        onClick={onClose}
+                        onClick={handleClose}
                         variant="ghost"
                         size="sm"
                         aria-label="Close PDF Viewer"
@@ -634,7 +660,7 @@ if (deviceType === 'phone') {
                 <Tooltip label="Close">
                   <IconButton
                     icon={<Text fontSize="md">✖</Text>}
-                    onClick={onClose}
+                    onClick={handleClose}
                     variant="ghost"
                     size="sm"
                     aria-label="Close PDF Viewer"

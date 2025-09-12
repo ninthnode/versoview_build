@@ -10,6 +10,7 @@ const { sendMail } = require("../config/nodemailer");
 const { OAuth2Client } = require("google-auth-library");
 const axios = require("axios");
 const mongoose = require('mongoose');
+const { ObjectId } = mongoose.Types;
 
 const {
   generateToken,
@@ -132,7 +133,7 @@ module.exports.signUp = asyncHandler(async (req, res) => {
   const hardcodedChannelId = process.env.ADMIN_CHANNEL_ID;
   const followChannel = new Follow({
     userId:user._id,
-    channelId:hardcodedChannelId,
+    channelId:new ObjectId(hardcodedChannelId),
     status:'active',
   });
   await followChannel.save();

@@ -2,9 +2,11 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Image, Box, Text } from "@chakra-ui/react";
 import { initializeSocket, disconnectSocket } from "../../app/utils/socket";
+import { listenToNotificationUpdates } from "../../app/utils/notificationEvents";
 
 const ChatNotification = ({ userId }) => {
   const [unreadCount, setUnreadCount] = useState(0);
+  const [lastUpdated, setLastUpdated] = useState(Date.now());
 
   const fetchUnreadMessageCount = async () => {
     try {
@@ -26,31 +28,74 @@ const ChatNotification = ({ userId }) => {
     }
   };
 
+  // Fetch count on mount and setup socket
   useEffect(() => {
     if (!userId) return;
 
     const fetchCountAndSetupSocket = async () => {
       const count = await fetchUnreadMessageCount();
+      console.log("ChatNotification: Initial count fetched:", count);
       setUnreadCount(count);
 
       const socket = initializeSocket(userId);
       
-      socket.on("unreadCount", (count) => {
+      const handleUnreadCountUpdate = (count) => {
+        console.log("ChatNotification: Received unreadCount update:", count);
         setUnreadCount(count || 0);
-      });
+        setLastUpdated(Date.now());
+      };
 
-      // Listen for new messages to update count
-      socket.on("dm", () => {
-        fetchUnreadMessageCount().then(setUnreadCount);
-      });
+      const handleNewMessage = async () => {
+        console.log("ChatNotification: Received new DM, fetching updated count");
+        const count = await fetchUnreadMessageCount();
+        console.log("ChatNotification: Updated count after new DM:", count);
+        setUnreadCount(count);
+        setLastUpdated(Date.now());
+      };
+
+      // Remove any existing listeners for this component
+      socket.off("unreadCount", handleUnreadCountUpdate);
+      socket.off("dm", handleNewMessage);
+      
+      // Add new listeners
+      socket.on("unreadCount", handleUnreadCountUpdate);
+      socket.on("dm", handleNewMessage);
+
+      // Cleanup function
+      return () => {
+        socket.off("unreadCount", handleUnreadCountUpdate);
+        socket.off("dm", handleNewMessage);
+      };
     };
 
-    fetchCountAndSetupSocket();
-
-    return () => {
-      disconnectSocket();
-    };
+    const cleanup = fetchCountAndSetupSocket();
+    return cleanup;
   }, [userId]);
+
+  // Listen to custom window events for notification updates
+  useEffect(() => {
+    const cleanup = listenToNotificationUpdates((count) => {
+      console.log("ChatNotification: Received custom event update:", count);
+      setUnreadCount(count);
+    });
+
+    return cleanup;
+  }, []);
+
+  // Backup polling mechanism - fetch count every 30 seconds
+  useEffect(() => {
+    if (!userId) return;
+
+    const interval = setInterval(async () => {
+      const count = await fetchUnreadMessageCount();
+      if (count !== unreadCount) {
+        console.log("ChatNotification: Polling detected count change:", count);
+        setUnreadCount(count);
+      }
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [userId, unreadCount]);
 
   return (
     <Box pos="relative">

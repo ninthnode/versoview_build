@@ -21,6 +21,11 @@ const path = require("path");
 const { exec } = require("node:child_process");
 const Message = require("./models/message.model");
 const morgan = require("morgan");
+const {
+    getUnreadMessageCount,
+    getRecentChats,
+    saveMessage
+} = require("./controllers/message.controller");
 const limiter = rateLimit({
 	windowMs: 30 * 1000, // 30 seconds
 	max: 10000, // Limit each IP to 100 requests per `window` (here, per 30 seconds)
@@ -61,86 +66,42 @@ const io = new Server(server, {
 
 const users = {};
 
+// Make io and users available to routes
+app.set('io', io);
+app.set('connectedUsers', users);
+
 io.on("connection", (socket) => {
 	socket.on("register", (userId) => {
 		users[userId] = socket.id;
 		console.log("User registered:", userId);
 	});
 
+
 	socket.on("private_message", async ({ senderId, receiverId, message }) => {
 		const receiverSocketId = users[receiverId];
 
 		try {
-			let conversation = await Message.findOne({
-				participants: { $all: [senderId, receiverId] },
-			});
-			if (conversation) {
-				conversation.messages.push({ senderId,receiverId, message });
-			} else {
-				conversation = new Message({
-					participants: [senderId, receiverId],
-					messages: [{ senderId,receiverId, message }],
-				});
-			}
-
-			await conversation.save();
+			await saveMessage(senderId, receiverId, message);
 
 			const receiverSocketId = users[receiverId];
 			const senderSocketId = users[senderId];
 
-			const chats = await Message.find({
-				participants: receiverId,
-			  }).sort({ "messages.timestamp": -1 });
-		
-			  const recentChats = await Promise.all(
-				chats.map(async (chat) => {
-				
-				  // Get details of other participants
-				  const otherParticipantId = chat.participants.find((id) => id !== receiverId);
-				  const otherParticipant = await User.findOne({ _id: otherParticipantId });
-		  
-				  // Count unread messages for the user
-				  const unreadCount = chat.messages.filter(
-					(message) => message.receiverId == receiverId && !message.read
-				  ).length;
-		  
-				 // Create a new object with unreadCount appended to user details
-				 const participantWithUnreadCount = {
-				  ...otherParticipant.toObject(), // Convert Mongoose document to plain object
-				  unreadCount, // Add unread count property
-				};
-		
-				return participantWithUnreadCount;
-				})
-			  );
-			const senderchats = await Message.find({
-				participants: senderId,
-			  }).sort({ "messages.timestamp": -1 });
-		
-			  const senderRecentChats = await Promise.all(
-				senderchats.map(async (chat) => {
-				
-				  // Get details of other participants
-				  const otherParticipantId = chat.participants.find((id) => id !== senderId);
-				  const otherParticipant = await User.findOne({ _id: otherParticipantId });
+			// Get recent chats for receiver
+			const recentChats = await getRecentChats(receiverId);
+			
+			// Get recent chats for sender (without unread counts)
+			const senderRecentChats = await getRecentChats(senderId);
 
-				  const participantWithUnreadCount = {
-				  ...otherParticipant.toObject(), // Convert Mongoose document to plain object
-				};
-		
-				return participantWithUnreadCount;
-				})
-			  );
-
-			  if(senderSocketId){
-				  io.to(senderSocketId).emit("recentChats", senderRecentChats);
-
-			  }
-			  if (receiverSocketId) {
+			// Update sender's recent chats
+			if(senderSocketId){
+				io.to(senderSocketId).emit("recentChats", senderRecentChats);
+			}
+			
+			// Update receiver's notifications and recent chats
+			if (receiverSocketId) {
 				const unreadCount = await getUnreadMessageCount(receiverId);
-
-				  io.to(receiverSocketId).emit("unreadCount", unreadCount);
-				  io.to(receiverSocketId).emit("recentChats", recentChats);
+				io.to(receiverSocketId).emit("unreadCount", unreadCount);
+				io.to(receiverSocketId).emit("recentChats", recentChats);
 			} else {
 				console.log("Receiver is not connected:", receiverId);
 			}
@@ -154,33 +115,12 @@ io.on("connection", (socket) => {
 		}
 	});
 	socket.on("recentChats", async (userId) => {
-		const chats = await Message.find({
-			participants: userId,
-		  }).sort({ "messages.timestamp": -1 });
-	
-		  const recentChats = await Promise.all(
-			chats.map(async (chat) => {
-			  const lastMessage = chat.messages[chat.messages.length - 1];
-	  
-			  // Get details of other participants
-			  const otherParticipantId = chat.participants.find((id) => id !== userId);
-			  const otherParticipant = await User.findOne({ _id: otherParticipantId });
-	  
-			  // Count unread messages for the user
-			  const unreadCount = chat.messages.filter(
-				(message) => message.senderId !== userId && !message.read
-			  ).length;
-	  
-			 // Create a new object with unreadCount appended to user details
-			 const participantWithUnreadCount = {
-			  ...otherParticipant.toObject(), // Convert Mongoose document to plain object
-			  unreadCount, // Add unread count property
-			};
-	
-			return participantWithUnreadCount;
-			})
-		  );
-		  socket.emit("recentChats", recentChats);
+		try {
+			const recentChats = await getRecentChats(userId);
+			socket.emit("recentChats", recentChats);
+		} catch (error) {
+			console.error("Error fetching recent chats:", error);
+		}
 	});
 	socket.on("disconnect", () => {
 		for (const userId in users) {
@@ -192,22 +132,6 @@ io.on("connection", (socket) => {
 		console.log("User disconnected:", socket.id);
 	});
 });
-const getUnreadMessageCount = async (userId) => {
-    const conversations = await Message.aggregate([
-        { $match: { participants: userId } },
-        { $unwind: "$messages" },
-        {
-            $match: {
-                "messages.read": false,        // Unread messages
-                "messages.receiverId": userId // Ensure the user is the receiver
-            }
-        },
-
-        { $group: { _id: null, count: { $sum: 1 } } }
-    ]);
-
-    return conversations[0]?.count || 0;
-};
 
 // app.use(express.json());
 // app.use(express.urlencoded({ extended: false }));
