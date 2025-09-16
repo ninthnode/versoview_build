@@ -31,6 +31,7 @@ import {
   unfollowChannel,
   getAllPinnedChannels
 } from "@/redux/channel/channelActions";
+import { useUnreadCount } from "@/contexts/UnreadCountContext";
 
 const pinChannel = (id) =>
   get(`channel/pinChannel/${id}`, true, { method: "PUT" }).then((r) => r.data);
@@ -49,59 +50,54 @@ const options = {
 // New component to handle individual following item with unread logic
 const FollowingItem = ({ following, user, handlePinUnpin, handleUnFollowChannel }) => {
   const authState = useSelector((s) => s.auth?.user?.user);
-  const [unread, setUnread] = useState(0);
+  const { fetchUnreadCount, setAsRead, getUnreadCount, removeChannel } = useUnreadCount();
   const [isLoading, setIsLoading] = useState(true);
 
-  const getUnread = async () => {
-    try {
-      const response = await get(`post/getAllUnreadPost/${following._id}`);
-      console.log('Unread response for following:', following.channelName, response.data?.length || 0);
-      return response.data?.length || 0;
-    } catch (error) {
-      console.error('Error fetching unread count:', error);
-      return 0;
-    }
-  };
-
-  const setReadPost = async () => {
-    try {
-      const response = await get(`post/setReadPost/${following._id}`);
-      console.log('Set read response:', response);
-      return response;
-    } catch (error) {
-      console.error('Error setting post as read:', error);
-      return null;
-    }
-  };
+  const unread = getUnreadCount(following._id);
 
   useEffect(() => {
-    const fetchUnread = async () => {
+    let isMounted = true;
+
+    const initializeUnread = async () => {
       if (authState && following._id) {
         setIsLoading(true);
-        const count = await getUnread();
-        console.log('Fetched unread count for:', following.channelName, count);
-        setUnread(count);
-        setIsLoading(false);
+        try {
+          await fetchUnreadCount(following._id);
+        } catch (error) {
+          console.error('Error initializing unread count:', error);
+        } finally {
+          if (isMounted) {
+            setIsLoading(false);
+          }
+        }
       } else {
-        setIsLoading(false);
-        setUnread(0);
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     };
 
-    fetchUnread();
-  }, [following._id, authState]);
+    initializeUnread();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [following._id, authState, fetchUnreadCount]);
 
   const handleClick = async () => {
     if (!authState) return;
-    
+
     try {
-      await setReadPost();
-      // Refresh unread count after marking as read
-      const newCount = await getUnread();
-      setUnread(newCount);
+      await setAsRead(following._id);
     } catch (error) {
       console.error('Error handling click:', error);
     }
+  };
+
+  const handleUnfollowClick = async (channelId) => {
+    // Remove from unread context when unfollowing
+    removeChannel(channelId);
+    handleUnFollowChannel(channelId);
   };
 
   return (
@@ -183,7 +179,7 @@ const FollowingItem = ({ following, user, handlePinUnpin, handleUnFollowChannel 
       </Flex>
       <ListDropdown
         channelId={following._id}
-        handleUnFollowChannel={handleUnFollowChannel}
+        handleUnFollowChannel={handleUnfollowClick}
       />
     </Flex>
   );

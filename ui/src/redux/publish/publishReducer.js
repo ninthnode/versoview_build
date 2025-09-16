@@ -1,4 +1,3 @@
-import { steps } from 'framer-motion';
 import {
     CREATE_EDITION_REQUEST,
     CREATE_EDITION_SUCCESS,

@@ -7,59 +7,49 @@ import get from "@/app/utils/get";
 import { useSelector,useDispatch } from "react-redux";
 import AvatarShimmer from "../../../components/posts/AvatarShimmer";
 import {getAllPinnedChannels} from "@/redux/channel/channelActions";
+import { useUnreadCount } from "@/contexts/UnreadCountContext";
 
 const StatusItem = ({ status }) => {
   const authState = useSelector((s) => s.auth?.user?.user);
-  const [unread, setUnread] = useState(0); // Initialize with 0 instead of null
+  const { fetchUnreadCount, setAsRead, getUnreadCount } = useUnreadCount();
   const [isLoading, setIsLoading] = useState(true);
 
-  const getUnread = async () => {
-    try {
-      const response = await get(`post/getAllUnreadPost/${status._id}`);
-      console.log('Unread response:', status); // Debug log
-      return response.data?.length || 0;
-    } catch (error) {
-      console.error('Error fetching unread count:', error); // Better error handling
-      return 0;
-    }
-  };
-
-  const setReadPost = async () => {
-    try {
-      const response = await get(`post/setReadPost/${status._id}`);
-      console.log('Set read response:', response); // Debug log
-      return response;
-    } catch (error) {
-      console.error('Error setting post as read:', error);
-      return null;
-    }
-  };
+  const unread = getUnreadCount(status._id);
 
   useEffect(() => {
-    const fetchUnread = async () => {
+    let isMounted = true;
+
+    const initializeUnread = async () => {
       if (authState && status._id) {
         setIsLoading(true);
-        const count = await getUnread();
-        console.log('Fetched unread count:', count); // Debug log
-        setUnread(count);
-        setIsLoading(false);
+        try {
+          await fetchUnreadCount(status._id);
+        } catch (error) {
+          console.error('Error initializing unread count:', error);
+        } finally {
+          if (isMounted) {
+            setIsLoading(false);
+          }
+        }
       } else {
-        setIsLoading(false);
-        setUnread(0);
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     };
 
-    fetchUnread();
-  }, [status._id, authState]); // Added authState as dependency
+    initializeUnread();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [status._id, authState, fetchUnreadCount]);
 
   const handleClick = async () => {
     if (!authState) return;
-    
+
     try {
-      await setReadPost();
-      // Refresh unread count after marking as read
-      const newCount = await getUnread();
-      setUnread(newCount);
+      await setAsRead(status._id);
     } catch (error) {
       console.error('Error handling click:', error);
     }

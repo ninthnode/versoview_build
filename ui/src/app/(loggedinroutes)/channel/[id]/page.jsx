@@ -18,6 +18,7 @@ import {
 } from "@/redux/navbar/action";
 import { setNavTitle } from "@/redux/navbar/action";
 import { addRemoveBookmarks } from "@/redux/bookmarks/bookmarkAction";
+import { useUnreadCount } from "@/contexts/UnreadCountContext";
 
 
 const Page = ({
@@ -41,6 +42,7 @@ const Page = ({
   clearTitle
 }) => {
   const { id } = params;
+  const { setAsRead } = useUnreadCount();
 
   const [postList, setPostList] = useState([]);
   const [editionList, setEditionList] = useState([]);
@@ -69,14 +71,19 @@ const Page = ({
       fetchFollowers(channelData._id);
       setNavTitle(
         channelData.channelName,
-        channelData.channelIconImageUrl 
+        channelData.channelIconImageUrl
       );
       // if(view==options.posts)
         fetchPosts(channelData._id);
       // if(view==options.editions)
         getEditionsByUserID(channelData.userId._id);
+
+      // Mark posts as read when channel is opened
+      if (user && channelData._id) {
+        setAsRead(channelData._id);
+      }
     }
-  }, [channelData,user,view]);
+  }, [channelData,user,view,setAsRead]);
 
   const submitBookmarkPost = async (type, postId) => {
     const res = await addRemoveBookmarks(type, postId);

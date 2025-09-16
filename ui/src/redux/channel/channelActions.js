@@ -104,6 +104,7 @@ export const followChannel = (channelId) => async (dispatch) => {
     );
     dispatch(fetchFollowers(channelId));
     dispatch(fetchfollowChannelList()); // Update sidebar followings list
+    dispatch(getAllPinnedChannels()); // Update StatusSlider pinned channels
     dispatch({ type: FOLLOW_CHANNEL_SUCCESS, payload: channelId });
   } catch (error) {
     dispatch({ type: FOLLOW_CHANNEL_FAILURE, error });
@@ -125,6 +126,7 @@ export const unfollowChannel = (channelId) => async (dispatch) => {
     );
     dispatch(fetchFollowers(channelId));
     dispatch(fetchfollowChannelList()); // Update sidebar followings list
+    dispatch(getAllPinnedChannels()); // Update StatusSlider pinned channels
     dispatch({ type: UNFOLLOW_CHANNEL_SUCCESS, payload: channelId });
   } catch (error) {
     dispatch({ type: UNFOLLOW_CHANNEL_FAILURE, error });

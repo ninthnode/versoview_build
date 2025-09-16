@@ -90,7 +90,11 @@ function RightSidebar({
     window.addEventListener("scroll", handleScroll);
 
     return () => {
-      window.removeEventListener("scroll", handleScroll);
+      try {
+        window.removeEventListener("scroll", handleScroll);
+      } catch (error) {
+        console.error("Error removing scroll event listener:", error);
+      }
     };
   }, [ShowSidebarIf]); // Add ShowSidebarIf as dependency
 

@@ -1,5 +1,4 @@
 import { border } from "@chakra-ui/react";
-import { color } from "framer-motion";
 
 export const TagStyles = {
     baseStyle: {
