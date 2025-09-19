@@ -212,3 +212,43 @@ export const getAllPinnedChannels = () => {
     } catch (error) {}
   };
 };
+
+export const suspendChannel = (channelId) => async (dispatch) => {
+  try {
+    const response = await axios.put(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/channel/suspendChannel/${channelId}`,
+      {},
+      {
+        headers: {
+          authorization: `Bearer ${localStorage
+            .getItem("token")
+            .replace(/"/g, "")}`,
+        },
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const reactivateChannel = (channelId) => async (dispatch) => {
+  try {
+    const response = await axios.put(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/channel/reactivateChannel/${channelId}`,
+      {},
+      {
+        headers: {
+          authorization: `Bearer ${localStorage
+            .getItem("token")
+            .replace(/"/g, "")}`,
+        },
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};

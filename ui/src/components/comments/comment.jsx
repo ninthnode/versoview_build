@@ -170,7 +170,7 @@ const Comment = ({
             fontSize="25px"
             icon={<FiMoreHorizontal />}
           /> */}
-          {canDelete && (
+          {canDelete &&!link && (
             <IconButton
               variant="ghost"
               color="red.500"

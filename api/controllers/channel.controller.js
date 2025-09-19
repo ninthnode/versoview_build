@@ -81,24 +81,32 @@ module.exports.getAllChannel = asyncHandler(async (req, res) => {
   
 	  let channelData = await Channel.find({
 		_id: { $in: followedChannelIds },
+		status: { $ne: 'suspended' } // Filter out suspended channels at query level
 	  });
-	  channelData = followedChannelIds.map((id) => channelData.find((channel) => channel._id.equals(id)));
-  
-	  const userChannel = await Channel.find({ userId: userId });
+	  channelData = followedChannelIds.map((id) => channelData.find((channel) => channel._id.equals(id))).filter(channel => channel !== undefined);
+
+	  const userChannel = await Channel.find({
+		userId: userId,
+		status: { $ne: 'suspended' } // Filter out suspended channels at query level
+	  });
+
 	  let combinedChannel = [...userChannel, ...channelData];
-  
+
 	  const uniqueChannels = Array.from(
 		new Map(combinedChannel.map((channel) => [channel._id.toString(), channel])).values()
 	  );
   
 	  // Ensure the hardcoded channel is at the top
-	  const hardcodedChannel = uniqueChannels.find((channel) =>
-		channel._id.equals(hardcodedChannelId)
-	  );
-	  const otherChannels = uniqueChannels.filter(
-		(channel) => !channel._id.equals(hardcodedChannelId)
-	  );
-	  const sortedChannels = hardcodedChannel ? [hardcodedChannel, ...otherChannels] : uniqueChannels;
+	  let sortedChannels = uniqueChannels;
+	  if (hardcodedChannelId) {
+		const hardcodedChannel = uniqueChannels.find((channel) =>
+		  channel._id.equals(hardcodedChannelId)
+		);
+		const otherChannels = uniqueChannels.filter(
+		  (channel) => !channel._id.equals(hardcodedChannelId)
+		);
+		sortedChannels = hardcodedChannel ? [hardcodedChannel, ...otherChannels] : uniqueChannels;
+	  }
   
 	  res.status(200).json({ message: "Success", data: sortedChannels });
 	} catch (error) {
@@ -222,7 +230,7 @@ module.exports.deleteChannel = asyncHandler(async (req, res) => {
 			return res.status(404).json({ error: "Channel not found" });
 		}
 
-		await channelToDelete.remove();
+		await channelToDelete.deleteOne();
 
 		res
 			.status(200)
@@ -264,12 +272,16 @@ module.exports.followChannelList = asyncHandler(async (req, res) => {
 				path: "userId",
 				model: "User",
 			},
-		})
-		
+		});
+
+		// Filter out follows of suspended channels
+		const activeChannelData = channelData.filter(follow =>
+			follow.channelId && follow.channelId.status !== 'suspended'
+		);
 
 		return res
 			.status(200)
-			.json({ status: 200, message: "Success", data: channelData });
+			.json({ status: 200, message: "Success", data: activeChannelData });
 	} catch (error) {
 		console.error(error);
 		return res.status(500).json({ error: "Internal Server Error" });
@@ -432,10 +444,94 @@ module.exports.getChannelByEditionId = asyncHandler(async (req, res) => {
         console.log(`edition not found for ID: ${editionId}`);
         return res.status(404).json({ message: "edition not found" });
       }
-  
+
       res.status(200).json({ message: "Success", data: {channelData,editionData} });
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Internal Server Error" });
     }
   });
+
+// Suspend Channel (Admin only)
+module.exports.suspendChannel = asyncHandler(async (req, res) => {
+	try {
+		const adminUserId = process.env.ADMIN_USER_ID;
+		const currentUserId = req.user._id.toString();
+
+		// Check if current user is admin
+		if (currentUserId !== adminUserId) {
+			return res.status(403).json({
+				status: 403,
+				message: "Access denied. Admin privileges required."
+			});
+		}
+
+		const channelId = req.params._id;
+		const channelData = await Channel.findOne({ _id: channelId });
+
+		if (!channelData) {
+			return res.status(404).json({
+				status: 404,
+				message: "Channel not found"
+			});
+		}
+
+		// Update channel status to suspended
+		const updatedChannel = await Channel.findByIdAndUpdate(
+			channelId,
+			{ status: "suspended" },
+			{ new: true }
+		);
+
+		res.status(200).json({
+			status: 200,
+			message: "Channel suspended successfully",
+			data: updatedChannel,
+		});
+	} catch (error) {
+		console.error(error);
+		res.status(500).json({ error: "Internal Server Error" });
+	}
+});
+
+// Reactivate Channel (Admin only)
+module.exports.reactivateChannel = asyncHandler(async (req, res) => {
+	try {
+		const adminUserId = process.env.ADMIN_USER_ID;
+		const currentUserId = req.user._id.toString();
+
+		// Check if current user is admin
+		if (currentUserId !== adminUserId) {
+			return res.status(403).json({
+				status: 403,
+				message: "Access denied. Admin privileges required."
+			});
+		}
+
+		const channelId = req.params._id;
+		const channelData = await Channel.findOne({ _id: channelId });
+
+		if (!channelData) {
+			return res.status(404).json({
+				status: 404,
+				message: "Channel not found"
+			});
+		}
+
+		// Update channel status to active
+		const updatedChannel = await Channel.findByIdAndUpdate(
+			channelId,
+			{ status: "active" },
+			{ new: true }
+		);
+
+		res.status(200).json({
+			status: 200,
+			message: "Channel reactivated successfully",
+			data: updatedChannel,
+		});
+	} catch (error) {
+		console.error(error);
+		res.status(500).json({ error: "Internal Server Error" });
+	}
+});

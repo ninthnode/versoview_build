@@ -206,8 +206,8 @@ function ViewBy({ view, setView, setSortedFollowings }) {
                 key={option}
                 onClick={() => {
                   setView(option);
-                  setSortedFollowings((followings) =>
-                    followings.sort(sortFn(option))
+                  setSortedFollowings((currentFollowings) =>
+                    Array.isArray(currentFollowings) ? currentFollowings.sort(sortFn(option)) : []
                   );
                 }}
               >
@@ -281,12 +281,23 @@ const Following = ({ followings, user, fetchfollowChannelList }) => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if (followings.data) {
+    console.log(followings, "tempList");
+    if (followings && followings.data && Array.isArray(followings.data)) {
       const tempList = followings.data
         .filter((i) => i.channelId)
         .map((i) => ({ ...i.channelId, pinned: i.pinned }))
         .toSorted(sortFn(options.Recent));
       setfollowingsDataSorted(tempList);
+      setFollowingLoading(false);
+    } else if (Array.isArray(followings)) {
+      // Fallback for if followings is passed directly as an array
+      const tempList = followings
+        .filter((i) => i.channelId)
+        .map((i) => ({ ...i.channelId, pinned: i.pinned }))
+        .toSorted(sortFn(options.Recent));
+      setfollowingsDataSorted(tempList);
+      setFollowingLoading(false);
+    } else {
       setFollowingLoading(false);
     }
   }, [followings]);

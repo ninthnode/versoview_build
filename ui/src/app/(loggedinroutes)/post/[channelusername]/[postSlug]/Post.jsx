@@ -139,6 +139,13 @@ function SinglePost({
       },
     });
     highlighter.init();
+
+    // Cleanup function to destroy highlighter on component unmount
+    return () => {
+      if (highlighter && typeof highlighter.destroy === 'function') {
+        highlighter.destroy();
+      }
+    };
   }, []);
 
   useEffect(() => {

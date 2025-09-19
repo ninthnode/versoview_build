@@ -78,48 +78,71 @@ export default function Channel({
   // Extract unique sections from posts
   const uniqueSections = Array.from(new Set(posts.map((post) => post.section)));
 
+  // Check if channel is suspended
+  const isChannelSuspended = channelDetail?.status === 'suspended';
+
   return (
     <Box>
       <Box>
-        <Tabs>
-        <TabList px={2} gap={2} w="100%">
-            <Box
-              display={"flex"}
-              alignItems="flex-end"
-              overflowX="scroll"
-              __css={{
-                "&::-webkit-scrollbar": {
-                  w: "2",
-                  h: "1",
-                },
-                "&::-webkit-scrollbar-track": {
-                  w: "6",
-                },
-                "&::-webkit-scrollbar-thumb": {
-                  borderRadius: "10",
-                  bg: "gray.100",
-                },
-              }}
-              overflowY="hidden"
-            >
-              <Tab pl="0">Latest</Tab>
-              {uniqueSections.map((section) => (
-                <Tab key={section} pl="0" fontSize={"sm"}>
-                  {section}
-                </Tab>
-              ))}
-            </Box>
-          </TabList>
-          <About
-            postsCount={posts?.length}
-            editionsCount={userEditions?.length}
-            followersCount={followers?.length}
-            followingCount={followings?.length}
-            {...channelDetail}
-            isFollowed={isFollowed}
-            isChannelLoading={isChannelLoading}
-          />
-          <TabPanels>
+        <About
+          postsCount={posts?.length}
+          editionsCount={userEditions?.length}
+          followersCount={followers?.length}
+          followingCount={followings?.length}
+          {...channelDetail}
+          isFollowed={isFollowed}
+          isChannelLoading={isChannelLoading}
+        />
+
+        {isChannelSuspended ? (
+          <Box
+            textAlign="center"
+            py={8}
+            px={4}
+            bg="red.50"
+            borderRadius="md"
+            border="1px solid"
+            borderColor="red.200"
+            mt={4}
+          >
+            <Text fontSize="lg" fontWeight="bold" color="red.600" mb={2}>
+              Channel Suspended
+            </Text>
+            <Text color="red.500">
+              This channel has been suspended and its content is no longer available.
+            </Text>
+          </Box>
+        ) : (
+          <Tabs>
+            <TabList px={2} gap={2} w="100%">
+              <Box
+                display={"flex"}
+                alignItems="flex-end"
+                overflowX="scroll"
+                __css={{
+                  "&::-webkit-scrollbar": {
+                    w: "2",
+                    h: "1",
+                  },
+                  "&::-webkit-scrollbar-track": {
+                    w: "6",
+                  },
+                  "&::-webkit-scrollbar-thumb": {
+                    borderRadius: "10",
+                    bg: "gray.100",
+                  },
+                }}
+                overflowY="hidden"
+              >
+                <Tab pl="0">Latest</Tab>
+                {uniqueSections.map((section) => (
+                  <Tab key={section} pl="0" fontSize={"sm"}>
+                    {section}
+                  </Tab>
+                ))}
+              </Box>
+            </TabList>
+            <TabPanels>
             <TabPanel p={0}>
               <Flex mt="3" w="100%" justifyContent="flex-end">
                 <ViewBy view={view} setView={setView} options={options} />
@@ -180,6 +203,7 @@ export default function Channel({
             <TabPanel></TabPanel>
           </TabPanels>
         </Tabs>
+        )}
       </Box>
     </Box>
   );

@@ -563,8 +563,7 @@ useEffect(() => {
           </Box>
           {isExceededLimit && (
             <Text color="red" fontSize="md">
-              You have exceeded the maximum file size of {UploadLimit}MB. Please
-              Upgrade your plan, or delete existing editions.
+              You have exceeded the maximum free account size of {UploadLimit}MB. Please Upgrade your plan.
             </Text>
           )}{" "}
           <Button

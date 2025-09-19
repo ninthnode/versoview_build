@@ -520,7 +520,7 @@ if (deviceType === 'phone') {
                 {/* Title and action buttons row */}
                 <Flex justifyContent="space-between" alignItems="center">
                   <Text fontSize="md" fontWeight="semibold" noOfLines={1}>
-                    {title}sdds
+                    {title}
                   </Text>
                   <HStack spacing={2}>
                     {/* <Tooltip label={isFullScreen ? "Exit Full Screen" : "Full Screen"}> */}
@@ -598,7 +598,7 @@ if (deviceType === 'phone') {
 
             {/* Desktop Layout */}
             <Box display={{ base: "none", md: "flex" }} w="100%" justifyContent="space-between" alignItems="center">
-              <Text fontSize="lg" fontWeight="semibold" noOfLines={1}>
+              <Text fontSize="lg" fontWeight="semibold" noOfLines={1} lineHeight="2.2rem">
                 {title}
               </Text>
               <HStack spacing={4}>

@@ -205,7 +205,14 @@ module.exports.getAllPost = asyncHandler(async (req, res) => {
     const skip = (page - 1) * limit;
     const userData = await User.findOne({ _id: userId });
 
-    const userPosts = await Post.find({ userId: userData._id })
+    // Get active channels first
+    const activeChannels = await Channel.find({ status: { $ne: 'suspended' } });
+    const activeChannelIds = activeChannels.map(channel => channel._id);
+
+    const userPosts = await Post.find({
+      userId: userData._id,
+      channelId: { $in: activeChannelIds }
+    })
       .populate("channelId")
       .populate("editionId");
 
@@ -213,10 +220,14 @@ module.exports.getAllPost = asyncHandler(async (req, res) => {
 
     const userFollows = await Follow.find({ userId }).exec();
 
-    const followedChannelIds = userFollows.map((follow) => follow.channelId);
+    const followedChannelIds = userFollows.map((follow) => follow.channelId)
+      .filter(id => activeChannelIds.some(activeId => activeId.equals(id)));
+
     const postDataGenre = await Post.find({
       section: { $in: genres },
+      channelId: { $in: activeChannelIds }
     }).populate("channelId").populate("editionId");
+
     const postFollowedchannel = await Post.find({
       channelId: { $in: followedChannelIds },
     }).populate("channelId").populate("editionId");
@@ -556,15 +567,25 @@ module.exports.getPostByChannelId = asyncHandler(async (req, res) => {
     const channelId = req.params._id;
     const userId = req.user ? req.user._id : null;
 
-    const postData = await Post.find({ channelId: channelId }).populate("channelId").populate("editionId");
+    // Check if the channel itself is suspended
+    const channel = await Channel.findById(channelId);
+    if (!channel || channel.status === 'suspended') {
+      return res.status(400).json({ message: `Channel is suspended or not found` });
+    }
 
-    if (!postData.length)
+    const postData = await Post.find({ channelId: channelId })
+      .populate("channelId")
+      .populate("editionId");
+
+    const activePosts = postData;
+
+    if (!activePosts.length)
       return res
         .status(400)
         .json({ message: `No Post Found for Channel id ${channelId}` });
 
     const postsWithBookmarkStatus = await Promise.all(
-      postData.map(async (post) => {
+      activePosts.map(async (post) => {
         const comments = await PostComment.find({ postId: post._id });
 
         let isBookmarked = false;
@@ -846,9 +867,14 @@ module.exports.getBookmarkPosts = asyncHandler(async (req, res) => {
         },
       });
 
+    // Filter out bookmarks of posts from suspended channels
+    const activeBookmarks = postBookmarks.filter(bookmark =>
+      bookmark && bookmark.postId && bookmark.postId.channelId && bookmark.postId.channelId.status !== 'suspended'
+    );
+
     return res
       .status(200)
-      .json({ status: 200, message: "Success", data: postBookmarks });
+      .json({ status: 200, message: "Success", data: activeBookmarks });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Internal Server Error" });
@@ -1718,8 +1744,13 @@ module.exports.getRecentlyViewedPosts = async (req, res) => {
     if (!recentlyViewed) {
       return res.status(200).json({ status: 200, data: [] });
     }
+    // Filter out posts from suspended channels
+    const activePosts = recentlyViewed.posts.filter(post =>
+      post && post.channelId && post.channelId.status !== 'suspended'
+    );
+
     const postsWithBookmarkStatus = await Promise.all(
-      recentlyViewed.posts.map(async (post) => {
+      activePosts.map(async (post) => {
         const bookmark = await Bookmark.findOne({ userId, postId: post._id });
         return {
           ...post.toObject(),

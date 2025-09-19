@@ -21,7 +21,20 @@ const Search = () => {
         setIsSearching(true);
         try {
           const { data } = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/search/${category}/${search}`);
-          setSearchResults(data.data || []);
+          const results = data.data || [];
+
+          // Additional frontend filter to exclude suspended channels (as safety measure)
+          const filteredResults = results.filter(result => {
+            if (category === "articles") {
+              return result.channelId && result.channelId.status !== 'suspended';
+            } else if (category === "users") {
+              // Users without active channels should already be filtered by backend
+              return true;
+            }
+            return true;
+          });
+
+          setSearchResults(filteredResults);
         } catch (error) {
           // console.error("Error fetching search results", error);
           setSearchResults([]);

@@ -17,7 +17,9 @@ const {
 	followersList,
 	followingList,
 	doesChannelExist,
-	getChannelByEditionId
+	getChannelByEditionId,
+	suspendChannel,
+	reactivateChannel
 } = require("../../controllers/channel.controller");
 const { protectUser } = require("../../middlewares/authMiddleware");
 const { upload } = require("../../config/multerUpload");
@@ -44,5 +46,7 @@ router.delete("/unfollowChannel/:_id", protectUser, unfollowChannel);
 router.get("/getFollowChannel/:_id", protectUser, getFollowChannel);
 router.put("/pinChannel/:_id", protectUser, pinChannel);
 router.put("/unpinChannel/:_id", protectUser, unpinChannel);
+router.put("/suspendChannel/:_id", protectUser, suspendChannel);
+router.put("/reactivateChannel/:_id", protectUser, reactivateChannel);
 
 module.exports = router;

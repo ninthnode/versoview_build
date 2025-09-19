@@ -25,13 +25,18 @@ module.exports.searchArticles = asyncHandler(async (req, res) => {
 
     const searchedPosts = await Post.find(searchConditions).populate("channelId");
 
-    if (!searchedPosts?.length) {
+    // Filter out posts from suspended channels
+    const filteredPosts = searchedPosts.filter(post =>
+      post.channelId && post.channelId.status !== 'suspended'
+    );
+
+    if (!filteredPosts?.length) {
       return res
         .status(404)
         .json({ status: 404, message: "No articles matched this search" });
     }
 
-    return res.status(200).json({ status: 200, data: searchedPosts });
+    return res.status(200).json({ status: 200, data: filteredPosts });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -56,14 +61,20 @@ module.exports.searchUsers = asyncHandler(async (req, res) => {
     const userIds = searchedUsers.map((user) => user._id);
     
     const channels = await Channel.find({ userId: { $in: userIds } });
-    
-    const userChannelsMap = channels.reduce((acc, channel) => {
+
+    // Filter out suspended channels
+    const activeChannels = channels.filter(channel => channel.status !== 'suspended');
+
+    const userChannelsMap = activeChannels.reduce((acc, channel) => {
       acc[channel.userId] = channel._id;
       return acc;
     }, {});
-    
-    // Step 5: Add the channelId to each searchedUser
-    const searchedUsersWithChannels = searchedUsers.map((user) => {
+
+    // Only include users who have active (non-suspended) channels
+    const filteredUsers = searchedUsers.filter(user => userChannelsMap[user._id]);
+
+    // Add the channelId to each searchedUser
+    const searchedUsersWithChannels = filteredUsers.map((user) => {
       return {
         ...user.toObject(), // Convert mongoose document to plain object
         channelId: userChannelsMap[user._id], // Add the channelId

@@ -6,7 +6,7 @@ import "react-pdf/dist/esm/Page/TextLayer.css";
 import "@/app/(loggedinroutes)/publish/post/pdf.css";
 // Initialize PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
-
+import "./pdf.css";
 const PdfViewer = ({ pdfUrls }) => {
   const [pdfPages, setPdfPages] = useState([]);
   const [numPages, setNumPages] = useState({});
