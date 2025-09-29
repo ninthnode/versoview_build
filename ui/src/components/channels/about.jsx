@@ -261,25 +261,25 @@ const About = ({
             <Flex spacing={8} gap={4} mt={4}>
               <Flex fontSize="sm" flexDirection="column" alignItems="left">
                 <Text fontWeight="bold" lineHeight={1}>
-                  {postsCount}
+                  {postsCount || 0}
                 </Text>
                 <Text fontSize="12px">Posts</Text>
               </Flex>
               <Flex fontSize="sm" flexDirection="column" alignItems="left">
                 <Text fontWeight="bold" lineHeight={1}>
-                  {editionsCount}
+                  {editionsCount || 0}
                 </Text>
                 <Text fontSize="12px">Editions</Text>
               </Flex>
               <Flex fontSize="sm" flexDirection="column" alignItems="left">
                 <Text fontWeight="bold" lineHeight={1}>
-                  {followingCount}
+                  {followingCount || 0}
                 </Text>
                 <Text fontSize="12px">Following</Text>
               </Flex>
               <Flex fontSize="sm" flexDirection="column" alignItems="left">
                 <Text fontWeight="bold" lineHeight={1}>
-                  {followersCount}
+                  {followersCount || 0}
                 </Text>
                 <Text fontSize="12px">Followers</Text>
               </Flex>

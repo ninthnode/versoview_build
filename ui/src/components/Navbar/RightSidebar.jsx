@@ -56,11 +56,20 @@ function RightSidebar({
     sidebarContent.style.transition = "transform 0.3s ease-out";
 
     const handleScroll = () => {
+      // Check if elements still exist during scroll
+      const currentSidebar = document.getElementById("sidebar");
+      const currentSidebarContent = document.getElementById("content_wrapper");
+      const currentMainContainer = document.getElementById("main_container");
+
+      if (!currentSidebar || !currentSidebarContent || !currentMainContainer) {
+        return;
+      }
+
       const scrollTop = window.scrollY;
       const viewportH = window.innerHeight;
-      const contentH = sidebarContent.getBoundingClientRect().height;
-      const mainContainerH = mainContainer.getBoundingClientRect().height;
-      const sidebarTop = sidebar.getBoundingClientRect().top + window.scrollY;
+      const contentH = currentSidebarContent.getBoundingClientRect().height;
+      const mainContainerH = currentMainContainer.getBoundingClientRect().height;
+      const sidebarTop = currentSidebar.getBoundingClientRect().top + window.scrollY;
 
       // Only apply custom scroll behavior if main container is tall enough to require scrolling
       if (mainContainerH > viewportH && contentH < mainContainerH) {
@@ -75,12 +84,12 @@ function RightSidebar({
           offsetRef.current = Math.min(0, offsetRef.current + (lastScrollTopRef.current - scrollTop));
         }
 
-        sidebarContent.style.transform = `translateY(${offsetRef.current}px)`;
-        sidebarContent.style.position = "fixed";
+        currentSidebarContent.style.transform = `translateY(${offsetRef.current}px)`;
+        currentSidebarContent.style.position = "fixed";
       } else {
         // Disable custom functionality - allow normal scroll behavior
-        sidebarContent.style.transform = '';
-        sidebarContent.style.position = '';
+        currentSidebarContent.style.transform = '';
+        currentSidebarContent.style.position = '';
         offsetRef.current = 0;
       }
 
@@ -90,11 +99,7 @@ function RightSidebar({
     window.addEventListener("scroll", handleScroll);
 
     return () => {
-      try {
-        window.removeEventListener("scroll", handleScroll);
-      } catch (error) {
-        console.error("Error removing scroll event listener:", error);
-      }
+      window.removeEventListener("scroll", handleScroll);
     };
   }, [ShowSidebarIf]); // Add ShowSidebarIf as dependency
 

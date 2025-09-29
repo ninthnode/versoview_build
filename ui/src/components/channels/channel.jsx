@@ -75,8 +75,10 @@ export default function Channel({
   userEditions,
   submitBookmarkEdition,
 }) {
-  // Extract unique sections from posts
-  const uniqueSections = Array.from(new Set(posts.map((post) => post.section)));
+  // Extract unique sections from posts - only when posts exist
+  const uniqueSections = posts && posts.length > 0
+    ? Array.from(new Set(posts.map((post) => post.section)))
+    : [];
 
   // Check if channel is suspended
   const isChannelSuspended = channelDetail?.status === 'suspended';
@@ -85,10 +87,10 @@ export default function Channel({
     <Box>
       <Box>
         <About
-          postsCount={posts?.length}
-          editionsCount={userEditions?.length}
-          followersCount={followers?.length}
-          followingCount={followings?.length}
+          postsCount={posts?.length || 0}
+          editionsCount={userEditions?.length || 0}
+          followersCount={followers?.length || 0}
+          followingCount={followings?.length || 0}
           {...channelDetail}
           isFollowed={isFollowed}
           isChannelLoading={isChannelLoading}

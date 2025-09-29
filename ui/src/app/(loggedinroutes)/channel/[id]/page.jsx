@@ -1,8 +1,8 @@
 "use client";
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { connect } from "react-redux";
 import Channel from "@/components/channels/channel";
-import { Box, Spinner } from "@chakra-ui/react";
+import { Box } from "@chakra-ui/react";
 import {
   fetchChannel,
   fetchPosts,
@@ -14,14 +14,18 @@ import {
   getEditionsByUserID
 } from "@/redux/publish/publishActions";
 import {
-  clearTitle
+  clearTitle,
+  setNavTitle
 } from "@/redux/navbar/action";
-import { setNavTitle } from "@/redux/navbar/action";
 import { addRemoveBookmarks } from "@/redux/bookmarks/bookmarkAction";
 import { useUnreadCount } from "@/contexts/UnreadCountContext";
 
+const VIEW_OPTIONS = {
+  posts: "Posts",
+  editions: "Editions",
+};
 
-const Page = ({
+const ChannelPage = ({
   params,
   channelData,
   posts,
@@ -43,98 +47,94 @@ const Page = ({
 }) => {
   const { id } = params;
   const { setAsRead } = useUnreadCount();
+  const [view, setView] = useState(VIEW_OPTIONS.posts);
 
-  const [postList, setPostList] = useState([]);
-  const [editionList, setEditionList] = useState([]);
-
-  const options = {
-    posts: "Posts",
-    editions: "Editions",
-  };
-  
-  const [view, setView] = useState(options.posts);
-
-  useEffect(() => {
-    
-      fetchChannel(id);
-    
-    return () => {
-      clearChannel()
-      clearTitle()
-      setPostList([])
-      setEditionList([])
-    }
-  }, [id,user]);
-  useEffect(() => {
-    if (channelData) {
-      fetchFollowings(channelData.userId._id);
-      fetchFollowers(channelData._id);
-      setNavTitle(
-        channelData.channelName,
-        channelData.channelIconImageUrl
-      );
-      // if(view==options.posts)
-        fetchPosts(channelData._id);
-      // if(view==options.editions)
-        getEditionsByUserID(channelData.userId._id);
-
-      // Mark posts as read when channel is opened
-      if (user && channelData._id) {
-        setAsRead(channelData._id);
-      }
-    }
-  }, [channelData,user,view,setAsRead]);
-
-  const submitBookmarkPost = async (type, postId) => {
-    const res = await addRemoveBookmarks(type, postId);
-    const updatedData = { isBookmarked: res.data.isBookmarked };
-    setPostList((prevItems) =>
-      prevItems.map((item) =>
-        item._id === res.data.postId ? { ...item, ...updatedData } : item
-      )
-    );
-  };
-
-  useEffect(() => {
-    if (posts && posts.data) setPostList(posts.data);
+  // Derive data directly from Redux store - single source of truth
+  const postList = useMemo(() => {
+    return Array.isArray(posts?.data) ? posts.data : [];
   }, [posts]);
 
-
-
-  const submitBookmarkEdition = async (type, editionId) => {
-    const res = await addRemoveBookmarks(type, editionId);
-    const updatedData = { isBookmarked: res.data.isBookmarked };
-    setEditionList((prevItems) =>
-      prevItems.map((item) =>
-        item._id === res.data.editionId ? { ...item, ...updatedData } : item
-      )
-    );
-  };
-
-
-  useEffect(() => {
-    if (userEditions) setEditionList(userEditions);
+  const editionList = useMemo(() => {
+    return Array.isArray(userEditions) ? userEditions : [];
   }, [userEditions]);
 
+  // Initialize/reset when channel ID changes
+  useEffect(() => {
+    clearChannel();
+    clearTitle();
+    fetchChannel(id);
+  }, [id]);
+
+  // Fetch related data when channel loads - WITH ID VALIDATION
+  useEffect(() => {
+    if (!channelData || !channelData._id || !channelData.userId?._id) return;
+
+    // Ensure channelData matches the current URL id parameter to prevent stale data
+    if (channelData.username !== id) return;
+
+    const channelId = channelData._id;
+    const userId = channelData.userId._id;
+
+    // Fetch all related data
+    fetchFollowings(userId);
+    fetchFollowers(channelId);
+    fetchPosts(channelId);
+    getEditionsByUserID(userId);
+
+    // Set navigation title
+    setNavTitle(channelData.channelName, channelData.channelIconImageUrl);
+
+    // Mark as read
+    if (user && channelId) {
+      setAsRead(channelId);
+    }
+  }, [channelData, id]);
+
+  // Handle bookmark toggle for posts
+  const handleBookmarkPost = useCallback(async (type, postId) => {
+    try {
+      const result = await addRemoveBookmarks(type, postId);
+      if (result && channelData?._id) {
+        // Refetch posts to get updated bookmark status
+        fetchPosts(channelData._id);
+      }
+    } catch (error) {
+      console.error("Error bookmarking post:", error);
+    }
+  }, [addRemoveBookmarks, fetchPosts, channelData]);
+
+  // Handle bookmark toggle for editions
+  const handleBookmarkEdition = useCallback(async (type, editionId) => {
+    try {
+      const result = await addRemoveBookmarks(type, editionId);
+      if (result && channelData?.userId?._id) {
+        // Refetch editions to get updated bookmark status
+        getEditionsByUserID(channelData.userId._id);
+      }
+    } catch (error) {
+      console.error("Error bookmarking edition:", error);
+    }
+  }, [addRemoveBookmarks, getEditionsByUserID, channelData]);
 
   return (
     <Box>
-        <Channel
-          channelDetail={channelData}
-          followers={followers}
-          followings={followings}
-          posts={postList}
-          submitBookmarkPost={submitBookmarkPost}
-          isFollowed={false}
-          channelId={id}
-          isPostLoading={isPostLoading}
-          isChannelLoading={isChannelLoading}
-          options={options}
-          view={view}
-          setView={setView}
-          userEditions={editionList}
-          submitBookmarkEdition={submitBookmarkEdition}
-        />
+      <Channel
+        key={id}
+        channelDetail={channelData}
+        followers={followers}
+        followings={followings}
+        posts={postList}
+        submitBookmarkPost={handleBookmarkPost}
+        isFollowed={false}
+        channelId={id}
+        isPostLoading={isPostLoading}
+        isChannelLoading={isChannelLoading}
+        options={VIEW_OPTIONS}
+        view={view}
+        setView={setView}
+        userEditions={editionList}
+        submitBookmarkEdition={handleBookmarkEdition}
+      />
     </Box>
   );
 };
@@ -162,4 +162,4 @@ const mapDispatchToProps = {
   clearTitle
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(Page);
+export default connect(mapStateToProps, mapDispatchToProps)(ChannelPage);

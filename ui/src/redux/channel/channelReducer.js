@@ -52,6 +52,7 @@ import {
       case FETCH_POSTS_REQUEST:
         return {
           ...state,
+          posts: [],
           isPostLoading: true,
         };
       case FETCH_FOLLOWERS_REQUEST:
