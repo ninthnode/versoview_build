@@ -109,7 +109,7 @@ const SuspendBtn = ({ channelId, suspendChannel, reactivateChannel, isLoading, i
       onClick={handleClick}
       fontSize="sm"
       px={4}
-      ml={2}
+      // ml={2}
       bg={localChannelStatus ? "#4CAF50" : "#ff4444"}
       rounded="md"
       fontWeight={"light"}
@@ -205,6 +205,17 @@ const About = ({
                 <Text fontWeight="semibold" mt={-1}>
                   @{username}
                 </Text>
+                <Box pt={2}>
+                 {isAdmin && (
+                  <SuspendBtn
+                    channelId={_id}
+                    suspendChannel={suspendChannel}
+                    reactivateChannel={reactivateChannel}
+                    isLoading={isLoading}
+                    isChannelSuspended={isChannelSuspended}
+                  />
+                )}
+                </Box>
                 {isChannelSuspended && (
                   <Text
                     fontSize="sm"
@@ -229,15 +240,6 @@ const About = ({
                     isLoading={isLoading}
                     followChannel={followChannel}
                     unfollowChannel={unfollowChannel}
-                  />
-                )}
-                {isAdmin && (
-                  <SuspendBtn
-                    channelId={_id}
-                    suspendChannel={suspendChannel}
-                    reactivateChannel={reactivateChannel}
-                    isLoading={isLoading}
-                    isChannelSuspended={isChannelSuspended}
                   />
                 )}
               </Flex>

@@ -10,6 +10,7 @@ import {
     FETCH_FOLLOWERS_SUCCESS,
     FETCH_FOLLOWERS_FAILURE,
     FETCH_FOLLOWINGS_SUCCESS,
+    FETCH_USER_FOLLOWINGS_SUCCESS,
     FOLLOW_CHANNEL_REQUEST,
     FOLLOW_CHANNEL_SUCCESS,
     FOLLOW_CHANNEL_FAILURE,
@@ -27,6 +28,7 @@ import {
     posts: [],
     followers: [],
     followings:[],
+    userFollowings:[],
     isChannelLoading: true,
     isPostLoading: true,
     isFollowLoading: false,
@@ -89,6 +91,12 @@ import {
         return {
           ...state,
           followings: action.payload,
+          isFollowLoading:false
+        };
+      case FETCH_USER_FOLLOWINGS_SUCCESS:
+        return {
+          ...state,
+          userFollowings: action.payload,
           isFollowLoading:false
         };
       case FOLLOW_CHANNEL_SUCCESS:

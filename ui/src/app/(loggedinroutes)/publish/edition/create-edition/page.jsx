@@ -28,6 +28,7 @@ import { useDispatch, useSelector } from "react-redux";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 import { fetchUser } from "@/redux/profile/actions";
+import { RefreshUserToken } from "@/redux/auth/authActions";
 import MultiSelectDropdown from "@/components/MultiSelectDropdown";
 import genres from "@/static-data/genres";
 import DemographicForm from "./DemographicForm";
@@ -83,6 +84,8 @@ useEffect(() => {
     eventSource.onopen = () => {
       console.log('SSE connection opened');
       setIsConnected(true);
+      setCurrentText('Connection established. Processing PDF...');
+      setProgress(20);
     };
 
     eventSource.onmessage = (event) => {
@@ -92,7 +95,13 @@ useEffect(() => {
 
         switch (data.type) {
           case 'connected':
-            setCurrentText('Connection established. Starting processing...');
+            setCurrentText('Connected! Processing your PDF...');
+            if (data.progress) setProgress(data.progress);
+            break;
+
+          case 'heartbeat':
+            // Keep connection alive, no UI update needed
+            console.log('SSE heartbeat received');
             break;
 
           case 'error':
@@ -144,13 +153,18 @@ useEffect(() => {
     eventSource.onerror = (error) => {
       console.error('SSE Error:', error);
       setIsConnected(false);
-      
-      setTimeout(() => {
-        if (eventSource.readyState === EventSource.CLOSED) {
-          console.log('Attempting to reconnect SSE...');
+
+      // Enhanced error handling for production
+      if (eventSource.readyState === EventSource.CLOSED) {
+        console.log('SSE connection closed, attempting to reconnect...');
+        setTimeout(() => {
+          console.log('Reconnecting SSE...');
           connectSSE();
-        }
-      }, 3000);
+        }, 3000);
+      } else if (eventSource.readyState === EventSource.CONNECTING) {
+        console.log('SSE connection is reconnecting...');
+        setCurrentText('Connection interrupted, reconnecting...');
+      }
     };
   };
 
@@ -238,6 +252,48 @@ useEffect(() => {
   };
 
 
+  const refreshTokenIfNeeded = async () => {
+    try {
+      // Check if current token is still valid (not expired)
+      const currentToken = localStorage.getItem('token');
+      if (currentToken) {
+        try {
+          // Decode JWT to check expiration (basic check)
+          const tokenPayload = JSON.parse(atob(currentToken.replace(/"/g, '').split('.')[1]));
+          const currentTime = Date.now() / 1000;
+
+          // If token expires in more than 5 minutes, no need to refresh
+          if (tokenPayload.exp && (tokenPayload.exp - currentTime) > 300) {
+            console.log('Token still valid, skipping refresh');
+            return true;
+          }
+        } catch (e) {
+          console.log('Token decode failed, will refresh');
+        }
+      }
+
+      let refreshToken = localStorage.getItem('refreshToken');
+      refreshToken = refreshToken ? refreshToken.replace(/^"(.*)"$/, "$1") : null;
+
+      if (refreshToken) {
+        console.log('Refreshing token before upload...');
+        await dispatch(RefreshUserToken(refreshToken));
+        return true;
+      }
+      return true;
+    } catch (error) {
+      console.error('Token refresh failed:', error);
+      toast({
+        title: "Authentication Error",
+        description: "Please log in again to upload files.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+      return false;
+    }
+  };
+
   const handleSaveSSE = async () => {
     // Validation for SSE approach
     if (!pdfFile || !about || !date || !genre.length) {
@@ -265,7 +321,17 @@ useEffect(() => {
     try {
       onOpen();
       setProgress(0);
-      setCurrentText("Starting upload...");
+      setCurrentText("Preparing upload...");
+
+      // Refresh token before upload to prevent expiration during processing
+      const tokenRefreshed = await refreshTokenIfNeeded();
+      if (!tokenRefreshed) {
+        onClose();
+        return;
+      }
+
+      setCurrentText("Uploading file...");
+      setProgress(5); // Show some progress immediately
 
       // Create FormData for file upload
       const formData = new FormData();
@@ -276,7 +342,7 @@ useEffect(() => {
       formData.append('genre', JSON.stringify(genre));
       formData.append('subGenre', JSON.stringify(subGenre));
 
-      // Send request to SSE endpoint
+      // Send request to SSE endpoint with fresh token
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/editions/create-edition-sse`,
         formData,
@@ -290,8 +356,9 @@ useEffect(() => {
 
       if (response.data.success) {
         // Start SSE connection with received session ID
+        setCurrentText("File uploaded. Connecting for progress updates...");
+        setProgress(15);
         setSessionId(response.data.sessionId);
-        setCurrentText("Connected to server. Processing...");
       } else {
         throw new Error(response.data.message || 'Failed to start processing');
       }

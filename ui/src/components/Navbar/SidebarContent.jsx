@@ -14,16 +14,27 @@ import SidebarRoutes from "../../routes/SidebarRoutes";
 import NavItem from "./NavItem";
 import { FaSignOutAlt } from "react-icons/fa";
 import { usePathname } from "next/navigation";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { loginOut } from "@/redux/auth/authActions";
 
 const SidebarContent = ({ onClose, ...rest }) => {
   const path = usePathname();
   const dispatch = useDispatch();
+  const user = useSelector(state => state.auth.user?.user);
+
+  const isAdmin = user && user.id === process.env.NEXT_PUBLIC_ADMIN_USER_ID;
 
   const LogoutHandler = () => {
     dispatch(loginOut());
   };
+
+  // Filter routes based on admin status
+  const filteredRoutes = SidebarRoutes.filter(route => {
+    if (route.adminOnly) {
+      return isAdmin;
+    }
+    return true;
+  });
 
   return (
     <Box
@@ -56,8 +67,8 @@ const SidebarContent = ({ onClose, ...rest }) => {
           justifyContent="space-between"
         >
           <Box w="11rem">
-            {/* {SidebarRoutes.map((link) => console.log(link))} */}
-            {SidebarRoutes.map((link) => (
+            {/* {filteredRoutes.map((link) => console.log(link))} */}
+            {filteredRoutes.map((link) => (
               <NavItem
                 key={link.name}
                 icon={link.icon}

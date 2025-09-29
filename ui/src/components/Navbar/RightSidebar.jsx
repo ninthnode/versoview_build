@@ -14,7 +14,7 @@ function RightSidebar({
   userDetails,
   user,
   fetchUser,
-  followings,
+  userFollowings,
   fetchfollowChannelList,
 }) {
   const path = usePathname();
@@ -108,14 +108,14 @@ function RightSidebar({
         <Chats user={user} />
 
         {/* <Divider/> */}
-        {userDetails && followings && userDetails != null &&
-          (followings ? (
+        {userDetails && userFollowings && userDetails != null &&
+          (userFollowings ? (
             <>
               <Heading as="h4" fontSize="lg" fontWeight="bold" mt="4" mb="2">
                 Following
               </Heading>
               <Following
-                followings={followings}
+                followings={userFollowings}
                 user={userDetails}
                 fetchfollowChannelList={fetchfollowChannelList}
               />
@@ -173,7 +173,7 @@ const mapStateToProps = (state) => ({
   loading: state.post.loading,
   posts: state.post.posts,
   recentPosts: state.post.recentPosts,
-  followings: state.channel.followings,
+  userFollowings: state.channel.userFollowings,
   user: state.auth.user?.user,
   authVerified: state.auth.userVerified,
   userDetails: state.profile.user,

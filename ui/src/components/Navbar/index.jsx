@@ -32,7 +32,7 @@ const Navbar = ({ children }) => {
   const [index, setIndex] = React.useState(routeIndex);
   const deviceType = useDeviceType();
 
-  const FullWidthRoutes = ["/publish"];
+  const FullWidthRoutes = ["/publish","/admin"];
   const IsFullWidthRoutes = FullWidthRoutes.find((route) =>
     path.startsWith(route)
   )

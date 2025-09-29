@@ -6,7 +6,7 @@ const { Bookmark } = require("../models/bookmark.model");
 const { LibraryImage } = require("../models/libraryImage.model");
 const { PostImages } = require("../models/postImages.model");
 const { processPdfForEdition } = require("../services/pdfProcessingService");
-const { sendCompletion, sendError } = require("./sse.controller");
+const { sendCompletion, sendError, registerSession, removeSession } = require("./sse.controller");
 const crypto = require("crypto");
 const e = require("express");
 
@@ -35,6 +35,9 @@ module.exports.createEditionSSE = asyncHandler(async (req, res) => {
 
     // Generate unique session ID
     const sessionId = crypto.randomUUID();
+
+    // Register session for SSE security
+    registerSession(sessionId, userId);
 
     // Parse and validate data
     let parsedGenre, parsedSubGenre;
@@ -128,12 +131,17 @@ const processEditionInBackground = async (pdfBuffer, editionData, sessionId) => 
       redirectUrl: "/publish"
     });
 
+    // Clean up session
+    removeSession(sessionId);
+
   } catch (error) {
     console.error(`Error in background processing for session ${sessionId}:`, error);
     sendError(sessionId, {
       message: "Error processing PDF: " + error.message,
       error: error.message
     });
+    // Clean up session on error
+    removeSession(sessionId);
   }
 };
 

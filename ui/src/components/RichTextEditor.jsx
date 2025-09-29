@@ -106,6 +106,8 @@ const RichTextEditor = forwardRef(
           "center",
           "right",
           "justify",
+          "superscript",
+          "subscript",
           "|",
           "undo",
           "redo",

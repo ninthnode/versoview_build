@@ -50,7 +50,7 @@ router.get("/getLibraryImages", protectUser, getLibraryImagesByEditionId);
 router.get("/getLibraryImagesForPageTurner/:_id", getLibraryImagesForPageTurner);
 router.post("/uploadPostImage", protectUser, uploadPostImage);
 
-// SSE Progress endpoint
+// SSE Progress endpoint - no auth required, session-based security
 router.get("/progress/:sessionId", sseProgress);
  
 module.exports = router;

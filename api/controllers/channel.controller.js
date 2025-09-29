@@ -535,3 +535,53 @@ module.exports.reactivateChannel = asyncHandler(async (req, res) => {
 		res.status(500).json({ error: "Internal Server Error" });
 	}
 });
+
+// Get channel dashboard with pagination (Admin only)
+module.exports.getChannelDashboard = asyncHandler(async (req, res) => {
+	try {
+		const adminUserId = process.env.ADMIN_USER_ID;
+		const currentUserId = req.user._id.toString();
+
+		// Check if current user is admin
+		if (currentUserId !== adminUserId) {
+			return res.status(403).json({
+				status: 403,
+				message: "Access denied. Admin privileges required."
+			});
+		}
+
+		const page = parseInt(req.query.page) || 1;
+		const limit = parseInt(req.query.limit) || 20;
+		const skip = (page - 1) * limit;
+
+		// Get total count of channels
+		const totalChannels = await Channel.countDocuments();
+
+		// Get paginated channels with user details
+		const channels = await Channel.find()
+			.populate('userId', 'firstName lastName email username status')
+			.sort({ createdAt: -1 })
+			.skip(skip)
+			.limit(limit);
+
+		const totalPages = Math.ceil(totalChannels / limit);
+
+		res.status(200).json({
+			status: 200,
+			data: {
+				channels,
+				pagination: {
+					currentPage: page,
+					totalPages,
+					totalChannels,
+					limit,
+					hasNextPage: page < totalPages,
+					hasPrevPage: page > 1
+				}
+			}
+		});
+	} catch (error) {
+		console.error(error);
+		res.status(500).json({ error: "Internal Server Error" });
+	}
+});

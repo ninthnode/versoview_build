@@ -12,6 +12,7 @@ import {
   FETCH_FOLLOWERS_SUCCESS,
   FETCH_FOLLOWERS_FAILURE,
   FETCH_FOLLOWINGS_SUCCESS,
+  FETCH_USER_FOLLOWINGS_SUCCESS,
   FOLLOW_CHANNEL_REQUEST,
   FOLLOW_CHANNEL_SUCCESS,
   FOLLOW_CHANNEL_FAILURE,
@@ -162,7 +163,7 @@ export const fetchfollowChannelList = () => async (dispatch) => {
         },
       }
     );
-    dispatch({ type: FETCH_FOLLOWINGS_SUCCESS, payload: response.data });
+    dispatch({ type: FETCH_USER_FOLLOWINGS_SUCCESS, payload: response.data });
   } catch (error) {}
 };
 

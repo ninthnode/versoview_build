@@ -19,7 +19,8 @@ const {
 	doesChannelExist,
 	getChannelByEditionId,
 	suspendChannel,
-	reactivateChannel
+	reactivateChannel,
+	getChannelDashboard
 } = require("../../controllers/channel.controller");
 const { protectUser } = require("../../middlewares/authMiddleware");
 const { upload } = require("../../config/multerUpload");
@@ -48,5 +49,6 @@ router.put("/pinChannel/:_id", protectUser, pinChannel);
 router.put("/unpinChannel/:_id", protectUser, unpinChannel);
 router.put("/suspendChannel/:_id", protectUser, suspendChannel);
 router.put("/reactivateChannel/:_id", protectUser, reactivateChannel);
+router.get("/adminDashboard", protectUser, getChannelDashboard);
 
 module.exports = router;
