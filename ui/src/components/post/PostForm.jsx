@@ -318,7 +318,7 @@ const imageUrlToDataUrl = async (url) => {
               <ImageCropper
               isLoadingFeatureImage={isLoadingFeatureImage}
                 croppedImage={croppedImage}
-                uploadedImage={uploadedImage ||formData?.mainImageURL}
+                uploadedImage={uploadedImage}
                 onCropComplete={setCroppedImage}
                 imageSizeError={imageSizeError}
                 setCroppedImage={setCroppedImage}
