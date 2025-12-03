@@ -26,6 +26,11 @@ const initialState = {
   editPostId: "",
   singlePostEditContent: {},
   withoutEditionPosts: [],
+  pagination: {
+    currentPage: 1,
+    totalPages: 1,
+    hasMore: false
+  },
 };
 
 const postsReducer = (state = initialState, action) => {
@@ -41,10 +46,12 @@ const postsReducer = (state = initialState, action) => {
         loadingModify: true,
       };
     case GET_POSTS_SUCCESS:
+      const { posts, pagination, page } = action.payload;
       return {
         ...state,
         loading: false,
-        posts: action.payload,
+        posts: page === 1 ? posts : [...state.posts, ...posts],
+        pagination: pagination,
         error: "",
       };
     case CLEAR_SINGLE_POST:

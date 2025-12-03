@@ -14,9 +14,9 @@ export const getPostsRequest = () => ({
   type: GET_POSTS_REQUEST,
 });
 
-export const getPostsSuccess = (posts) => ({
+export const getPostsSuccess = (posts, pagination, page) => ({
   type: GET_POSTS_SUCCESS,
-  payload: posts,
+  payload: { posts, pagination, page },
 });
 
 export const getPostsFailure = (error) => ({
@@ -29,7 +29,7 @@ export const setPostEdit = (isEditPost,postId) => ({
   payload: {isEditPost,postId},
 });
 
-export const fetchPosts = () => {
+export const fetchPosts = (page = 1, limit = 10) => {
   return async (dispatch,getState) => {
     const { auth } = getState();
     dispatch(getPostsRequest());
@@ -38,7 +38,7 @@ export const fetchPosts = () => {
       if (auth.isAuthenticated){
         const token = localStorage.getItem("token").replaceAll('"', "");
 
-        response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/getAllPost`,{ 
+        response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/getAllPost?page=${page}&limit=${limit}`,{
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -46,10 +46,15 @@ export const fetchPosts = () => {
 
       }
       else{
-        response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/getPostIfUserNotLoggedIn`);
+        response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/getPostIfUserNotLoggedIn?page=${page}&limit=${limit}`);
       }
       const data = await response.data.data
-      dispatch(getPostsSuccess(data));
+      const pagination = {
+        currentPage: response.data.currentPage,
+        totalPages: response.data.totalPages,
+        hasMore: response.data.hasMore || false
+      }
+      dispatch(getPostsSuccess(data, pagination, page));
     } catch (error) {
       dispatch(getPostsFailure(error.message));
     }

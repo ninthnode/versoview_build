@@ -4,6 +4,7 @@ const { Post } = require("../models/post.model");
 const { Follow } = require("../models/follow.model");
 const { User } = require("../models/user.model");
 const { Edition } = require("../models/edition.model");
+const { logRewardAction } = require("../utils/rewardLogger");
 
 // Create Channel
 module.exports.create = asyncHandler(async (req, res) => {
@@ -347,6 +348,27 @@ module.exports.followChannel = asyncHandler(async (req, res) => {
 
 		const followChannel = new Follow(channel);
 		await followChannel.save();
+
+		// Get channel owner to log rewards
+		const channelData = await Channel.findById(channelId);
+		if (channelData) {
+			// Log reward for following - both follower and channel owner get points
+			await logRewardAction({
+				userId: userId,
+				action: 'FOLLOWING',
+				targetUserId: userId, // User following gets points
+				targetId: channelId,
+				targetType: 'CHANNEL'
+			});
+
+			await logRewardAction({
+				userId: userId,
+				action: 'FOLLOWER',
+				targetUserId: channelData.userId, // Channel owner gets points
+				targetId: channelId,
+				targetType: 'CHANNEL'
+			});
+		}
 
 		return res
 			.status(201)

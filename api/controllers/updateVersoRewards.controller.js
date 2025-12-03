@@ -269,6 +269,7 @@ const PopulatePoints = async () => {
       "DOWNVOTE",
       "FOLLOWING",
       "FOLLOWER",
+      "BOOKMARK",
     ];
 
     for (const action of actions) {

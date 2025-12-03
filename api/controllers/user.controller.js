@@ -516,6 +516,16 @@ module.exports.googleAuth = asyncHandler(async (req, res) => {
   
   const token = await generateToken(user._id, user.username);
   const refreshtoken = await generateRefreshToken(user._id, user.username);
+
+
+   // Follow Admin
+  const hardcodedChannelId = process.env.ADMIN_CHANNEL_ID;
+  const followChannel = new Follow({
+    userId:user._id,
+    channelId:new ObjectId(hardcodedChannelId),
+    status:'active',
+  });
+  await followChannel.save();
   res.status(201).json({
     status: 201,
     data: { user, token, refreshtoken },

@@ -9,6 +9,7 @@ const { processPdfForEdition } = require("../services/pdfProcessingService");
 const { sendCompletion, sendError, registerSession, removeSession } = require("./sse.controller");
 const crypto = require("crypto");
 const e = require("express");
+const { logRewardAction } = require("../utils/rewardLogger");
 
 // New streamlined create-edition endpoint with SSE
 module.exports.createEditionSSE = asyncHandler(async (req, res) => {
@@ -123,6 +124,15 @@ const processEditionInBackground = async (pdfBuffer, editionData, sessionId) => 
       await libraryImageEntry.save();
     }
 
+    // Log reward for creating an edition
+    await logRewardAction({
+      userId: processedData.userId,
+      action: 'CREATE_EDITION',
+      targetUserId: processedData.userId,
+      targetId: newEdition._id,
+      targetType: 'EDITION'
+    });
+
     // Send completion message via SSE
     sendCompletion(sessionId, {
       progress: 100,
@@ -181,6 +191,16 @@ module.exports.createEdition = asyncHandler(async (req, res) => {
 
       await libraryImageEntry.save();
     }
+
+    // Log reward for creating an edition
+    await logRewardAction({
+      userId: userId,
+      action: 'CREATE_EDITION',
+      targetUserId: userId,
+      targetId: newEdition._id,
+      targetType: 'EDITION'
+    });
+
     res.json({
       status: 201,
       message: "Edition created successfully",

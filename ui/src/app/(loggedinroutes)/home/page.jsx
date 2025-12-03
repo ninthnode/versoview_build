@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import {
   Box,
   Tabs,
@@ -8,6 +8,8 @@ import {
   Tab,
   TabPanel,
   Text,
+  Spinner,
+  Center,
 } from "@chakra-ui/react";
 import { connect } from "react-redux";
 import {
@@ -35,21 +37,26 @@ const Home = ({
   fetchUser,
   user,
   authVerified,
-  userDetails
+  userDetails,
+  pagination
 }) => {
   const [tabIndex, setTabIndex] = useState(0);
   const [postList, setPostList] = useState([]);
   const [recentPostList, setRecentPostList] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const observerTarget = useRef(null);
   const deviceType = useDeviceType();
 
   useEffect(() => {
     if(authVerified){
       if (tabIndex === 0) {
-        fetchPosts();
+        setCurrentPage(1);
+        fetchPosts(1, 10);
       } else if (tabIndex === 1) {
         fetchRecentlyViewedPosts();
       } else if (tabIndex === 2) {
-        fetchfollowChannelList(); 
+        fetchfollowChannelList();
          fetchUser(user.id);
       }
     }
@@ -61,6 +68,41 @@ const Home = ({
   useEffect(() => {
     if (recentPosts.length > 0) setRecentPostList(recentPosts);
   }, [recentPosts]);
+
+  // Load more posts when user scrolls to bottom
+  const loadMorePosts = useCallback(async () => {
+    if (isFetchingMore || !pagination?.hasMore || loading) return;
+
+    setIsFetchingMore(true);
+    const nextPage = currentPage + 1;
+    await fetchPosts(nextPage, 10);
+    setCurrentPage(nextPage);
+    setIsFetchingMore(false);
+  }, [currentPage, isFetchingMore, pagination, loading, fetchPosts]);
+
+  // Intersection Observer for infinite scroll
+  useEffect(() => {
+    if (tabIndex !== 0) return; // Only for Latest tab
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && pagination?.hasMore && !loading) {
+          loadMorePosts();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    return () => {
+      if (observerTarget.current) {
+        observer.unobserve(observerTarget.current);
+      }
+    };
+  }, [tabIndex, pagination, loading, loadMorePosts]);
 
   const submitBookmarkPost = async (type, postId) => {
     const res = await addRemoveBookmarks(type, postId);
@@ -93,7 +135,7 @@ const Home = ({
           <TabPanel p="0">
             <Box mt='2'>
               {<StatusSlider />}
-              {loading || !authVerified ? (
+              {loading && postList.length === 0 || !authVerified ? (
                 <PostCardShimmer />
               ) : (
                 <>
@@ -108,6 +150,14 @@ const Home = ({
                       {/* <Divider /> */}
                     </Box>
                   ))}
+                  {/* Infinite scroll trigger */}
+                  <Box ref={observerTarget} py={4}>
+                    {isFetchingMore && (
+                      <Center>
+                        <Spinner size="md" color="blue.500" />
+                      </Center>
+                    )}
+                  </Box>
                 </>
               )}
             </Box>
@@ -156,7 +206,8 @@ const mapStateToProps = (state) => ({
   followings: state.channel.followings,
   user: state.auth.user?.user,
   authVerified: state.auth.userVerified,
-  userDetails: state.profile.user
+  userDetails: state.profile.user,
+  pagination: state.post.pagination
 });
 
 const mapDispatchToProps = {

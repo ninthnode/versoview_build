@@ -19,6 +19,7 @@ const path = require("node:path");
 const fse = require("fs-extra");
 const { Follow } = require("../models/follow.model");
 const { PostImages } = require("../models/postImages.model");
+const { logRewardAction } = require("../utils/rewardLogger");
 
 // get all pdf images
 function getAllImageFiles(folder) {
@@ -148,6 +149,15 @@ module.exports.create = asyncHandler(async (req, res) => {
     // Update userType to 'publisher'
     await User.findByIdAndUpdate(userId, { userType: "publisher" });
 
+    // Log reward for creating a post
+    await logRewardAction({
+      userId: userId,
+      action: 'CREATE_POST',
+      targetUserId: userId,
+      targetId: savedPost._id,
+      targetType: 'POST'
+    });
+
     res.status(201);
     res.json({
       status: 201,
@@ -242,9 +252,15 @@ module.exports.getAllPost = asyncHandler(async (req, res) => {
       new Map(combinedPosts.map((post) => [post._id.toString(), post])).values()
     );
 
-    const finalPosts = uniquePosts
-      .sort((a, b) => b.createdAt - a.createdAt)
-      .slice(skip, skip + limit);
+    // Sort all unique posts first
+    const sortedPosts = uniquePosts.sort((a, b) => b.createdAt - a.createdAt);
+
+    // Calculate total count of unique posts for pagination
+    const totalPosts = sortedPosts.length;
+    const totalPages = Math.ceil(totalPosts / limit);
+
+    // Apply pagination - slice the sorted posts
+    const finalPosts = sortedPosts.slice(skip, skip + limit);
 
     const postsWithBookmarkStatus = await Promise.all(
       finalPosts.map(async (post) => {
@@ -260,13 +276,13 @@ module.exports.getAllPost = asyncHandler(async (req, res) => {
       })
     );
 
-    const totalPosts = await Post.countDocuments();
-
     res.status(200).json({
       message: "Success",
       data: postsWithBookmarkStatus,
-      totalPages: Math.ceil(totalPosts / limit),
+      totalPages: totalPages,
       currentPage: page,
+      totalPosts: totalPosts,
+      hasMore: page < totalPages,
     });
   } catch (error) {
     console.error(error);
@@ -575,7 +591,8 @@ module.exports.getPostByChannelId = asyncHandler(async (req, res) => {
 
     const postData = await Post.find({ channelId: channelId })
       .populate("channelId")
-      .populate("editionId");
+      .populate("editionId")
+      .sort({ createdAt: -1 });
 
     const activePosts = postData;
 
@@ -675,6 +692,16 @@ module.exports.upvotePost = asyncHandler(async (req, res) => {
     if (isAlreadyVoted && isAlreadyVoted.voteType === false) {
       isAlreadyVoted.voteType = true;
       await isAlreadyVoted.save();
+
+      // Log reward for upvote - post author gets the points
+      await logRewardAction({
+        userId: userId,
+        action: 'UPVOTE',
+        targetUserId: postData.userId,
+        targetId: postId,
+        targetType: 'POST'
+      });
+
       return res.status(200).json({ status: 200, message: "upvoted" });
     }
     const newVote = new Vote({
@@ -684,6 +711,16 @@ module.exports.upvotePost = asyncHandler(async (req, res) => {
     });
 
     await newVote.save();
+
+    // Log reward for upvote - post author gets the points
+    await logRewardAction({
+      userId: userId,
+      action: 'UPVOTE',
+      targetUserId: postData.userId,
+      targetId: postId,
+      targetType: 'POST'
+    });
+
     return res
       .status(201)
       .json({ status: 201, message: "upvoted", data: newVote });
@@ -715,6 +752,16 @@ module.exports.downvotePost = asyncHandler(async (req, res) => {
     if (isAlreadyVoted && isAlreadyVoted.voteType === true) {
       isAlreadyVoted.voteType = false;
       await isAlreadyVoted.save();
+
+      // Log reward for downvote - post author gets the points
+      await logRewardAction({
+        userId: userId,
+        action: 'DOWNVOTE',
+        targetUserId: postData.userId,
+        targetId: postId,
+        targetType: 'POST'
+      });
+
       return res.status(200).json({ status: 200, message: "downvoted" });
     }
     const newVote = new Vote({
@@ -724,6 +771,16 @@ module.exports.downvotePost = asyncHandler(async (req, res) => {
     });
 
     await newVote.save();
+
+    // Log reward for downvote - post author gets the points
+    await logRewardAction({
+      userId: userId,
+      action: 'DOWNVOTE',
+      targetUserId: postData.userId,
+      targetId: postId,
+      targetType: 'POST'
+    });
+
     return res
       .status(201)
       .json({ status: 201, message: "downvoted", data: newVote });
@@ -794,6 +851,43 @@ module.exports.addBookmark = asyncHandler(async (req, res) => {
 
     const bookmarkPost = new Bookmark(bookmark);
     await bookmarkPost.save();
+
+    // Log reward for bookmarking - get the owner of the bookmarked item
+    let targetUserId = null;
+    let targetType = null;
+
+    if (type === "post") {
+      const post = await Post.findById(_id);
+      if (post) {
+        targetUserId = post.userId;
+        targetType = 'POST';
+      }
+    } else if (type === "comment") {
+      const comment = await PostComment.findById(_id);
+      if (comment) {
+        const post = await Post.findById(comment.postId);
+        if (post) {
+          targetUserId = post.userId;
+          targetType = 'COMMENT';
+        }
+      }
+    } else if (type === "edition") {
+      const edition = await Edition.findById(_id);
+      if (edition) {
+        targetUserId = edition.userId;
+        targetType = 'EDITION';
+      }
+    }
+
+    if (targetUserId) {
+      await logRewardAction({
+        userId: userId,
+        action: 'BOOKMARK',
+        targetUserId: targetUserId,
+        targetId: _id,
+        targetType: targetType
+      });
+    }
 
     return res.status(201).json({
       status: 201,
@@ -1145,6 +1239,15 @@ module.exports.postComment = asyncHandler(async (req, res) => {
 
     // Populate userId field with user information
     await savedComment.populate("userId");
+
+    // Log reward for commenting - the post author gets the points
+    await logRewardAction({
+      userId: userId,
+      action: 'COMMENT',
+      targetUserId: postExists.userId,
+      targetId: savedComment._id,
+      targetType: 'COMMENT'
+    });
 
     if (parentId) {
       const parentComment = await PostComment.findById(parentId).populate(
