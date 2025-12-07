@@ -148,10 +148,11 @@ const getUserRewardsPoints = (id) => async (dispatch) => {
         },
       }
     );
-    console.log(response.data.data);
+    console.log("User rewards response:", response.data);
     dispatch({ type: USER_REWARDS_SUCCESS, payload: response.data.data });
   } catch (error) {
-    // dispatch({ type: USER_FETCH_FAILURE, payload: error.message });
+    console.error("Error fetching user rewards:", error);
+    console.error("Error response:", error.response?.data);
   }
 };
 
