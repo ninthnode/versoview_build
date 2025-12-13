@@ -321,7 +321,7 @@ module.exports.getUser = asyncHandler(async (req, res) => {
         .json({ status: 404, message: `User wih Id ${_id} Not Found !` });
     }
     //get user posts titles
-    const posts = await Post.find({ userId: _id }).populate("channelId");
+    const posts = await Post.find({ userId: _id }).sort({ createdAt: -1 }).populate("channelId");
     const totalPosts = await Post.find({ userId: _id }).countDocuments();
     const channelData = await Channel.findOne({ userId: _id });
     //get user channel followings

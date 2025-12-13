@@ -506,23 +506,61 @@ module.exports.getLibraryImagesForPageTurner = asyncHandler(
   async (req, res) => {
     try {
       const editionId = req.params._id;
+      const { startPage, endPage } = req.query;
 
       // Check if edition exists
       const edition = await Edition.findById(editionId);
       if (!edition) {
         return res.status(404).json({ message: "Edition not found" });
       }
+      
       // Get library images from the LibraryImage model
-    const libraryImages = await LibraryImage.findOne({ editionId });
+      const libraryImages = await LibraryImage.findOne({ editionId });
 
-const flatImageArray = [
-      ...(libraryImages.allImages || [])
+      if (!libraryImages || !libraryImages.allImages) {
+        return res.status(200).json({
+          success: true,
+          data: [],
+          totalPages: 0,
+          message: "No library images found",
+        });
+      }
+
+      // Get all default images
+      const allDefaultImages = (libraryImages.allImages || [])
         .filter((img) => img.isDefault === true)
-        .map((img) => img.url),
-    ];
+        .map((img) => img.url);
+
+      // If page range is specified, return only requested pages
+      if (startPage !== undefined && endPage !== undefined) {
+        const start = parseInt(startPage, 10);
+        const end = parseInt(endPage, 10);
+        
+        if (isNaN(start) || isNaN(end) || start < 0 || end < start) {
+          return res.status(400).json({
+            success: false,
+            message: "Invalid page range parameters",
+          });
+        }
+
+        // Return requested page range
+        const requestedImages = allDefaultImages.slice(start, end + 1);
+        
+        return res.status(200).json({
+          success: true,
+          data: requestedImages,
+          startPage: start,
+          endPage: Math.min(end, allDefaultImages.length - 1),
+          totalPages: allDefaultImages.length,
+          message: "Library images fetched successfully",
+        });
+      }
+
+      // If no page range specified, return all images (backward compatibility)
       res.status(200).json({
         success: true,
-        data: flatImageArray,
+        data: allDefaultImages,
+        totalPages: allDefaultImages.length,
         message: "Library images fetched successfully",
       });
     } catch (error) {

@@ -1,6 +1,7 @@
 import { GET_POSTS_REQUEST, GET_POSTS_SUCCESS, GET_POSTS_FAILURE,
   GET_SINGLE_POST_SUCCESS,
   CLEAR_SINGLE_POST,
+  CLEAR_SINGLE_POST_EDITDATA,
   GET_RECENT_POSTS_SUCCESS,
   SET_POST_EDIT,
   GET_SINGLE_POST_EDITDATA_SUCCESS,POST_ADD_SUCCESS,
@@ -105,6 +106,13 @@ export const clearPost = () => {
   return async (dispatch,getState) => {
   dispatch({
     type:CLEAR_SINGLE_POST
+  });
+  }
+}
+export const clearPostEditData = () => {
+  return async (dispatch,getState) => {
+  dispatch({
+    type:CLEAR_SINGLE_POST_EDITDATA
   });
   }
 }

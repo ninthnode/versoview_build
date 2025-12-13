@@ -22,8 +22,12 @@ const getUserRewardsPoints = async (req, res) => {
     let downvoteArray = [];
     let postReadArray = [];
     let bookmarkArray = [];
-
+console.log("userId",userId)
     const userData = await User.findOne({ _id: userId });
+
+    if (!userData) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
     for (const action of getAllActionPoints) {
       if (action.action === "FOLLOWING") {
@@ -32,6 +36,9 @@ const getUserRewardsPoints = async (req, res) => {
         );
 
         for (const follow of followedChannels) {
+          // Skip if channel was deleted
+          if (!follow.channelId) continue;
+
           const channelOwner = follow.channelId.userId;
 
           // Push the reward entry into the array
@@ -53,6 +60,9 @@ const getUserRewardsPoints = async (req, res) => {
         }).populate("userId");
 
         for (const follow of followerUsers) {
+          // Skip if user was deleted
+          if (!follow.userId) continue;
+
           const followerOfChannel = follow.userId._id;
 
           // Push the reward entry into the array
@@ -229,7 +239,11 @@ const getUserRewardsPoints = async (req, res) => {
       postReadArray,
       bookmarkArray
     );
-    const sortedArr = mergedArray.sort((a, b) =>
+
+    // Filter out any null/undefined entries or entries with null userId
+    const validArray = mergedArray.filter(item => item && item.userId);
+
+    const sortedArr = validArray.sort((a, b) =>
       a.userId.toString() === userId.toString() ? -1 : b.userId.toString() === userId.toString() ? 1 : 0
     );
 
@@ -242,17 +256,18 @@ const getUserRewardsPoints = async (req, res) => {
 const mergeMultipleArrays = (...arrays) => {
   let mergedMap = new Map();
 
-  arrays.flat().forEach(({ userId, name,avatar, points }) => {
-    if (!userId) return;
-    const key = userId.toString();
-    if (mergedMap.has(key)) {
-      // Update the existing entry by adding points
-      mergedMap.get(key).points += points;
-    } else {
-      // Add a new entry
-      mergedMap.set(key, { userId, name,avatar, points: points });
-    }
-  });
+  arrays.flat()
+    .filter(item => item && item.userId) // Filter out null/undefined items or items without userId
+    .forEach(({ userId, name, avatar, points }) => {
+      const key = userId.toString();
+      if (mergedMap.has(key)) {
+        // Update the existing entry by adding points
+        mergedMap.get(key).points += points;
+      } else {
+        // Add a new entry
+        mergedMap.set(key, { userId, name, avatar, points: points });
+      }
+    });
 
   return Array.from(mergedMap.values());
 };

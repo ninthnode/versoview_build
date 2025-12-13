@@ -4,6 +4,7 @@ import { Box, Flex } from "@chakra-ui/react";
 import {
   editPost,
   getPostByIdEditData,
+  clearPostEditData,
 } from "@/redux/posts/postActions";
 import { fetchLoggedInUserChannel } from "@/redux/channel/channelActions";
 import { clearTempLibraryImages } from "@/redux/publish/publishActions";
@@ -40,11 +41,18 @@ const PublishPost = ({params}) => {
   });
 
   useEffect(() => {
-    const fetchAndSetData = async () => {
-      if (singlePostEditContent?.post === undefined) {
-        await dispatch(getPostByIdEditData(editPostId));
-      }
+    // Clear previous post edit data and fetch new data when editPostId changes
+    dispatch(clearPostEditData());
+    dispatch(getPostByIdEditData(editPostId));
 
+    return () => {
+      // Cleanup: clear edit data when component unmounts
+      dispatch(clearPostEditData());
+    };
+  }, [editPostId]);
+
+  useEffect(() => {
+    const fetchAndSetData = async () => {
       if (singlePostEditContent?.post) {
         setFormData((prevFormData) => ({
           ...prevFormData,

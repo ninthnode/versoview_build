@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { Box, Flex } from "@chakra-ui/react";
-import { editPost, getPostByIdEditData } from "@/redux/posts/postActions";
+import { editPost, getPostByIdEditData, clearPostEditData } from "@/redux/posts/postActions";
 import { fetchLoggedInUserChannel } from "@/redux/channel/channelActions";
 import { useDispatch, useSelector } from "react-redux";
 import { useToast } from "@chakra-ui/react";
@@ -42,8 +42,9 @@ const EditPdfPost = ({ params }) => {
 
   useEffect(() => {
     const fetchData = async () => {
-      // Dispatch the necessary actions
-      console.log("Fetching data for postId:", params.postId, "editionId:", params.editionId);
+      // Clear previous post edit data first
+      console.log("Clearing previous data and fetching new data for postId:", params.postId, "editionId:", params.editionId);
+      await dispatch(clearPostEditData());
       await dispatch(fetchLoggedInUserChannel());
       await dispatch(getPostByIdEditData(params.postId));
       await dispatch(getEditionById(params.editionId));
@@ -52,9 +53,10 @@ const EditPdfPost = ({ params }) => {
 
     return () => {
       console.log("Cleaning up edit page");
+      dispatch(clearPostEditData());
       dispatch(cleanEdition());
     };
-  }, [dispatch, params.postId, params.editionId]);
+  }, [params.postId, params.editionId]);
 
   // Set form data when post content is loaded
   useEffect(() => {

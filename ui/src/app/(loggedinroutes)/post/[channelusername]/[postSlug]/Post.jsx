@@ -369,7 +369,7 @@ function SinglePost({
                   {postState.post.header}
                 </Heading>
                 {postState.post.standFirst && (
-                  <Heading
+                  <Text
                     py="1"
                     mb="1"
                     fontWeight="bold"
@@ -377,7 +377,7 @@ function SinglePost({
                     lineHeight="1.5rem"
                   >
                     {postState.post.standFirst}
-                  </Heading>
+                  </Text>
                 )}
                 <Text
                   fontSize="md"
