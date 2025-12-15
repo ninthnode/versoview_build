@@ -452,80 +452,13 @@ if (deviceType === 'phone') {
     }
   }, [isFullScreen, modalDimensions, windowDimensions, baseBreakpointDimensions, isDesktop]);
 
-  const [loadedPages, setLoadedPages] = useState(new Set());
-  const [totalPages, setTotalPages] = useState(0);
-  
-  // Load initial pages when modal opens
-  const loadInitialImages = () => {
-    // Load first 6 pages (0-5) for initial view
-    dispatch(getLibraryImagesForPageTurner(editionId, 0, 5));
-    setLoadedPages(new Set([0, 1, 2, 3, 4, 5]));
-  };
-
-  // Load more pages on demand
-  const loadMorePages = (currentPage) => {
-    if (totalPages === 0) return;
-    
-    const PAGES_TO_LOAD = 5; // Load 5 pages ahead
-    const startPage = Math.max(0, currentPage);
-    const endPage = Math.min(totalPages - 1, currentPage + PAGES_TO_LOAD);
-    
-    // Check which pages need to be loaded
-    const pagesToLoad = [];
-    for (let i = startPage; i <= endPage; i++) {
-      if (!loadedPages.has(i)) {
-        pagesToLoad.push(i);
-      }
-    }
-    
-    if (pagesToLoad.length > 0) {
-      const minPage = Math.min(...pagesToLoad);
-      const maxPage = Math.max(...pagesToLoad);
-      dispatch(getLibraryImagesForPageTurner(editionId, minPage, maxPage));
-      
-      // Update loaded pages set
-      const newLoadedPages = new Set(loadedPages);
-      pagesToLoad.forEach(page => newLoadedPages.add(page));
-      setLoadedPages(newLoadedPages);
-    }
-  };
-
-  // Handle page flip to load more pages (Desktop only)
-  useEffect(() => {
-    if (!isMobileDevice() && flipBookRef.current && isOpen) {
-      const flipBook = flipBookRef.current.pageFlip();
-      if (flipBook) {
-        const handleFlip = () => {
-          const currentPage = flipBook.getCurrentPageIndex();
-          loadMorePages(currentPage);
-        };
-        
-        flipBook.on('flip', handleFlip);
-        return () => {
-          flipBook.off('flip', handleFlip);
-        };
-      }
-    }
-  }, [isOpen, loadedPages, totalPages]);
-
-  // Load initial images when modal opens
-  useEffect(() => {
-    if (isOpen && editionId) {
-      loadInitialImages();
-    }
-  }, [isOpen, editionId]);
+  const loadImages = () => {
+    dispatch(getLibraryImagesForPageTurner(editionId));
+  }
 
   const { 
-    libraryImages,
-    totalPages: reduxTotalPages,
+    libraryImages, 
   } = useSelector((state) => state.publish);
-
-  // Update total pages from redux
-  useEffect(() => {
-    if (reduxTotalPages && reduxTotalPages > 0) {
-      setTotalPages(reduxTotalPages);
-    }
-  }, [reduxTotalPages]);
 
   return (
     <Box>
@@ -546,7 +479,6 @@ if (deviceType === 'phone') {
           onClose={handleClose}
           title={title}
           libraryImages={libraryImages}
-          editionId={editionId}
         />
       ) : (
         /* Desktop PDF Viewer */

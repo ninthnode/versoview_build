@@ -38,7 +38,8 @@ const Home = ({
   user,
   authVerified,
   userDetails,
-  pagination
+  pagination,
+  userFollowings
 }) => {
   const [tabIndex, setTabIndex] = useState(0);
   const [postList, setPostList] = useState([]);
@@ -187,8 +188,8 @@ const Home = ({
           </TabPanel>
           <TabPanel p='0'>
           <Box mt='2'>
-            {userDetails&&followings.data && deviceType!='desktop' && (
-              <Following followings={followings} user={userDetails} fetchfollowChannelList={fetchfollowChannelList}/>
+            {userFollowings  && (
+              <Following followings={userFollowings} user={userDetails} fetchfollowChannelList={fetchfollowChannelList}/>
             )}
             </Box>
           </TabPanel>
@@ -207,7 +208,8 @@ const mapStateToProps = (state) => ({
   user: state.auth.user?.user,
   authVerified: state.auth.userVerified,
   userDetails: state.profile.user,
-  pagination: state.post.pagination
+  pagination: state.post.pagination,
+  userFollowings: state.channel.userFollowings
 });
 
 const mapDispatchToProps = {

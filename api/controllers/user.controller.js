@@ -284,29 +284,90 @@ module.exports.resetPassword = asyncHandler(async (req, res) => {
 module.exports.updateUser = asyncHandler(async (req, res) => {
   const updateData = req.body;
   const userId = req.params._id;
-  // try{}
+
+  // Fetch existing user to compare username/email changes
+  const existingUser = await User.findById(userId);
+  if (!existingUser) {
+    return res.status(404).json({ status: 404, message: "User not found" });
+  }
+
+  // Prevent duplicate usernames when the username is being changed
+  if (updateData.username && updateData.username !== existingUser.username) {
+    const isUsernameTaken = await User.findOne({
+      username: updateData.username,
+      _id: { $ne: userId },
+    });
+    const isChannelUsernameTaken = await Channel.findOne({
+      username: updateData.username,
+      userId: { $ne: userId },
+    });
+
+    if (isUsernameTaken || isChannelUsernameTaken) {
+      return res.status(409).json({
+        status: 409,
+        message: "Username already exists",
+      });
+    }
+  }
+
   const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
     new: true,
+    runValidators: true,
   });
-  const updatedChannelImage = await Channel.findOneAndUpdate(
+
+  const channelUpdate = {};
+  if (updateData.profileImageUrl) {
+    channelUpdate.channelIconImageUrl = updateData.profileImageUrl;
+  }
+  if (updateData.username) {
+    channelUpdate.username = updateData.username;
+  }
+  if (updateData.channelName) {
+    channelUpdate.channelName = updateData.channelName;
+  }
+  if (updateData.profileBgColor) {
+    channelUpdate.backgroundColor = updateData.profileBgColor;
+  }
+  if (updateData.profileAbout) {
+    channelUpdate.about = updateData.profileAbout;
+  }
+  if (updateData.profileUrl) {
+    channelUpdate.url = updateData.profileUrl;
+  }
+  if (updateData.email) {
+    channelUpdate.email = updateData.email;
+  }
+  if (updateData.profilePhone) {
+    channelUpdate.phone = updateData.profilePhone;
+  }
+  if (updateData.profileLocation) {
+    channelUpdate.location = updateData.profileLocation;
+  }
+
+  const updatedChannel = await Channel.findOneAndUpdate(
     { userId: userId },
-    { channelIconImageUrl: updateData.profileImageUrl },
+    { $set: channelUpdate },
     {
       new: true,
     }
   );
 
-  if (!updatedChannelImage) {
+  if (!updatedChannel) {
     return res.status(404).json({ status: 404, message: "channel not found" });
   }
-  if (!updatedUser) {
-    return res.status(404).json({ status: 404, message: "User not found" });
-  }
+
+  const token = await generateToken(updatedUser._id, updatedUser.username);
+  const refreshtoken = await generateRefreshToken(
+    updatedUser._id,
+    updatedUser.username
+  );
 
   return res.status(200).json({
     status: 200,
     message: "User updated successfully",
     user: updatedUser,
+    token,
+    refreshtoken,
   });
 });
 

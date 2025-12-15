@@ -115,6 +115,14 @@ const updateUser = (key, content_type, uploadImage, id, dataObj) => {
         }
       );
 
+      // Refresh tokens if backend sends updated tokens (e.g., after username change)
+      if (responsefile.data?.token) {
+        localStorage.setItem("token", JSON.stringify(responsefile.data.token));
+      }
+      if (responsefile.data?.refreshtoken) {
+        localStorage.setItem("refreshToken", JSON.stringify(responsefile.data.refreshtoken));
+      }
+
       dispatch({
         type: USER_UPDATE_SUCCESS,
         payload: responsefile.data.user,

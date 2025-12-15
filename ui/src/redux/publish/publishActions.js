@@ -12,7 +12,6 @@ import {
     CLEAN_EDITION,
     GET_LIBRARY_IMAGES_REQUEST,
     GET_LIBRARY_IMAGES_SUCCESS,
-    GET_LIBRARY_IMAGES_PARTIAL_SUCCESS,
     UPLOAD_LIBRARY_IMAGE_REQUEST,
     UPLOAD_LIBRARY_IMAGE_SUCCESS,
     GET_LIBRARY_IMAGES_FAILURE,
@@ -331,36 +330,16 @@ import {
       });
     }
   };
-  export const getLibraryImagesForPageTurner = (editionId, startPage = null, endPage = null) => async (dispatch) => {
+  export const getLibraryImagesForPageTurner = (editionId) => async (dispatch) => {
     try {
       dispatch({ type: GET_LIBRARY_IMAGES_REQUEST });
-      
-      // Build URL with optional page range parameters
-      let url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/editions/getLibraryImagesForPageTurner/${editionId}`;
-      if (startPage !== null && endPage !== null) {
-        url += `?startPage=${startPage}&endPage=${endPage}`;
-      }
-      
-      const response = await axios.get(url);
-      
-      // If page range was specified, merge with existing images
-      if (startPage !== null && endPage !== null && response?.data?.data) {
-        dispatch({
-          type: GET_LIBRARY_IMAGES_PARTIAL_SUCCESS,
-          payload: {
-            images: response?.data?.data,
-            startPage: response?.data?.startPage,
-            endPage: response?.data?.endPage,
-            totalPages: response?.data?.totalPages,
-          },
-        });
-      } else {
-        // Full load (backward compatibility)
-        dispatch({
-          type: GET_LIBRARY_IMAGES_SUCCESS,
-          payload: response?.data?.data,
-        });
-      }
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/editions/getLibraryImagesForPageTurner/${editionId}`,
+      );
+      dispatch({
+        type: GET_LIBRARY_IMAGES_SUCCESS,
+        payload: response?.data?.data,
+      });
     } catch (error) {
       console.error("Error fetching library images:", error);
       dispatch({

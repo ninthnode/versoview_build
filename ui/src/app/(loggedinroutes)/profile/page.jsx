@@ -374,7 +374,7 @@ function Profile() {
                   <Text fontSize="md">{user.username}</Text>
                 )}
 
-                <Text fontSize="md">URL:</Text>
+                {/* <Text fontSize="md">URL:</Text>
                 {isEditing ? (
                   <Input
                     bg="#fff"
@@ -387,7 +387,7 @@ function Profile() {
                       {user.profileUrl}
                     </Link>
                   </Text>
-                )}
+                )} */}
 
                 <Text fontSize="md">Email:</Text>
                 {isEditing ? (

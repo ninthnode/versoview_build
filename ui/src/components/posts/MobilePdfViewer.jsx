@@ -21,11 +21,9 @@ import 'swiper/css/navigation';
 import 'swiper/css/zoom';
 import 'swiper/css/pagination';
 import './style.css';
-import { useDispatch, useSelector } from 'react-redux';
-import { getLibraryImagesForPageTurner } from '../../redux/publish/publishActions';
 
 // Component to merge two images side by side without quality loss
-const MergedImage = ({ leftImage, rightImage, alt, isVisible = true }) => {
+const MergedImage = ({ leftImage, rightImage, alt }) => {
   const [mergedImageSrc, setMergedImageSrc] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -39,41 +37,16 @@ const MergedImage = ({ leftImage, rightImage, alt, isVisible = true }) => {
   
   const canvasRef = useRef(null);
   const imageRef = useRef(null);
-  const abortControllerRef = useRef(null);
 
   useEffect(() => {
-    // Only load images when slide is visible (lazy loading for iOS memory management)
-    if (!isVisible) {
-      // Cancel any in-flight requests when slide becomes invisible
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-        abortControllerRef.current = null;
-      }
-      // Don't reset loading state if we already have an image (keep it cached)
-      if (!mergedImageSrc) {
-        setIsLoading(false);
-      }
-      return;
-    }
-
     if (!leftImage || !rightImage) {
       console.log('Missing images:', { leftImage, rightImage });
-      return;
-    }
-
-    // If we already have the merged image, don't reload
-    if (mergedImageSrc) {
-      setIsLoading(false);
       return;
     }
 
     console.log('Starting image merge:', { leftImage, rightImage });
     setIsLoading(true);
     setError(null);
-
-    // Create abort controller for this request
-    abortControllerRef.current = new AbortController();
-    const signal = abortControllerRef.current.signal;
 
     const mergeImages = async () => {
       try {
@@ -94,36 +67,14 @@ const MergedImage = ({ leftImage, rightImage, alt, isVisible = true }) => {
             return url;
           }
           
-          try {
-            const proxiedUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/image-proxy?url=` + encodeURIComponent(url);
-            const response = await fetch(proxiedUrl, { 
-              mode: 'cors',
-              credentials: 'omit',
-              cache: 'default',
-              signal: signal
-            });
-            
-            if (!response.ok) {
-              throw new Error(`Failed to fetch image: ${response.status} ${response.statusText}`);
-            }
-            
-            const blob = await response.blob();
-            return await new Promise((resolve, reject) => {
-              const reader = new FileReader();
-              reader.onloadend = () => {
-                if (reader.result) {
-                  resolve(reader.result);
-                } else {
-                  reject(new Error('Failed to convert blob to data URL'));
-                }
-              };
-              reader.onerror = () => reject(new Error('FileReader error'));
-              reader.readAsDataURL(blob);
-            });
-          } catch (error) {
-            console.error('Error in imageUrlToDataUrl:', error);
-            throw error;
-          }
+          const proxiedUrl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/image-proxy?url=` + encodeURIComponent(url);
+          const response = await fetch(proxiedUrl, { mode: 'cors' });
+          const blob = await response.blob();
+          return await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.readAsDataURL(blob);
+          });
         };
 
         // Convert both images to data URLs first
@@ -155,98 +106,42 @@ const MergedImage = ({ leftImage, rightImage, alt, isVisible = true }) => {
         ]);
 
         // Calculate dimensions - maintain aspect ratio
-        // iOS Safari has canvas size limits (typically 4096x4096 or memory-based)
-        // Limit canvas size to prevent iOS crashes
-        const MAX_CANVAS_DIMENSION = 4096;
         const maxHeight = Math.max(leftImg.height, rightImg.height);
         const leftWidth = (leftImg.width / leftImg.height) * maxHeight;
         const rightWidth = (rightImg.width / rightImg.height) * maxHeight;
-        let totalWidth = leftWidth + rightWidth;
-        let finalHeight = maxHeight;
+        const totalWidth = leftWidth + rightWidth;
 
-        // Scale down if exceeds iOS limits
-        if (totalWidth > MAX_CANVAS_DIMENSION || finalHeight > MAX_CANVAS_DIMENSION) {
-          const scale = Math.min(
-            MAX_CANVAS_DIMENSION / totalWidth,
-            MAX_CANVAS_DIMENSION / finalHeight
-          );
-          totalWidth = Math.floor(totalWidth * scale);
-          finalHeight = Math.floor(finalHeight * scale);
-          console.log('Canvas scaled down for iOS compatibility:', { totalWidth, finalHeight, scale });
-        }
-
-        console.log('Canvas dimensions:', { totalWidth, finalHeight });
+        console.log('Canvas dimensions:', { totalWidth, maxHeight });
         
         canvas.width = totalWidth;
-        canvas.height = finalHeight;
+        canvas.height = maxHeight;
         
         const ctx = canvas.getContext('2d');
         
         // Clear canvas
-        ctx.clearRect(0, 0, totalWidth, finalHeight);
-        
-        // Calculate scale factor if canvas was scaled down
-        const scaleFactor = totalWidth / (leftWidth + rightWidth);
-        const scaledLeftWidth = leftWidth * scaleFactor;
-        const scaledRightWidth = rightWidth * scaleFactor;
+        ctx.clearRect(0, 0, totalWidth, maxHeight);
         
         // Draw left image
-        ctx.drawImage(leftImg, 0, 0, scaledLeftWidth, finalHeight);
+        ctx.drawImage(leftImg, 0, 0, leftWidth, maxHeight);
         
         // Draw right image
-        ctx.drawImage(rightImg, scaledLeftWidth, 0, scaledRightWidth, finalHeight);
+        ctx.drawImage(rightImg, leftWidth, 0, rightWidth, maxHeight);
         
         // Convert to data URL
-        // iOS Safari has data URL size limits, use JPEG with quality for smaller size if needed
-        let dataURL;
-        try {
-          dataURL = canvas.toDataURL('image/png', 1.0);
-          // If data URL is too large (> 32MB is iOS limit), use JPEG with quality
-          if (dataURL.length > 32 * 1024 * 1024) {
-            console.log('Data URL too large, using JPEG compression');
-            dataURL = canvas.toDataURL('image/jpeg', 0.9);
-          }
-          console.log('Merged image created, data URL length:', dataURL.length);
-          setMergedImageSrc(dataURL);
-          setIsLoading(false);
-        } catch (error) {
-          console.error('Error converting canvas to data URL:', error);
-          // Fallback: try JPEG with lower quality
-          try {
-            dataURL = canvas.toDataURL('image/jpeg', 0.8);
-            setMergedImageSrc(dataURL);
-            setIsLoading(false);
-          } catch (fallbackError) {
-            console.error('Fallback conversion also failed:', fallbackError);
-            setError('Failed to process images. Image may be too large for this device.');
-            setIsLoading(false);
-          }
-        }
+        const dataURL = canvas.toDataURL('image/png', 1.0);
+        console.log('Merged image created, data URL length:', dataURL.length);
+        setMergedImageSrc(dataURL);
+        setIsLoading(false);
         
       } catch (error) {
-        // Don't set error if request was aborted (slide became invisible)
-        if (error.name === 'AbortError') {
-          console.log('Image merge aborted (slide no longer visible)');
-          return;
-        }
         console.error('Error merging images:', error);
         setError(error.message);
         setIsLoading(false);
-      } finally {
-        abortControllerRef.current = null;
       }
     };
 
     mergeImages();
-    
-    // Cleanup function
-    return () => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-        abortControllerRef.current = null;
-      }
-    };
-  }, [leftImage, rightImage, isVisible]);
+  }, [leftImage, rightImage]);
 
   // Touch event handlers for custom zoom
   const getTouchDistance = (touches) => {
@@ -262,13 +157,11 @@ const MergedImage = ({ leftImage, rightImage, alt, isVisible = true }) => {
     if (e.touches.length === 2) {
       // Pinch gesture start
       e.preventDefault();
-      e.stopPropagation();
       setInitialDistance(getTouchDistance(e.touches));
       setInitialScale(scale);
     } else if (e.touches.length === 1 && scale > 1) {
       // Single touch drag when zoomed
       e.preventDefault();
-      e.stopPropagation();
       setIsDragging(true);
       setDragStart({ x: e.touches[0].clientX, y: e.touches[0].clientY });
     }
@@ -278,7 +171,6 @@ const MergedImage = ({ leftImage, rightImage, alt, isVisible = true }) => {
     if (e.touches.length === 2) {
       // Pinch zoom
       e.preventDefault();
-      e.stopPropagation();
       const currentDistance = getTouchDistance(e.touches);
       const scaleChange = currentDistance / initialDistance;
       const newScale = Math.min(3, Math.max(1, initialScale * scaleChange));
@@ -291,7 +183,6 @@ const MergedImage = ({ leftImage, rightImage, alt, isVisible = true }) => {
     } else if (e.touches.length === 1 && isDragging && scale > 1) {
       // Pan when zoomed
       e.preventDefault();
-      e.stopPropagation();
       const deltaX = e.touches[0].clientX - dragStart.x;
       const deltaY = e.touches[0].clientY - dragStart.y;
       
@@ -328,19 +219,10 @@ const MergedImage = ({ leftImage, rightImage, alt, isVisible = true }) => {
     );
   }
 
-  if (!isVisible && !mergedImageSrc) {
-    // Don't show anything if slide isn't visible and we haven't loaded yet
-    return (
-      <Box color="white" textAlign="center" p={4}>
-        <Text fontSize="sm" opacity={0.5}>Loading when visible...</Text>
-      </Box>
-    );
-  }
-
   if (isLoading) {
     return (
       <Box color="white" textAlign="center" p={4}>
-        <Text>Loading images...</Text>
+        <Text>Loading...</Text>
       </Box>
     );
   }
@@ -387,123 +269,33 @@ const MergedImage = ({ leftImage, rightImage, alt, isVisible = true }) => {
   );
 };
 
-const MobilePdfViewer = ({ isOpen, onClose, title, libraryImages: initialLibraryImages, editionId }) => {
-  const dispatch = useDispatch();
+const MobilePdfViewer = ({ isOpen, onClose, title, libraryImages }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [windowDimensions, setWindowDimensions] = useState({
     width: typeof window !== 'undefined' ? window.innerWidth : 375,
     height: typeof window !== 'undefined' ? window.innerHeight : 667
   });
   const swiperRef = useRef(null);
-  const [visibleSlides, setVisibleSlides] = useState(new Set([0])); // Track visible slide indices
-  const [loadedImageIndices, setLoadedImageIndices] = useState(new Set());
-  const [totalPages, setTotalPages] = useState(0);
-
-  // Get libraryImages from Redux if editionId is provided, otherwise use prop
-  const reduxLibraryImages = useSelector((state) => state.publish.libraryImages);
-  const reduxTotalPages = useSelector((state) => state.publish.totalPages);
-  const libraryImages = editionId ? (reduxLibraryImages || []) : (initialLibraryImages || []);
-
-  // Detect iOS device
-  const isIOS = typeof window !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-  
-  // Update total pages from redux
-  useEffect(() => {
-    if (reduxTotalPages && reduxTotalPages > 0) {
-      setTotalPages(reduxTotalPages);
-    }
-  }, [reduxTotalPages]);
 
   // Check if device is in landscape mode
   const isLandscape = windowDimensions.width > windowDimensions.height;
   
-  // Load images on demand based on visible slides
-  const loadImagesForSlides = (slideIndices) => {
-    if (!editionId) return;
-    
-    slideIndices.forEach(slideIndex => {
-      if (loadedImageIndices.has(slideIndex)) return;
-      
-      let startPage, endPage;
-      
-      if (!isLandscape) {
-        // Portrait: each slide = 1 image
-        startPage = slideIndex;
-        endPage = slideIndex;
-      } else {
-        // Landscape: first slide = 1 image, rest are pairs
-        if (slideIndex === 0) {
-          startPage = 0;
-          endPage = 0;
-        } else {
-          // Each pair slide uses 2 images: (slideIndex - 1) * 2 + 1 and (slideIndex - 1) * 2 + 2
-          startPage = (slideIndex - 1) * 2 + 1;
-          endPage = startPage + 1; // Will be clamped by backend if exceeds totalPages
-        }
-      }
-      
-      // Load the required pages
-      dispatch(getLibraryImagesForPageTurner(editionId, startPage, endPage));
-      
-      // Mark as loaded
-      setLoadedImageIndices(prev => new Set([...prev, slideIndex]));
-    });
-  };
-
-  // Load total pages count on initial open
-  useEffect(() => {
-    if (isOpen && editionId && totalPages === 0) {
-      // Load first page to get totalPages count
-      dispatch(getLibraryImagesForPageTurner(editionId, 0, 0));
-    }
-  }, [isOpen, editionId, totalPages]);
-
-  // Load images when slides become visible
-  useEffect(() => {
-    if (isOpen && editionId && visibleSlides.size > 0) {
-      loadImagesForSlides(Array.from(visibleSlides));
-    }
-  }, [isOpen, visibleSlides, editionId, isLandscape]);
-  
   // Debug logging
   console.log('Mobile PDF Viewer - Window dimensions:', windowDimensions);
   console.log('Mobile PDF Viewer - Is landscape:', isLandscape);
-  console.log('Mobile PDF Viewer - Is iOS:', isIOS);
 
-  // Update window dimensions on resize (with iOS-specific handling)
+  // Update window dimensions on resize
   useEffect(() => {
     const updateWindowDimensions = () => {
       const width = window.innerWidth;
-      // iOS Safari viewport height fix: use visual viewport if available, otherwise innerHeight
-      let height = window.innerHeight;
-      if (isIOS && window.visualViewport) {
-        height = window.visualViewport.height;
-      } else if (isIOS) {
-        // Fallback for older iOS: use document.documentElement.clientHeight
-        height = document.documentElement.clientHeight || window.innerHeight;
-      }
+      const height = window.innerHeight;
       setWindowDimensions({ width, height });
     };
     
     updateWindowDimensions();
     window.addEventListener('resize', updateWindowDimensions);
-    // iOS-specific: listen to visual viewport changes
-    if (isIOS && window.visualViewport) {
-      window.visualViewport.addEventListener('resize', updateWindowDimensions);
-    }
-    // iOS-specific: listen to orientation changes
-    window.addEventListener('orientationchange', () => {
-      setTimeout(updateWindowDimensions, 100);
-    });
-    
-    return () => {
-      window.removeEventListener('resize', updateWindowDimensions);
-      if (isIOS && window.visualViewport) {
-        window.visualViewport.removeEventListener('resize', updateWindowDimensions);
-      }
-      window.removeEventListener('orientationchange', updateWindowDimensions);
-    };
-  }, [isIOS]);
+    return () => window.removeEventListener('resize', updateWindowDimensions);
+  }, []);
 
   // Auto fullscreen on mobile when modal opens
   useEffect(() => {
@@ -512,27 +304,17 @@ const MobilePdfViewer = ({ isOpen, onClose, title, libraryImages: initialLibrary
     // }
   }, [isOpen]);
 
-  // Browser full-screen handling (iOS Safari doesn't support fullscreen API)
+  // Browser full-screen handling
   useEffect(() => {
-    // iOS Safari doesn't support fullscreen API, so skip on iOS
-    if (isIOS) {
-      setIsFullScreen(false);
-      return;
-    }
-    
     const fullScreenChange = () => {
-      setIsFullScreen(!!(
-        document.fullscreenElement ||
-        document.webkitFullscreenElement ||
-        document.mozFullScreenElement ||
-        document.msFullscreenElement
-      ));
+      setIsFullScreen(!!document.fullscreenElement);
       
-      if (document.fullscreenElement || document.webkitFullscreenElement) {
+      if (document.fullscreenElement) {
         setTimeout(() => {
-          const width = window.innerWidth;
-          const height = window.innerHeight;
-          setWindowDimensions({ width, height });
+          setWindowDimensions({
+            width: window.innerWidth,
+            height: window.innerHeight
+          });
         }, 100);
       }
     };
@@ -548,15 +330,9 @@ const MobilePdfViewer = ({ isOpen, onClose, title, libraryImages: initialLibrary
       document.removeEventListener('mozfullscreenchange', fullScreenChange);
       document.removeEventListener('MSFullscreenChange', fullScreenChange);
     };
-  }, [isIOS]);
+  }, []);
 
   const toggleFullScreen = () => {
-    // iOS Safari doesn't support fullscreen API
-    if (isIOS) {
-      console.log('Fullscreen not supported on iOS Safari');
-      return;
-    }
-    
     if (!isFullScreen) {
       if (document.documentElement.requestFullscreen) {
         document.documentElement.requestFullscreen()
@@ -638,17 +414,12 @@ const MobilePdfViewer = ({ isOpen, onClose, title, libraryImages: initialLibrary
     >
       <ModalOverlay bg="blackAlpha.900" />
       <ModalContent 
-        height={isIOS ? "100dvh" : "100vh"}
-        maxH={isIOS ? "100dvh" : "100vh"}
+        height="100vh" 
+        maxH="100vh"
         maxW="100%"
         m={0}
         borderRadius={0}
         bg="black"
-        style={isIOS ? {
-          height: '100dvh',
-          maxHeight: '100dvh',
-          minHeight: '100dvh'
-        } : {}}
       >
         <ModalHeader 
           position="absolute"
@@ -666,19 +437,17 @@ const MobilePdfViewer = ({ isOpen, onClose, title, libraryImages: initialLibrary
             <Text fontSize="sm" fontWeight="semibold" color="white" noOfLines={1}>
               {title}
             </Text>
-              <HStack spacing={2}>
+            <HStack spacing={2}>
               {/* <Tooltip label={isFullScreen ? "Exit Full Screen" : "Full Screen"}> */}
-                {!isIOS && (
-                  <IconButton
-                    icon={isFullScreen ? <FaCompress /> : <FaExpand />}
-                    onClick={toggleFullScreen}
-                    variant="ghost"
-                    size="sm"
-                    color="white"
-                    _hover={{ bg: "rgba(255,255,255,0.1)" }}
-                    aria-label={isFullScreen ? "Exit Full Screen" : "Full Screen"}
-                  />
-                )}
+                <IconButton
+                  icon={isFullScreen ? <FaCompress /> : <FaExpand />}
+                  onClick={toggleFullScreen}
+                  variant="ghost"
+                  size="sm"
+                  color="white"
+                  _hover={{ bg: "rgba(255,255,255,0.1)" }}
+                  aria-label={isFullScreen ? "Exit Full Screen" : "Full Screen"}
+                />
               {/* </Tooltip> */}
               
               {/* <Tooltip label="Close"> */}
@@ -696,16 +465,7 @@ const MobilePdfViewer = ({ isOpen, onClose, title, libraryImages: initialLibrary
           </Flex>
         </ModalHeader>
         
-        <ModalBody 
-          p={0} 
-          height={isIOS ? "100dvh" : "100vh"}
-          position="relative"
-          style={isIOS ? {
-            height: '100dvh',
-            maxHeight: '100dvh',
-            minHeight: '100dvh'
-          } : {}}
-        >
+        <ModalBody p={0} height="100vh" position="relative">
           {slides.length > 0 ? (
             <Swiper
               ref={swiperRef}
@@ -724,11 +484,6 @@ const MobilePdfViewer = ({ isOpen, onClose, title, libraryImages: initialLibrary
                 zoomedSlideClass: 'swiper-slide-zoomed'
               }}
               touchEventsTarget="container"
-              touchStartPreventDefault={false}
-              touchMoveStopPropagation={false}
-              simulateTouch={true}
-              allowTouchMove={true}
-              watchSlidesProgress={true}
               pagination={{
                 clickable: true,
                 dynamicBullets: true,
@@ -745,43 +500,18 @@ const MobilePdfViewer = ({ isOpen, onClose, title, libraryImages: initialLibrary
                 // Store swiper instance globally for merged image updates
                 window.swiper = swiper;
                 console.log('Swiper instance stored');
-                
-                // Track visible slides for lazy loading
-                const updateVisibleSlides = () => {
-                  const activeIndex = swiper.activeIndex;
-                  const visible = new Set([activeIndex]);
-                  // Preload adjacent slides (1 before, 1 after) for smoother experience
-                  if (activeIndex > 0) visible.add(activeIndex - 1);
-                  if (activeIndex < slides.length - 1) visible.add(activeIndex + 1);
-                  setVisibleSlides(visible);
-                };
-                
-                updateVisibleSlides();
-                swiper.on('slideChange', updateVisibleSlides);
-              }}
-              onSlideChange={(swiper) => {
-                const activeIndex = swiper.activeIndex;
-                const visible = new Set([activeIndex]);
-                // Preload adjacent slides
-                if (activeIndex > 0) visible.add(activeIndex - 1);
-                if (activeIndex < slides.length - 1) visible.add(activeIndex + 1);
-                setVisibleSlides(visible);
               }}
             >
               {slides.map((slide, index) => (
                 <SwiperSlide key={slide.key}>
                   <Box 
-                    height={isIOS ? "100dvh" : "100vh"}
+                    height="100vh" 
                     display="flex" 
                     alignItems="center" 
                     justifyContent="center"
                     bg="black"
                     position="relative"
                     pt="60px"
-                    style={isIOS ? {
-                      height: '100dvh',
-                      maxHeight: '100dvh'
-                    } : {}}
                   >
                     {slide.type === 'single' ? (
                       <div className="swiper-zoom-container">
@@ -801,7 +531,6 @@ const MobilePdfViewer = ({ isOpen, onClose, title, libraryImages: initialLibrary
                         leftImage={slide.images[0]}
                         rightImage={slide.images[1]}
                         alt={`Pages ${(index * 2)} - ${(index * 2) + 1}`}
-                        isVisible={visibleSlides.has(index)}
                       />
                     )}
                   </Box>

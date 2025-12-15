@@ -11,7 +11,6 @@ import {
     CLEAN_EDITION,
     GET_LIBRARY_IMAGES_REQUEST,
     GET_LIBRARY_IMAGES_SUCCESS,
-    GET_LIBRARY_IMAGES_PARTIAL_SUCCESS,
     UPLOAD_LIBRARY_IMAGE_REQUEST,
     UPLOAD_LIBRARY_IMAGE_SUCCESS,
     GET_LIBRARY_IMAGES_FAILURE,
@@ -36,7 +35,6 @@ import {
     libraryUploadLoading: false,
     libraryUploadError: null,
     tempLibraryImages: [],
-    totalPages: 0,
   };
   
  const publishReducer = (state = initialState, action) => {
@@ -67,26 +65,6 @@ import {
           ...state,
           libraryLoading: false,
           libraryImages: action.payload,
-          totalPages: action.payload?.length || 0,
-          libraryError: null,
-        };
-      case GET_LIBRARY_IMAGES_PARTIAL_SUCCESS:
-        // Merge partial images with existing images array
-        const { images, startPage, endPage, totalPages } = action.payload;
-        const existingImages = state.libraryImages || [];
-        const newImages = [...existingImages];
-        
-        // Fill in the requested range
-        images.forEach((image, index) => {
-          const actualIndex = startPage + index;
-          newImages[actualIndex] = image;
-        });
-        
-        return {
-          ...state,
-          libraryLoading: false,
-          libraryImages: newImages,
-          totalPages: totalPages,
           libraryError: null,
         };
       case GET_LIBRARY_IMAGES_FAILURE:

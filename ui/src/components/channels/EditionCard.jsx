@@ -20,6 +20,7 @@ import { FaBookmark as BookmarkFilled } from "react-icons/fa6";
 import Link from "next/link";
 import { getExcerptHtml, getExcerptText } from "@/app/utils/GetExcerpt";
 import DOMPurify from "dompurify";
+import useDeviceType from "@/components/useDeviceType";
 
 const EditionCard = ({
   edition,
@@ -28,6 +29,7 @@ const EditionCard = ({
   submitBookmarkEdition,
   isLinkDisabled = false,
 }) => {
+    const deviceType = useDeviceType();
   return (
     <Box mb="4">
       <Card px={4} mb={4} boxShadow="none">
@@ -101,11 +103,11 @@ const EditionCard = ({
                 <Box w="100%" pt="3">
                   <Text
                     fontSize="md"
-                    textAlign="justify"
+                    textAlign="left"
                     dangerouslySetInnerHTML={{
                       __html: getExcerptHtml(
                         DOMPurify.sanitize(edition.editionDescription),
-                        150
+                        deviceType === 'phone' ? 500 : 500
                       ),
                     }}
                   />
@@ -125,16 +127,16 @@ const EditionCard = ({
                       cursor: "pointer",
                     }}
                   >
-                    <Image src={edition?.firstImage} alt="pdf" />
+                    <Image src={edition?.firstImage} alt="pdf" height={"300px" }/>
                   </div>
                   <Box w="100%" pt="3">
                     <Text
                       fontSize="md"
-                      textAlign="justify"
+                      textAlign="left"
                       dangerouslySetInnerHTML={{
                         __html: getExcerptHtml(
                           DOMPurify.sanitize(edition.editionDescription),
-                          150
+                          deviceType === 'phone' ? 500 : 500
                         ),
                       }}
                     />

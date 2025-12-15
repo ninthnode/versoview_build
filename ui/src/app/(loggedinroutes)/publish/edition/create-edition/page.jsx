@@ -492,7 +492,7 @@ useEffect(() => {
                 placeholder="Enter details about this edition..."
                 size="sm"
                 minH="xs"
-                maxLength={700}
+                maxLength={500}
               />
             </Box>
             <br />

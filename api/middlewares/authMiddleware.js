@@ -20,10 +20,9 @@ module.exports.protectUser = asyncHandler(async (req, res, next) => {
 			// Verify the token using the public key
 			const decoded = jwt.verify(token, cert, { algorithms: ["RS256"] });
 
-			// Fetch the user from the database
+			// Fetch the user from the database using id to avoid mismatches after username changes
 			req.user = await User.findOne({
 				_id: decoded.id,
-				username: decoded.username,
 				userType: { $in: ["user", "publisher"] },
 			});
 

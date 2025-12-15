@@ -2,23 +2,3 @@
 .swiper-button-next-custom {
   display: none !important;
 }
-
-/* iOS Safari viewport fixes */
-@supports (-webkit-touch-callout: none) {
-  /* iOS Safari specific styles */
-  .swiper-zoom-container {
-    -webkit-overflow-scrolling: touch;
-    touch-action: pan-x pan-y pinch-zoom;
-  }
-  
-  /* Prevent iOS Safari bounce/overscroll */
-  .swiper {
-    overscroll-behavior: none;
-    -webkit-overflow-scrolling: touch;
-  }
-  
-  /* Fix for iOS viewport height issues */
-  .swiper-slide {
-    min-height: -webkit-fill-available;
-  }
-}
