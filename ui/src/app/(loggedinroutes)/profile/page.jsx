@@ -51,7 +51,6 @@ function Profile() {
   const [genre, setGenre] = useState([]);
   const [subGenre, setSubGenre] = useState([]);
   const [url, setUrl] = useState();
-  const [username, setUsername] = useState();
   const [email, setEmail] = useState();
   const [phone, setPhone] = useState();
   const [location, setLocation] = useState();
@@ -71,7 +70,6 @@ function Profile() {
       setGenre(user.genre);
       setSubGenre(user.subGenre);
       setAbout(user.profileAbout);
-      setUsername(user.username);
       setEmail(user.email);
       setPhone(user.profilePhone);
       setLocation(user.profileLocation);
@@ -101,7 +99,6 @@ function Profile() {
       profileFacebook: facebook,
       email: email,
       channelName: channelName,
-      username: username,
       profileBgColor: bg,
     };
     setUpdating(true);
@@ -356,22 +353,22 @@ function Profile() {
                 <Text fontSize="lg" fontWeight="bold">
                   Profile:
                 </Text>
-                <ChannelName
+                {/* <ChannelName
                   defaultValue={user.channelName}
                   isEditing={isEditing}
                   channelName={channelName}
                   setChannelName={setChannelName}
-                />
+                /> */}<Box></Box>
 
                 <Text fontSize="md">Name:</Text>
                 {isEditing ? (
                   <Input
                     bg="#fff"
-                    onChange={(e) => setUsername(e.target.value)}
-                    defaultValue={user.username}
+                    onChange={(e) => setChannelName(e.target.value)}
+                    defaultValue={user.channelName}
                   />
                 ) : (
-                  <Text fontSize="md">{user.username}</Text>
+                  <Text fontSize="md">{user.channelName}</Text>
                 )}
 
                 {/* <Text fontSize="md">URL:</Text>

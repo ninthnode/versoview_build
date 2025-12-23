@@ -29,7 +29,7 @@ const EditionCard = ({
   submitBookmarkEdition,
   isLinkDisabled = false,
 }) => {
-    const deviceType = useDeviceType();
+  const deviceType = useDeviceType();
   return (
     <Box mb="4">
       <Card px={4} mb={4} boxShadow="none">
@@ -87,61 +87,52 @@ const EditionCard = ({
         </CardHeader>
         <CardBody p={1} w="100%">
           {isLinkDisabled ? (
-            <Box pos="relative" w="100%">
-              <Flex gap="2" overflow="hidden" minH="200px">
-                <div
-                  className="pdf-container"
-                  style={{
-                    width: "100%",
-                    display: "flex",
-                    justifyContent: "center",
-                    cursor: "default",
-                  }}
-                >
-                  <Image src={edition?.firstImage} alt="pdf" />
-                </div>
-                <Box w="100%" pt="3">
+              <Box pos="relative" w="100%">
+                <Box minH="200px">
+                  <Image
+                    src={edition?.firstImage}
+                    alt="pdf"
+                    maxH="280px"
+                    mr="4"
+                    mb="2"
+                    float="left"
+                    cursor="pointer"
+                  />
+
+                  <Text
+                    fontSize="md"
+                    textAlign="left"
+                      dangerouslySetInnerHTML={{
+                        __html: DOMPurify.sanitize(edition.editionDescription),
+                      }}
+                    />
+                </Box>
+              </Box>
+          ) : (
+            <Link href={`../edition/${edition._id}`}>
+              <Box pos="relative" w="100%">
+                <Box minH="200px">
+                  <Image
+                    src={edition?.firstImage}
+                    alt="pdf"
+                    maxH="280px"
+                    mr="4"
+                    mb="2"
+                    float="left"
+                    cursor="pointer"
+                  />
+
                   <Text
                     fontSize="md"
                     textAlign="left"
                     dangerouslySetInnerHTML={{
                       __html: getExcerptHtml(
                         DOMPurify.sanitize(edition.editionDescription),
-                        deviceType === 'phone' ? 500 : 500
+                        deviceType === "phone" ? 500 : 500
                       ),
                     }}
                   />
                 </Box>
-              </Flex>
-            </Box>
-          ) : (
-            <Link href={`../edition/${edition._id}`}>
-              <Box pos="relative" w="100%">
-                <Flex gap="2" overflow="hidden" minH="200px">
-                  <div
-                    className="pdf-container"
-                    style={{
-                      width: "100%",
-                      display: "flex",
-                      justifyContent: "center",
-                      cursor: "pointer",
-                    }}
-                  >
-                    <Image src={edition?.firstImage} alt="pdf" height={"300px" }/>
-                  </div>
-                  <Box w="100%" pt="3">
-                    <Text
-                      fontSize="md"
-                      textAlign="left"
-                      dangerouslySetInnerHTML={{
-                        __html: getExcerptHtml(
-                          DOMPurify.sanitize(edition.editionDescription),
-                          deviceType === 'phone' ? 500 : 500
-                        ),
-                      }}
-                    />
-                  </Box>
-                </Flex>
               </Box>
             </Link>
           )}

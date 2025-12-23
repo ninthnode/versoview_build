@@ -113,7 +113,7 @@ const FollowingItem = ({ following, user, handlePinUnpin, handleUnFollowChannel 
         <IconButton
           fontSize="25px"
           aria-label="Pin Channel"
-          colorScheme={user.profileBgColor}
+          // colorScheme={user.profileBgColor}
           onClick={() => handlePinUnpin(following)}
           icon={
             following.pinned ? (

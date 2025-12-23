@@ -310,6 +310,25 @@ module.exports.updateUser = asyncHandler(async (req, res) => {
     }
   }
 
+  // Prevent duplicate channelNames when the channelName is being changed
+  if (updateData.channelName && updateData.channelName !== existingUser.channelName) {
+    const isChannelNameTaken = await User.findOne({
+      channelName: updateData.channelName,
+      _id: { $ne: userId },
+    });
+    const isChannelNameTakenInChannel = await Channel.findOne({
+      channelName: updateData.channelName,
+      userId: { $ne: userId },
+    });
+
+    if (isChannelNameTaken || isChannelNameTakenInChannel) {
+      return res.status(409).json({
+        status: 409,
+        message: "Channel name already exists",
+      });
+    }
+  }
+
   const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
     new: true,
     runValidators: true,

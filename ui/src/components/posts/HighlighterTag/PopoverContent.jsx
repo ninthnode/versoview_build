@@ -1,5 +1,5 @@
 import React from "react";
-import { FaPen } from "react-icons/fa";
+import { FaCommentAlt } from "react-icons/fa";
 import { Flex } from "@chakra-ui/react";
 const PopoverContent = ({ onClick }) => {
   return (
@@ -7,7 +7,7 @@ const PopoverContent = ({ onClick }) => {
       justifyContent="center"
       padding="10px"
       h="30px"
-      w="30px"
+      w="100px"
       borderRadius="10px"
       alignItems="center"
       backgroundColor="#333"
@@ -15,8 +15,9 @@ const PopoverContent = ({ onClick }) => {
       cursor="pointer"
       margin="0 auto"
       onClick={onClick}
+      gap={2}
     >
-      <FaPen fontSize="18px" />
+      <FaCommentAlt fontSize="11px"/>Comment
     </Flex>
   );
 };

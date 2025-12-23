@@ -43,7 +43,7 @@ const NavbarTitle = ({ navtitle, navicon }) => {
           <Button ml='-10px' pr='2' pl="0" variant="ghost" onClick={() => router.back()}>
             <Image m="0" src={"/assets/back.svg"} />
           </Button>
-          {!pathname.startsWith("/post") ||!pathname.startsWith("/messages") && (
+          {/* {!pathname.startsWith("/post") ||!pathname.startsWith("/messages") && (
             <>
               {navicon && (
                 <Avatar
@@ -58,7 +58,7 @@ const NavbarTitle = ({ navtitle, navicon }) => {
               </Tooltip>
               </Heading>}
             </>
-          )}
+          )} */}
         </Flex>
       )}
     </nav>

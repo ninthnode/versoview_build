@@ -16,7 +16,10 @@ export function stylePopover(popover, range, options) {
     }
     style.width = `${endLineRect.right - endLineRect.left}px`;
     style.height = `${endLineRect.bottom - endLineRect.top}px`;
-    style.top = `${endLineRect.top - offsetScroll.top}px`;
+    // Position the popover just below the selected text so it doesn't overlap
+    // native copy / selection toolbars on mobile devices.
+    const verticalOffset = 8; // small gap in pixels below selection
+    style.top = `${endLineRect.bottom - offsetScroll.top + verticalOffset}px`;
     style.position = "absolute";
 
     // eslint-disable-next-line no-param-reassign

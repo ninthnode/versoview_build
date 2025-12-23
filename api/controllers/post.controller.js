@@ -583,6 +583,7 @@ module.exports.getPostByChannelId = asyncHandler(async (req, res) => {
     const channelId = req.params._id;
     const userId = req.user ? req.user._id : null;
 
+        console.log('userId:', userId);
     // Check if the channel itself is suspended
     const channel = await Channel.findById(channelId);
     if (!channel || channel.status === 'suspended') {
@@ -1011,10 +1012,16 @@ module.exports.getAllBookmark = asyncHandler(async (req, res) => {
       .populate({
         path: "postId",
         model: "Post",
-        populate: {
-          path: "channelId",
-          model: "Channel",
-        },
+        populate: [
+          {
+            path: "channelId",
+            model: "Channel",
+          },
+          {
+            path: "editionId",
+            model: "Edition",
+          },
+        ],
       })
       .populate({
         path: "postCommentId",
@@ -1037,11 +1044,23 @@ module.exports.getAllBookmark = asyncHandler(async (req, res) => {
       .lean()
       .exec();
     for (const bookmark of bookmarks) {
+      // Attach channel data to edition bookmarks for display
       if (bookmark.editionId && bookmark.editionId.userId) {
         const channelData = await Channel.findOne({
           userId: bookmark.editionId.userId,
         }).lean();
         bookmark.editionId.channelData = channelData; // Attach the `Channel` data directly to `editionId`
+      }
+
+      // Enrich post bookmarks with counts/read-time so UI badges render
+      if (bookmark.postId) {
+        const comments = await PostComment.find({
+          postId: bookmark.postId._id,
+        }).lean();
+        bookmark.postId.commentCount = comments.length;
+        bookmark.postId.readingTime = calculateReadingTime(
+          bookmark.postId.bodyRichText
+        );
       }
     }
     return res

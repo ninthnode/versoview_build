@@ -56,11 +56,26 @@ export const fetchChannelByEditionId = (id) => async (dispatch) => {
   }
 };
 
-export const fetchPosts = (channelId) => async (dispatch) => {
+export const fetchPosts = (channelId) => async (dispatch,getState) => {
   dispatch({ type: FETCH_POSTS_REQUEST });
   try {
+    const { auth } = getState();
+    if (!auth.isAuthenticated) {
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/getPostByChannelId/${channelId}`
+      );
+      dispatch({ type: FETCH_POSTS_SUCCESS, payload: response.data });
+      return;
+    }
     const response = await axios.get(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/getPostByChannelId/${channelId}`
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/post/getPostByChannelId/${channelId}`,
+      {
+        headers: {
+          authorization: `Bearer ${localStorage
+            .getItem("token")
+            .replace(/"/g, "")}`,
+        },
+      }
     );
     dispatch({ type: FETCH_POSTS_SUCCESS, payload: response.data });
   } catch (error) {

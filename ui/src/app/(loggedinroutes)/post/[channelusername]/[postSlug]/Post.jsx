@@ -131,6 +131,7 @@ function SinglePost({
         // console.log("Popover opened with text: ", text);
       },
       onClick: (selectedText) => {
+        if (isAuthenticated)
         handleSelection(selectedText);
         // console.log("You clicked on: ", selectedText);
       },
