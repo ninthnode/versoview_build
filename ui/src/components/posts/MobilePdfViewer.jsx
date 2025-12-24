@@ -16,7 +16,7 @@ import {
 import { FaExpand, FaCompress } from "react-icons/fa";
 import './style.css';
 
-const MobilePdfViewer = ({ isOpen, onClose, title, libraryImages }) => {
+const MobilePdfViewer = ({ isOpen, onClose, title, libraryImages, mergedImages = [] }) => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [windowDimensions, setWindowDimensions] = useState({
     width: typeof window !== 'undefined' ? window.innerWidth : 375,
@@ -124,7 +124,7 @@ const MobilePdfViewer = ({ isOpen, onClose, title, libraryImages }) => {
         key: `single-${index}`
       }));
     } else {
-      // Landscape mode: first image single, then pairs
+      // Landscape mode: use merged images if available, otherwise fallback to pairing
       const slides = [];
       
       // First image always single and centered
@@ -134,22 +134,33 @@ const MobilePdfViewer = ({ isOpen, onClose, title, libraryImages }) => {
         key: 'cover-single'
       });
 
-      // Remaining images in pairs - each pair gets individual zoom containers
-      for (let i = 1; i < libraryImages.length; i += 2) {
-        if (i + 1 < libraryImages.length) {
-          // Pair of images with individual zoom containers
+      // Use merged images if available (they're already merged pairs)
+      if (mergedImages && mergedImages.length > 0) {
+        mergedImages.forEach((mergedImage, index) => {
           slides.push({
-            type: 'pair',
-            images: [libraryImages[i], libraryImages[i + 1]],
-            key: `pair-${i}`
+            type: 'merged',
+            images: [mergedImage],
+            key: `merged-${index}`
           });
-        } else {
-          // Last single image
-          slides.push({
-            type: 'single',
-            images: [libraryImages[i]],
-            key: `single-${i}`
-          });
+        });
+      } else {
+        // Fallback: manually pair remaining images
+        for (let i = 1; i < libraryImages.length; i += 2) {
+          if (i + 1 < libraryImages.length) {
+            // Pair of images with individual zoom containers
+            slides.push({
+              type: 'pair',
+              images: [libraryImages[i], libraryImages[i + 1]],
+              key: `pair-${i}`
+            });
+          } else {
+            // Last single image
+            slides.push({
+              type: 'single',
+              images: [libraryImages[i]],
+              key: `single-${i}`
+            });
+          }
         }
       }
       
@@ -375,6 +386,34 @@ const MobilePdfViewer = ({ isOpen, onClose, title, libraryImages }) => {
                   );
                 }
 
+                // Handle merged images (single image that's already merged) or pairs
+                if (slide.type === 'merged') {
+                  // Merged image - single image that contains two pages side by side
+                  return (
+                    <Box
+                      width="100%"
+                      height="100%"
+                      overflow="hidden"
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="center"
+                      style={zoomStyle}
+                    >
+                      <Image 
+                        src={slide.images[0]} 
+                        alt={`Merged pages ${currentIndex}`}
+                        objectFit="contain"
+                        maxW="100%"
+                        maxH="100%"
+                        loading={currentIndex < 3 ? "eager" : "lazy"}
+                        draggable={false}
+                        style={{ userSelect: 'none' }}
+                      />
+                    </Box>
+                  );
+                }
+
+                // Fallback: pair of separate images
                 return (
                   <Box
                     width="100%"

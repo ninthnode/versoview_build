@@ -30,6 +30,7 @@ import {
     uploadProgress:0,
     uploadSteps:0,
     libraryImages: [],
+    mergedImages: [],
     libraryLoading: false,
     libraryError: null,
     libraryUploadLoading: false,
@@ -61,10 +62,16 @@ import {
           uploadProgress: action.payload,
         };
       case GET_LIBRARY_IMAGES_SUCCESS:
+        // Handle both old format (array) and new format (object with libraryImages and mergedImages)
+        const payload = action.payload;
+        const libraryImages = Array.isArray(payload) ? payload : (payload.libraryImages || payload || []);
+        const mergedImages = Array.isArray(payload) ? [] : (payload.mergedImages || []);
+        
         return {
           ...state,
           libraryLoading: false,
-          libraryImages: action.payload,
+          libraryImages: libraryImages,
+          mergedImages: mergedImages,
           libraryError: null,
         };
       case GET_LIBRARY_IMAGES_FAILURE:

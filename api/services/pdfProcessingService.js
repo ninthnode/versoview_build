@@ -76,8 +76,18 @@ const getCapabilities = async () => {
 };
 
 // Optimize image with sharp for better quality-to-size ratio
-const optimizeImage = async (imageBuffer, quality = 90) => {
+const optimizeImage = async (imageBuffer, quality = 96, skipIfAlreadyOptimized = false) => {
   try {
+    // Check if image is already a JPEG with high quality - if so, skip re-encoding to avoid quality loss
+    if (skipIfAlreadyOptimized) {
+      const metadata = await sharp(imageBuffer).metadata();
+      // If it's already JPEG and we're trying to maintain quality, just return as-is
+      // Re-encoding JPEG causes quality loss even at same quality level
+      if (metadata.format === 'jpeg') {
+        return imageBuffer;
+      }
+    }
+    
     // Use sharp to optimize the image with better compression settings
     // Progressive JPEG provides better perceived quality and compression
     const optimized = await sharp(imageBuffer)
@@ -112,17 +122,19 @@ const uploadToS3 = async (buffer, filename, contentType, folder = 'pdf') => {
 };
 
 // Poppler-based conversion (production)
-const convertPageWithPoppler = async (pdfBuffer, pageNumber, scale = 800) => {
+// Use higher resolution and PNG format to avoid quality loss, then convert to high-quality JPEG
+const convertPageWithPoppler = async (pdfBuffer, pageNumber, scale = 2400) => {
   return new Promise((resolve, reject) => {
     let processExited = false;
     let stdinClosed = false;
     
+    // Use PNG format first to avoid quality loss, then convert to high-quality JPEG
     const process = spawn('pdftocairo', [
-      '-jpeg',
+      '-png', // Use PNG to avoid quality loss from JPEG compression
       '-singlefile',
       '-f', pageNumber.toString(),
       '-l', pageNumber.toString(),
-      '-scale-to', scale.toString(),
+      '-scale-to', scale.toString(), // Increased from 800 to 2400 for higher resolution
       '-', '-'
     ]);
 
@@ -137,10 +149,23 @@ const convertPageWithPoppler = async (pdfBuffer, pageNumber, scale = 800) => {
     process.stdout.on('data', chunk => chunks.push(chunk));
     process.stderr.on('data', chunk => errorOutput += chunk.toString());
 
-    process.on('close', (code) => {
+    process.on('close', async (code) => {
       processExited = true;
       if (code === 0 && chunks.length > 0) {
-        resolve(Buffer.concat(chunks));
+        const pngBuffer = Buffer.concat(chunks);
+        // Convert PNG to high-quality JPEG to avoid double compression
+        try {
+          const jpegBuffer = await sharp(pngBuffer)
+            .jpeg({ 
+              quality: 100, // Maximum quality
+              progressive: true
+            })
+            .toBuffer();
+          resolve(jpegBuffer);
+        } catch (sharpError) {
+          // If sharp conversion fails, return PNG buffer (will be converted later)
+          resolve(pngBuffer);
+        }
       } else {
         reject(new Error(`pdftocairo failed with code ${code}: ${errorOutput}`));
       }
@@ -197,7 +222,8 @@ const convertPageWithPoppler = async (pdfBuffer, pageNumber, scale = 800) => {
 };
 
 // pdfjs-dist based conversion (development/fallback)
-const convertPageWithPdfjs = async (pdfBuffer, pageNumber, scale = 3.0) => {
+// Increased scale for higher resolution
+const convertPageWithPdfjs = async (pdfBuffer, pageNumber, scale = 4.0) => {
   try {
     let pdfjsLib;
     try {
@@ -219,8 +245,8 @@ const convertPageWithPdfjs = async (pdfBuffer, pageNumber, scale = 3.0) => {
     const renderTask = page.render({ canvasContext: context, viewport: viewport });
     await renderTask.promise;
     
-    // Use higher quality (0.90) - will be further optimized by optimizeImage function
-    return canvas.toBuffer('image/jpeg', { quality: 0.90 });
+    // Use maximum quality (0.98) - will be further optimized by optimizeImage function
+    return canvas.toBuffer('image/jpeg', { quality: 0.98 });
   } catch (error) {
     console.error(`pdfjs conversion failed for page ${pageNumber}:`, error);
     throw error;
@@ -309,8 +335,37 @@ const convertPdfToImages = async (pdfBuffer, totalPages, sessionId) => {
       }
     }
     
-    // Optimize image for better quality-to-size ratio
-    const optimizedBuffer = await optimizeImage(imageBuffer, 90);
+    // Check if image is already JPEG from Poppler conversion
+    // If it's PNG (from Poppler), convert to high-quality JPEG
+    // If it's already JPEG, skip re-encoding to avoid quality loss
+    let optimizedBuffer;
+    try {
+      const metadata = await sharp(imageBuffer).metadata();
+      console.log(`Page ${i} image format: ${metadata.format}, size: ${metadata.width}x${metadata.height}`);
+      
+      if (metadata.format === 'png') {
+        // Convert PNG to high-quality JPEG (single conversion, no quality loss)
+        console.log(`Converting PNG to JPEG at quality 100 for page ${i}`);
+        optimizedBuffer = await sharp(imageBuffer)
+          .jpeg({ 
+            quality: 100, // Maximum quality
+            progressive: true
+          })
+          .toBuffer();
+      } else if (metadata.format === 'jpeg') {
+        // Already JPEG from Poppler - don't re-encode to avoid quality loss
+        console.log(`Page ${i} already JPEG, skipping re-encoding to preserve quality`);
+        optimizedBuffer = imageBuffer;
+      } else {
+        // Other format - convert with maximum quality
+        console.log(`Converting ${metadata.format} to JPEG at quality 100 for page ${i}`);
+        optimizedBuffer = await optimizeImage(imageBuffer, 100);
+      }
+    } catch (error) {
+      console.warn(`Error processing page ${i} image:`, error.message);
+      // Fallback to optimization if metadata check fails
+      optimizedBuffer = await optimizeImage(imageBuffer, 100);
+    }
     
     // Upload to S3
     const filename = `page-${i}-${Date.now()}.jpg`;
@@ -404,9 +459,14 @@ const mergeImages = async (imageUrls, sessionId) => {
           const img1Buffer = Buffer.from(img1Response.data);
           const img2Buffer = Buffer.from(img2Response.data);
           
+          // Get metadata first to check image properties
           const img1Info = await sharp(img1Buffer).metadata();
           const img2Info = await sharp(img2Buffer).metadata();
+          
+          // Use images directly - sharp will handle the merge without quality loss
+          // No need to pre-process as sharp's composite operation preserves quality
 
+          // Merge images with maximum quality settings
           const mergedBuffer = await sharp({
             create: {
               width: img1Info.width + img2Info.width,
@@ -420,13 +480,20 @@ const mergeImages = async (imageUrls, sessionId) => {
             { input: img2Buffer, left: img1Info.width, top: 0 }
           ])
           .jpeg({ 
-            quality: 90,
-            progressive: true
+            quality: 100, // Maximum quality for merged images to preserve all detail
+            progressive: true // Progressive encoding for better compression
           })
           .toBuffer();
 
+          console.log(`Merged images ${i}-${i+1} at quality 100, size: ${img1Info.width + img2Info.width}x${Math.max(img1Info.height, img2Info.height)}`);
+          
+          // Don't re-optimize merged images - they're already at maximum quality
+          // Re-encoding JPEG causes quality loss even at the same quality level
+          // The merged buffer is already optimized with progressive encoding
+          const optimizedMergedBuffer = mergedBuffer;
+
           const filename = `merged-${i}-${i + 1}-${Date.now()}.jpg`;
-          const mergedUrl = await uploadToS3(mergedBuffer, filename, 'image/jpeg', 'images');
+          const mergedUrl = await uploadToS3(optimizedMergedBuffer, filename, 'image/jpeg', 'images');
           mergedImages.push(mergedUrl);
           
         } catch (mergeError) {

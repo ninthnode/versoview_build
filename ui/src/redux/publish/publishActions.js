@@ -363,7 +363,10 @@ import {
       );
       dispatch({
         type: GET_LIBRARY_IMAGES_SUCCESS,
-        payload: response?.data?.data,
+        payload: {
+          libraryImages: response?.data?.data || [],
+          mergedImages: response?.data?.mergedImages || []
+        },
       });
     } catch (error) {
       console.error("Error fetching library images:", error);

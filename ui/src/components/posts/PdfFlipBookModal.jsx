@@ -457,7 +457,8 @@ if (deviceType === 'phone') {
   }
 
   const { 
-    libraryImages, 
+    libraryImages,
+    mergedImages,
   } = useSelector((state) => state.publish);
 
   return (
@@ -479,6 +480,7 @@ if (deviceType === 'phone') {
           onClose={handleClose}
           title={title}
           libraryImages={libraryImages}
+          mergedImages={mergedImages}
         />
       ) : (
         /* Desktop PDF Viewer */

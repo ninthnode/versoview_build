@@ -556,9 +556,14 @@ const flatImageArray = [
         .filter((img) => img.isDefault === true)
         .map((img) => img.url),
     ];
+      
+      // Get merged images for landscape display
+      const mergedImages = libraryImages?.mergedImages || [];
+      
       res.status(200).json({
         success: true,
         data: flatImageArray,
+        mergedImages: mergedImages,
         message: "Library images fetched successfully",
       });
     } catch (error) {
