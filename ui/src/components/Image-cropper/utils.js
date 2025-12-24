@@ -84,6 +84,64 @@ export const createImage = (url) =>
     return 0;
   };
 
+  // Function to optimize image for better quality-to-size ratio
+  // This function maintains high quality while optimizing file size
+  export const optimizeImageForUpload = async (file, quality = 0.92, maxWidth = 3000) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      
+      reader.onload = async (e) => {
+        try {
+          const image = await createImage(e.target.result);
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          // Enable high-quality image smoothing
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          
+          // Calculate dimensions - maintain aspect ratio, limit max width
+          let { width, height } = image;
+          if (width > maxWidth) {
+            const ratio = maxWidth / width;
+            width = maxWidth;
+            height = Math.round(height * ratio);
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          
+          // Draw image with high quality
+          ctx.drawImage(image, 0, 0, width, height);
+          
+          // Convert to blob with optimized quality settings
+          canvas.toBlob((blob) => {
+            if (blob) {
+              // Create a File object from the blob to maintain file metadata
+              const optimizedFile = new File([blob], file.name, {
+                type: 'image/jpeg',
+                lastModified: Date.now()
+              });
+              resolve(optimizedFile);
+            } else {
+              reject(new Error('Failed to optimize image'));
+            }
+          }, 'image/jpeg', quality);
+        } catch (error) {
+          console.error('Error optimizing image:', error);
+          // Fallback to original file if optimization fails
+          resolve(file);
+        }
+      };
+      
+      reader.onerror = () => {
+        reject(new Error('Failed to read file'));
+      };
+      
+      reader.readAsDataURL(file);
+    });
+  };
+
   // Function to get the cropped image
   export const getCroppedImg = async (imageSrc, pixelCrop, quality = 0.95) => {
     const image = await createImage(imageSrc);

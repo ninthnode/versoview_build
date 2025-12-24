@@ -74,7 +74,7 @@ const EditionCard = ({
                   p="0"
                   icon={
                     edition.isBookmarked ? (
-                      <BookmarkFilled style={{ margin: -6 }} />
+                      <BookmarkFilled color="green.500" style={{ margin: -6 }} />
                     ) : (
                       <CiBookmark style={{ margin: -6 }} />
                     )

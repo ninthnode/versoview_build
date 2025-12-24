@@ -120,7 +120,7 @@ const PostCard = ({
               border="1px solid lightgray"
               borderRadius="md"
               objectFit="cover"
-              // minH={{ base: "250px", md: "300px"}} 
+              // minH={{ base: "250px", md: "300px"}}
               aspectRatio="360/205"
               src={post.mainImageURL}
               alt={post.header}
@@ -145,8 +145,9 @@ const PostCard = ({
                 flexWrap="nowrap"
               >
                 <Text overflow="hidden" textOverflow="ellipsis" flexShrink={1}>
-                  {post.section} {post.section&& "●"} {post.subSection} {post.subSection&& "●"}{" "}
-                  {formatDate(post.createdAt)} &bull; {post.readingTime} read
+                  {post.section} {post.section && "●"} {post.subSection}{" "}
+                  {post.subSection && "●"} {formatDate(post.createdAt)} &bull;{" "}
+                  {post.readingTime} read
                 </Text>
                 <div
                   onClick={() => {
@@ -168,16 +169,14 @@ const PostCard = ({
               </Flex>
 
               <Box>
-                {post.editionId?.pdfUrls?.length>0 && (
+                {post.editionId?.pdfUrls?.length > 0 && (
                   <PdfFlipBookModal
                     title={
                       post.editionId?.editionText +
                       " " +
                       post.editionId?.editionDate
                     }
-                    editionId ={
-                      post.editionId._id
-                    }
+                    editionId={post.editionId._id}
                   />
                 )}
               </Box>
@@ -206,7 +205,7 @@ const PostCard = ({
               {post.header}
             </Heading>
             {post.standFirst && (
-              <Heading
+              <Text
                 py="1"
                 mb="1"
                 fontWeight="bold"
@@ -214,7 +213,7 @@ const PostCard = ({
                 lineHeight="1.5rem"
               >
                 {post.standFirst}
-              </Heading>
+              </Text>
             )}
           </Link>
           <Text

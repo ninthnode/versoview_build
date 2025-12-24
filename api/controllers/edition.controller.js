@@ -10,6 +10,8 @@ const { sendCompletion, sendError, registerSession, removeSession } = require(".
 const crypto = require("crypto");
 const e = require("express");
 const { logRewardAction } = require("../utils/rewardLogger");
+const mongoose = require('mongoose');
+const { ObjectId } = mongoose.Types;
 
 function calculateReadingTime(text, time = 250) {
   let words = text.trim().match(/\S+/g) || [];
@@ -360,15 +362,26 @@ module.exports.getPdf = asyncHandler(async (req, res) => {
 module.exports.getEditionsByUserId = asyncHandler(async (req, res) => {
   try {
     const userId = req.params._id;
+    const loggedInUserId = req.user?._id; // Get logged-in user ID if available
+    console.log('getEditionsByUserId - loggedInUserId:', loggedInUserId, 'req.user exists:', !!req.user);
     const editionData = await Edition.find({ userId: userId }) .sort({ createdAt: -1 })
         .lean();
 
     const editionWithBookmarkStatus = await Promise.all(
       editionData.map(async (edition) => {
-        const bookmark = await Bookmark.findOne({
-          userId,
-          editionId: edition._id,
-        });
+        // Check bookmark status for the logged-in user, not the channel user
+        let bookmark = null;
+        if (loggedInUserId) {
+          // Convert to ObjectId if needed (edition._id from .lean() is a string)
+          const editionObjectId = typeof edition._id === 'string' ? new ObjectId(edition._id) : edition._id;
+          const userObjectId = typeof loggedInUserId === 'string' ? new ObjectId(loggedInUserId) : loggedInUserId;
+          
+          bookmark = await Bookmark.findOne({
+            userId: userObjectId,
+            editionId: editionObjectId,
+          });
+        }
+        console.log(`Edition ${edition._id} - bookmark found:`, !!bookmark, 'for loggedInUserId:', loggedInUserId, 'isBookmarked will be:', !!bookmark);
          const firstImage = await LibraryImage.findOne({
             editionId: edition._id, // edition._id is already a string/hex with .lean()
           }).lean(); // optional, if you don't need full Mongoose doc

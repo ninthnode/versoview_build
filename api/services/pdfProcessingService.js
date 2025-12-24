@@ -59,8 +59,39 @@ const getCapabilities = async () => {
   if (!cachedCapabilities) {
     cachedCapabilities = await detectPdfCapabilities();
     console.log('PDF Processing Capabilities:', cachedCapabilities);
+    
+    // Warn if no conversion methods are available
+    if (!cachedCapabilities.poppler && !(cachedCapabilities.pdfjs && cachedCapabilities.canvas)) {
+      console.warn('⚠️  WARNING: No PDF conversion methods available!');
+      console.warn('   Placeholder images will be used. To fix:');
+      console.warn('   - Install Poppler: https://github.com/oschwartz10612/poppler-windows/releases/ (Windows)');
+      console.warn('   - Or install Canvas dependencies: npm install canvas (requires build tools)');
+      console.warn('   See README.md for detailed installation instructions.');
+    } else if (!cachedCapabilities.poppler) {
+      console.log('ℹ️  Using pdfjs+canvas fallback (slower than Poppler)');
+      console.log('   For better performance, install Poppler: https://github.com/oschwartz10612/poppler-windows/releases/');
+    }
   }
   return cachedCapabilities;
+};
+
+// Optimize image with sharp for better quality-to-size ratio
+const optimizeImage = async (imageBuffer, quality = 90) => {
+  try {
+    // Use sharp to optimize the image with better compression settings
+    // Progressive JPEG provides better perceived quality and compression
+    const optimized = await sharp(imageBuffer)
+      .jpeg({ 
+        quality: quality,
+        progressive: true // Progressive JPEG for better perceived quality and compression
+      })
+      .toBuffer();
+    
+    return optimized;
+  } catch (error) {
+    console.warn('Image optimization failed, using original:', error.message);
+    return imageBuffer; // Fallback to original if optimization fails
+  }
 };
 
 // Upload buffer to S3
@@ -188,7 +219,8 @@ const convertPageWithPdfjs = async (pdfBuffer, pageNumber, scale = 3.0) => {
     const renderTask = page.render({ canvasContext: context, viewport: viewport });
     await renderTask.promise;
     
-    return canvas.toBuffer('image/jpeg', { quality: 0.85 });
+    // Use higher quality (0.90) - will be further optimized by optimizeImage function
+    return canvas.toBuffer('image/jpeg', { quality: 0.90 });
   } catch (error) {
     console.error(`pdfjs conversion failed for page ${pageNumber}:`, error);
     throw error;
@@ -219,7 +251,10 @@ const createPagePlaceholder = async (pageNum, totalPages) => {
       left: 0
     }
   ])
-  .jpeg({ quality: 80 })
+  .jpeg({ 
+    quality: 85,
+    progressive: true
+  })
   .toBuffer();
 };
 
@@ -274,9 +309,12 @@ const convertPdfToImages = async (pdfBuffer, totalPages, sessionId) => {
       }
     }
     
+    // Optimize image for better quality-to-size ratio
+    const optimizedBuffer = await optimizeImage(imageBuffer, 90);
+    
     // Upload to S3
     const filename = `page-${i}-${Date.now()}.jpg`;
-    const imageUrl = await uploadToS3(imageBuffer, filename, 'image/jpeg', 'images');
+    const imageUrl = await uploadToS3(optimizedBuffer, filename, 'image/jpeg', 'images');
     images.push(imageUrl);
 
     const progress = 55 + (i / totalPages) * 20;
@@ -381,7 +419,10 @@ const mergeImages = async (imageUrls, sessionId) => {
             { input: img1Buffer, left: 0, top: 0 },
             { input: img2Buffer, left: img1Info.width, top: 0 }
           ])
-          .jpeg({ quality: 85 })
+          .jpeg({ 
+            quality: 90,
+            progressive: true
+          })
           .toBuffer();
 
           const filename = `merged-${i}-${i + 1}-${Date.now()}.jpg`;

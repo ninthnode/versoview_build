@@ -48,6 +48,7 @@ module.exports.protectUser = asyncHandler(async (req, res, next) => {
 });
 
 // Allows logged-out users through while attaching req.user when a valid token
+// Silently fails if token is invalid/missing (truly optional)
 module.exports.attachUserIfPresent = asyncHandler(async (req, res, next) => {
 	let token;
 
@@ -60,22 +61,21 @@ module.exports.attachUserIfPresent = asyncHandler(async (req, res, next) => {
 			const cert = fs.readFileSync(path.join(__dirname, "../jwtRS256.pem"));
 			const decoded = jwt.verify(token, cert, { algorithms: ["RS256"] });
 
-			req.user = await User.findOne({
+			const user = await User.findOne({
 				_id: decoded.id,
 				userType: { $in: ["user", "publisher"] },
 			});
 
-			if (!req.user) {
-				return res.status(401).json({ status: 401, message: "Not authorized" });
+			// Only set req.user if user is found
+			if (user) {
+				req.user = user;
 			}
+			// If user not found, just continue without req.user (don't return error)
+			// This makes auth truly optional
 		} catch (error) {
-			console.error("Optional token verification failed:", error);
-			return res
-				.status(401)
-				.json({
-					status: 401,
-					message: "Token verification or user lookup failed Not authorized",
-				});
+			// Silently fail - don't set req.user and continue
+			// This allows endpoints to work with or without valid auth
+			console.error("Optional token verification failed (continuing without auth):", error.message);
 		}
 	}
 

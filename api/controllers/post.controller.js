@@ -616,6 +616,7 @@ module.exports.getPostByChannelId = asyncHandler(async (req, res) => {
           ...post.toObject(),
           ...(userId && { isBookmarked }), // Only add if userId exists
           commentCount: comments.length,
+          readingTime: calculateReadingTime(post.bodyRichText)
         };
       })
     );
@@ -1050,6 +1051,8 @@ module.exports.getAllBookmark = asyncHandler(async (req, res) => {
           userId: bookmark.editionId.userId,
         }).lean();
         bookmark.editionId.channelData = channelData; // Attach the `Channel` data directly to `editionId`
+        // Set isBookmarked from bookmark record so UI can show green bookmark
+        bookmark.editionId.isBookmarked = bookmark.isBookmarked !== false; // Default to true if not explicitly false
       }
 
       // Enrich post bookmarks with counts/read-time so UI badges render
@@ -1061,6 +1064,13 @@ module.exports.getAllBookmark = asyncHandler(async (req, res) => {
         bookmark.postId.readingTime = calculateReadingTime(
           bookmark.postId.bodyRichText
         );
+        // Set isBookmarked from bookmark record
+        bookmark.postId.isBookmarked = bookmark.isBookmarked !== false;
+      }
+
+      // Set isBookmarked for comment bookmarks
+      if (bookmark.postCommentId) {
+        bookmark.postCommentId.isBookmarked = bookmark.isBookmarked !== false;
       }
     }
     return res

@@ -118,10 +118,23 @@ const LibraryImageSelector = ({ isOpen, onClose, editionId, postId, onImageSelec
     if (!selectedFile) return;
     
     try {
+      // Optimize image before upload
+      let fileToUpload = selectedFile;
+      let content_type = selectedFile.type;
+      
+      if (selectedFile.type && selectedFile.type.startsWith('image/')) {
+        try {
+          const { optimizeImageForUpload } = await import('@/components/Image-cropper/utils');
+          fileToUpload = await optimizeImageForUpload(selectedFile, 0.92, 3000);
+          content_type = 'image/jpeg'; // Optimized images are always JPEG
+        } catch (error) {
+          console.warn('Failed to optimize image, using original:', error);
+        }
+      }
+      
       // Create a unique key for the upload
       const uploadId = postId || `temp_${Date.now()}`;
-      const key = `post/${uploadId}/${selectedFile.name}`;
-      const content_type = selectedFile.type;
+      const key = `post/${uploadId}/${fileToUpload.name}`;
       
       // Upload to S3 only (don't save to database yet)
       const signedUrlResponse = await fetch(
@@ -141,7 +154,7 @@ const LibraryImageSelector = ({ isOpen, onClose, editionId, postId, onImageSelec
       await fetch(signedUrlData.data.signedUrl, {
         method: 'PUT',
         headers: { 'Content-Type': content_type },
-        body: selectedFile
+        body: fileToUpload
       });
       
       // Get the final URL

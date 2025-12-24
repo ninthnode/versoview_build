@@ -68,7 +68,26 @@ import {
   
   async function processFiles(files, setProcessProgress, type) {
     const fileUrls = [];
-    const totalSize = files.reduce((acc, file) => acc + file.size, 0);
+    
+    // Optimize image files before calculating total size
+    const optimizedFiles = await Promise.all(
+      files.map(async (file) => {
+        // Only optimize image files, skip PDFs
+        if (type === 'images' && file.type && file.type.startsWith('image/')) {
+          try {
+            // Dynamically import the utility function
+            const { optimizeImageForUpload } = await import('@/components/Image-cropper/utils');
+            return await optimizeImageForUpload(file, 0.92, 3000);
+          } catch (error) {
+            console.warn('Failed to optimize image, using original:', error);
+            return file;
+          }
+        }
+        return file;
+      })
+    );
+    
+    const totalSize = optimizedFiles.reduce((acc, file) => acc + file.size, 0);
   
     // Track uploaded bytes for each file
     const uploadedBytesPerFile = {};
@@ -77,13 +96,13 @@ import {
     const concurrencyLimit = 3; // Process 3 files at once
   
     // Initialize progress for all files
-    files.forEach((_, index) => {
+    optimizedFiles.forEach((_, index) => {
       uploadedBytesPerFile[index] = 0;
     });
 
     // Process files in batches with controlled concurrency
-    for (let i = 0; i < files.length; i += concurrencyLimit) {
-      const batch = files.slice(i, i + concurrencyLimit);
+    for (let i = 0; i < optimizedFiles.length; i += concurrencyLimit) {
+      const batch = optimizedFiles.slice(i, i + concurrencyLimit);
       const batchIndexes = Array.from(
         { length: batch.length },
         (_, index) => i + index
@@ -243,7 +262,13 @@ import {
     try {
       dispatch({ type: GET_USER_EDITION_REQUEST });
       console.log(userId)
-     const response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/editions/getEditionsByUserId/${userId}`);
+      const token = localStorage.getItem("token");
+      const headers = token ? {
+        authorization: `Bearer ${token.replaceAll('"', "")}`,
+      } : {};
+     const response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/editions/getEditionsByUserId/${userId}`, {
+        headers,
+      });
       dispatch({
         type: GET_USER_EDITION_SUCCESS,
         payload: response.data.data,
@@ -353,6 +378,18 @@ import {
     try {
       dispatch({ type: UPLOAD_LIBRARY_IMAGE_REQUEST });
       
+      // Optimize image before upload if it's an image file
+      let fileToUpload = file;
+      if (file && file.type && file.type.startsWith('image/')) {
+        try {
+          const { optimizeImageForUpload } = await import('@/components/Image-cropper/utils');
+          fileToUpload = await optimizeImageForUpload(file, 0.92, 3000);
+          content_type = 'image/jpeg'; // Optimized images are always JPEG
+        } catch (error) {
+          console.warn('Failed to optimize image, using original:', error);
+        }
+      }
+      
       // Get signed URL
       const signedUrlResponse = await axios.post(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/s3/signed_url`,
@@ -360,7 +397,7 @@ import {
       );
 
       // Upload to S3
-      await axios.put(signedUrlResponse.data.data.signedUrl, file, {
+      await axios.put(signedUrlResponse.data.data.signedUrl, fileToUpload, {
         headers: { "Content-Type": content_type },
       });
 
